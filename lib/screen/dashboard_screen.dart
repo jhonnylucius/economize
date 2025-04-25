@@ -6,7 +6,6 @@ import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
@@ -86,9 +85,8 @@ class DashBoardScreenState extends State<DashBoardScreen> {
   // Função para filtrar despesas por mês
   List<Costs> _filterCostsByMonth(int month) {
     return listCosts.where((cost) {
-      // Aqui mantemos o parse pois cost.data é String
-      DateTime costDate = DateFormat('dd/MM/yyyy').parse(cost.data);
-      return costDate.month == month;
+      // Agora cost.data já é DateTime, não precisa fazer parse
+      return cost.data.month == month;
     }).toList();
   }
 
@@ -212,13 +210,12 @@ class DashBoardScreenState extends State<DashBoardScreen> {
                         ),
                         dropdownColor: theme.colorScheme.surface,
                         style: TextStyle(color: theme.colorScheme.onSurface),
-                        items:
-                            monthList.asMap().entries.map((entry) {
-                              return DropdownMenuItem<int>(
-                                value: entry.key + 1,
-                                child: Text(entry.value),
-                              );
-                            }).toList(),
+                        items: monthList.asMap().entries.map((entry) {
+                          return DropdownMenuItem<int>(
+                            value: entry.key + 1,
+                            child: Text(entry.value),
+                          );
+                        }).toList(),
                         onChanged: (int? newValue) {
                           if (newValue != null) {
                             setState(() {
@@ -309,6 +306,13 @@ class DashBoardScreenState extends State<DashBoardScreen> {
       Colors.pink,
       Colors.amber,
       Colors.cyan,
+      Colors.indigo,
+      Colors.brown,
+      Colors.grey,
+      Colors.deepOrange,
+      Colors.deepPurple,
+      Colors.lightBlue,
+      Colors.lightGreen,
     ];
     return GestureDetector(
       onLongPress: () {
