@@ -23,10 +23,9 @@ class ReportService {
         if (specificType == 'Todas') {
           finalItems = items; // Retorna todas as receitas
         } else {
-          finalItems =
-              items
-                  .where((item) => item.tipoReceita == specificType)
-                  .toList(); // Retorna apenas as receitas do tipo específico
+          finalItems = items
+              .where((item) => item.tipoReceita == specificType)
+              .toList(); // Retorna apenas as receitas do tipo específico
         }
 
         // Calcula totais
@@ -38,9 +37,21 @@ class ReportService {
           total += item.preco;
         }
 
+        // Converter os objetos Revenues para mapas
+        final List<Map<String, dynamic>> itemsAsMaps = finalItems
+            .map((item) => {
+                  'descricaoDaReceita': item.descricaoDaReceita,
+                  'tipoReceita': item.tipoReceita,
+                  'preco': item.preco,
+                  'data': item.data,
+                  'id': item.id,
+                })
+            .toList();
+
         return {
           'success': true,
-          'items': finalItems,
+          'items':
+              itemsAsMaps, // Retornando a lista de mapas em vez dos objetos
           'totals': totals,
           'total': total,
         };
@@ -53,10 +64,9 @@ class ReportService {
         if (specificType == 'Todas') {
           finalItems = items; // Retorna todas as despesas
         } else {
-          finalItems =
-              items
-                  .where((item) => item.tipoDespesa == specificType)
-                  .toList(); // Retorna apenas as despesas do tipo específico
+          finalItems = items
+              .where((item) => item.tipoDespesa == specificType)
+              .toList(); // Retorna apenas as despesas do tipo específico
         }
 
         // Calcula totais
@@ -68,9 +78,21 @@ class ReportService {
           total += item.preco;
         }
 
+        // Converter os objetos Costs para mapas
+        final List<Map<String, dynamic>> itemsAsMaps = finalItems
+            .map((item) => {
+                  'descricaoDaDespesa': item.descricaoDaDespesa,
+                  'tipoDespesa': item.tipoDespesa,
+                  'preco': item.preco,
+                  'data': item.data,
+                  'id': item.id,
+                })
+            .toList();
+
         return {
           'success': true,
-          'items': finalItems,
+          'items':
+              itemsAsMaps, // Retornando a lista de mapas em vez dos objetos
           'totals': totals,
           'total': total,
         };
@@ -97,7 +119,7 @@ class ReportService {
       // Busca períodos das despesas
       final costs = await _costsDAO.findAll();
       for (var cost in costs) {
-        final date = DateFormat('dd/MM/yyyy').parse(cost.data);
+        final date = DateFormat('dd/MM/yyyy').parse(cost.data as String);
         periods.add('${date.month.toString().padLeft(2, '0')}/${date.year}');
       }
 
