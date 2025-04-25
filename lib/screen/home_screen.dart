@@ -104,10 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
               'O que quer fazer?',
               style: TextStyle(
                 // Mantém a lógica original para esta cor específica (preto ou branco)
-                color:
-                    themeManager.currentThemeType == ThemeType.light
-                        ? Colors.black
-                        : Colors.white,
+                color: themeManager.currentThemeType == ThemeType.light
+                    ? Colors.black
+                    : Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -125,18 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   return AnimatedPositioned(
                     duration: const Duration(milliseconds: 900),
                     curve: Curves.easeInOut,
-                    left:
-                        _isAnimating
-                            ? (_selectedIndex == index
-                                ? x
-                                : _getExitPosition(index, screenSize.width).dx)
-                            : x,
-                    top:
-                        _isAnimating
-                            ? (_selectedIndex == index
-                                ? y
-                                : _getExitPosition(index, screenSize.height).dy)
-                            : y,
+                    left: _isAnimating
+                        ? (_selectedIndex == index
+                            ? x
+                            : _getExitPosition(index, screenSize.width).dx)
+                        : x,
+                    top: _isAnimating
+                        ? (_selectedIndex == index
+                            ? y
+                            : _getExitPosition(index, screenSize.height).dy)
+                        : y,
                     width: screenSize.width / 2,
                     height: (screenSize.width / 2) / 1.3,
                     child: Padding(
@@ -271,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'Relatórios',
       'Gerenciar Produtos',
       'Dicas Importantes',
-      'Tendência das Despesa',
+      'Tendência das Despesa X Receita',
     ];
     return labels[index];
   }
