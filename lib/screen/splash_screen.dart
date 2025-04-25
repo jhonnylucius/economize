@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,6 +9,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final Logger _logger = Logger();
+
   @override
   void initState() {
     super.initState();
@@ -16,12 +19,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initializeApp() async {
     try {
+      _logger.d('Inicializando aplicativo e carregando banco de dados...');
+
+      // Aumentado para 3 segundos (3000 ms)
       await Future.delayed(
-        const Duration(milliseconds: 500),
-      ); // Garante que a UI carregue
+        const Duration(milliseconds: 3000),
+      );
+
+      _logger.d('Carregamento concluído, navegando para a tela principal');
+
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
+      _logger.e('Erro ao inicializar o aplicativo: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
