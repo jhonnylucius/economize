@@ -76,6 +76,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
 
     // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
+      // --- OVERFLOW FIX: Adicionado resizeToAvoidBottomInset: false ---
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         // Mantém a AppBar original com o TabBar
         title: Text(
@@ -103,11 +105,10 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: themeManager.getDetailHeaderTextColor(),
-          unselectedLabelColor: themeManager
-              .getDetailHeaderTextColor()
-              .withValues(
-                alpha: 0.7,
-              ), // Usa withValues para evitar perda de precisão
+          unselectedLabelColor:
+              themeManager.getDetailHeaderTextColor().withAlpha(
+                    (0.7 * 255).toInt(),
+                  ), // Ajustado para usar withAlpha
           indicatorColor: themeManager.getDetailHeaderTextColor(),
           tabs: const [
             Tab(text: 'Locais', icon: Icon(MyFlutterApp.location)),
@@ -119,27 +120,27 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
       // Passa a cor de fundo original para o ResponsiveScreen
       backgroundColor: themeManager.getDetailCardColor(),
       // Passa o FloatingActionButton original para o ResponsiveScreen
-      floatingActionButton:
-          _isEditingCard
-              ? null
-              : FloatingActionButton(
-                onPressed: () {
-                  if (_tabController.index == 0) {
-                    _showAddLocationDialog();
-                  } else {
-                    _showAddItemDialog();
-                  }
-                },
-                backgroundColor: themeManager.getDetailHeaderColor(),
-                child: Icon(
-                  Icons.add,
-                  color: themeManager.getDetailHeaderTextColor(),
-                ),
+      floatingActionButton: _isEditingCard
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                if (_tabController.index == 0) {
+                  _showAddLocationDialog();
+                } else {
+                  _showAddItemDialog();
+                }
+              },
+              backgroundColor: themeManager.getDetailHeaderColor(),
+              child: Icon(
+                Icons.add,
+                color: themeManager.getDetailHeaderTextColor(),
               ),
+            ),
       // Parâmetro obrigatório para ResponsiveScreen
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // O body original agora é o child do ResponsiveScreen
       child: Column(
+        // Esta é a Column em budget_detail_screen.dart:140
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -160,7 +161,6 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
           ),
         ],
       ), // Mantém a posição original
-      // resizeToAvoidBottomInset: true, // Padrão já é true
     );
   }
 
@@ -218,9 +218,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             subtitle: Text(
               location.address,
               style: TextStyle(
-                color: themeManager
-                    .getDetailLocationCardTextColor()
-                    .withValues(alpha: 0.7), // Usa withValues para evitar perda de precisão
+                color: themeManager.getDetailLocationCardTextColor().withAlpha(
+                    (0.7 * 255).toInt()), // Ajustado para usar withAlpha
                 fontSize: 14,
               ),
             ),
@@ -311,12 +310,11 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                   themeManager.getDetailCompareButtonBackgroundColor(),
               foregroundColor: themeManager.getDetailCompareButtonTextColor(),
             ),
-            onPressed:
-                () => Navigator.pushNamed(
-                  context,
-                  '/budget/compare',
-                  arguments: widget.budget,
-                ),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              '/budget/compare',
+              arguments: widget.budget,
+            ),
           ),
         ],
       ),
@@ -344,7 +342,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     });
   }
 
-  // Método _showAddLocationDialog original (sem alterações)
+  // Método _showAddLocationDialog (mantendo SizedBox + SingleChildScrollView interno)
   Future<void> _showAddLocationDialog() async {
     final themeManager = context.read<ThemeManager>();
     final nameController = TextEditingController();
@@ -352,14 +350,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
 
     return showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeManager.getDetailDialogBackgroundColor(),
-            title: Text(
-              'Adicionar Local',
-              style: TextStyle(color: themeManager.getDetailDialogTextColor()),
-            ),
-            content: Column(
+      builder: (context) => AlertDialog(
+        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        title: Text(
+          'Adicionar Local',
+          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+        ),
+        content: SizedBox(
+          // Mantém SizedBox para limitar altura interna
+          height: 200.0,
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            // Mantém SingleChildScrollView interno
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
@@ -378,6 +381,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                   style: TextStyle(
                     color: themeManager.getDetailTextFieldTextColor(),
                   ),
+                  autofocus: true,
                 ),
                 TextField(
                   controller: addressController,
@@ -398,38 +402,40 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: themeManager.getDetailDialogButtonTextColor(),
-                  ),
-                ),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (nameController.text.isNotEmpty) {
-                    final location = BudgetLocation(
-                      id: const Uuid().v4(),
-                      name: nameController.text.trim(),
-                      address: addressController.text.trim(),
-                      priceDate: DateTime.now(),
-                      budgetId: widget.budget.id,
-                    );
-                    _addLocation(location);
-                    Navigator.pop(context);
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: themeManager.getDetailHeaderColor(),
-                  foregroundColor: themeManager.getDetailHeaderTextColor(),
-                ),
-                child: const Text('Adicionar'),
-              ),
-            ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: themeManager.getDetailDialogButtonTextColor(),
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (nameController.text.isNotEmpty) {
+                final location = BudgetLocation(
+                  id: const Uuid().v4(),
+                  name: nameController.text.trim(),
+                  address: addressController.text.trim(),
+                  priceDate: DateTime.now(),
+                  budgetId: widget.budget.id,
+                );
+                _addLocation(location);
+                Navigator.pop(context);
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: themeManager.getDetailHeaderColor(),
+              foregroundColor: themeManager.getDetailHeaderTextColor(),
+            ),
+            child: const Text('Adicionar'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -439,30 +445,29 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     return showDialog(
       context: context,
       // Usa Dialog em vez de AlertDialog para mais controle sobre o tamanho
-      builder:
-          (context) => Dialog(
-            backgroundColor: themeManager.getDetailDialogBackgroundColor(),
-            // Define o preenchimento e o tamanho do Dialog
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                // Define largura e altura relativas à tela
-                width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: AddItemForm(
-                  budgetId: widget.budget.id,
-                  onItemsAdded: (items) async {
-                    // Adiciona os itens um por um
-                    for (final item in items) {
-                      await _addItem(item);
-                    }
-                    // Fecha o diálogo após adicionar todos os itens
-                    if (mounted) Navigator.pop(context);
-                  },
-                ),
-              ),
+      builder: (context) => Dialog(
+        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        // Define o preenchimento e o tamanho do Dialog
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            // Define largura e altura relativas à tela
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: AddItemForm(
+              budgetId: widget.budget.id,
+              onItemsAdded: (items) async {
+                // Adiciona os itens um por um
+                for (final item in items) {
+                  await _addItem(item);
+                }
+                // Fecha o diálogo após adicionar todos os itens
+                if (mounted) Navigator.pop(context);
+              },
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -565,47 +570,50 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     final themeManager = context.read<ThemeManager>();
     return showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeManager.getDetailDialogBackgroundColor(),
-            title: Text(
-              title,
-              style: TextStyle(color: themeManager.getDetailDialogTextColor()),
-            ),
-            content: Text(
-              message,
-              style: TextStyle(color: themeManager.getDetailDialogTextColor()),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: themeManager.getDetailDialogButtonTextColor(),
-                  ),
-                ),
+      builder: (context) => AlertDialog(
+        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        title: Text(
+          title,
+          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: themeManager.getDetailDialogButtonTextColor(),
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: themeManager.getDetailErrorColor(),
-                  foregroundColor: themeManager.getDetailErrorTextColor(),
-                ),
-                child: const Text('Remover'),
-              ),
-            ],
+            ),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: themeManager.getDetailErrorColor(),
+              foregroundColor: themeManager.getDetailErrorTextColor(),
+            ),
+            child: const Text('Remover'),
+          ),
+        ],
+      ),
     );
   }
 
-  // Método _showSuccess original (sem alterações)
+  // Método _showSuccess com correção da cor do texto (mantido)
   void _showSuccess(String message) {
     // Garante que o ScaffoldMessenger seja acessado apenas se o widget estiver montado
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        // --- COR DO TEXTO: Definida como branca ---
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white), // Texto branco
+        ),
         backgroundColor:
             context.read<ThemeManager>().getDetailSuccessBackgroundColor(),
       ),
