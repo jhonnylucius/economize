@@ -1,4 +1,4 @@
-package com.luciano.economize
+package com.lucianoribeiro.economize
 
 import io.flutter.embedding.android.FlutterActivity
 
