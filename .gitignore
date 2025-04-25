@@ -51,3 +51,4 @@ app.*.map.json
 build
 
 android\app\economize-key.jks
+pubspec.lock
