@@ -51,22 +51,19 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
 
     if (_searchController.text.isNotEmpty) {
       final searchResults = BudgetUtils.searchProducts(_searchController.text);
-      filtered =
-          filtered.where((budget) {
-            return budget.items.any(
-              (item) =>
-                  searchResults.any((result) => result['name'] == item.name),
-            );
-          }).toList();
+      filtered = filtered.where((budget) {
+        return budget.items.any(
+          (item) => searchResults.any((result) => result['name'] == item.name),
+        );
+      }).toList();
     }
 
     if (_selectedCategory != null) {
-      filtered =
-          filtered.where((budget) {
-            return budget.items.any(
-              (item) => item.category == _selectedCategory,
-            );
-          }).toList();
+      filtered = filtered.where((budget) {
+        return budget.items.any(
+          (item) => item.category == _selectedCategory,
+        );
+      }).toList();
     }
 
     return filtered;
@@ -111,7 +108,8 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
         ),
         icon: Icon(
           MyFlutterApp.building,
-          color: themeManager.getBudgetListCardTextColor(),
+          color: themeManager
+              .getBudgetListCardTextColor(), // Ajustado para usar cor do texto do card
         ),
         backgroundColor: themeManager.getBudgetListHeaderColor(),
       ),
@@ -213,10 +211,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
             backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
             selectedColor: themeManager.getBudgetListCardBackgroundColor(),
           ),
-          ...defaultItems
-              .map((e) => e['category'] as String)
-              .toSet()
-              .map(
+          ...defaultItems.map((e) => e['category'] as String).toSet().map(
                 (category) => Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: FilterChip(
@@ -227,10 +222,9 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                       ),
                     ),
                     selected: _selectedCategory == category,
-                    onSelected:
-                        (selected) => setState(() {
-                          _selectedCategory = selected ? category : null;
-                        }),
+                    onSelected: (selected) => setState(() {
+                      _selectedCategory = selected ? category : null;
+                    }),
                     backgroundColor:
                         themeManager.getBudgetListCardBackgroundColor(),
                     selectedColor:
@@ -255,8 +249,8 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
               Icons.search_off,
               size: 64,
               color: themeManager.getBudgetListCardTextColor().withAlpha(
-                (0.5 * 255).toInt(),
-              ),
+                    (0.5 * 255).toInt(),
+                  ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -296,71 +290,73 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
 
     return showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
-            title: Text(
-              'Novo Orçamento',
-              style: TextStyle(
-                color: themeManager.getBudgetListCardTextColor(),
-              ),
-            ),
-            content: TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                labelText: 'Título do Orçamento',
-                hintText: 'Ex: Compras do Mês',
-                labelStyle: TextStyle(
-                  color: themeManager.getBudgetListCardTextColor(),
-                ),
-                hintStyle: TextStyle(
-                  color: themeManager.getBudgetListCardTextColor().withAlpha(
-                    (0.7 * 255).toInt(),
-                  ),
-                ),
-              ),
-              style: TextStyle(
-                color: themeManager.getBudgetListCardTextColor(),
-              ),
-              autofocus: true,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: themeManager.getBudgetListHeaderColor(),
-                  ),
-                ),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  if (titleController.text.isNotEmpty) {
-                    try {
-                      final budget = await _budgetService.createBudget(
-                        titleController.text.trim(),
-                      );
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        _navigateToBudgetDetail(budget);
-                        _showSuccess('Orçamento criado com sucesso!');
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        _showError('Erro ao criar orçamento: $e');
-                      }
-                    }
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: themeManager.getBudgetListHeaderColor(),
-                  foregroundColor: themeManager.getBudgetListHeaderTextColor(),
-                ),
-                child: const Text('Criar'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
+        title: Text(
+          'Novo Orçamento',
+          style: TextStyle(
+            color: themeManager.getBudgetListCardTextColor(),
           ),
+        ),
+        // --- OVERFLOW FIX: Adicionado SingleChildScrollView ---
+        content: SingleChildScrollView(
+          child: TextField(
+            controller: titleController,
+            decoration: InputDecoration(
+              labelText: 'Título do Orçamento',
+              hintText: 'Ex: Compras do Mês',
+              labelStyle: TextStyle(
+                color: themeManager.getBudgetListCardTextColor(),
+              ),
+              hintStyle: TextStyle(
+                color: themeManager.getBudgetListCardTextColor().withAlpha(
+                      (0.7 * 255).toInt(),
+                    ),
+              ),
+            ),
+            style: TextStyle(
+              color: themeManager.getBudgetListCardTextColor(),
+            ),
+            autofocus: true,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: themeManager.getBudgetListHeaderColor(),
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (titleController.text.isNotEmpty) {
+                try {
+                  final budget = await _budgetService.createBudget(
+                    titleController.text.trim(),
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    _navigateToBudgetDetail(budget);
+                    _showSuccess('Orçamento criado com sucesso!');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    _showError('Erro ao criar orçamento: $e');
+                  }
+                }
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: themeManager.getBudgetListHeaderColor(),
+              foregroundColor: themeManager.getBudgetListHeaderTextColor(),
+            ),
+            child: const Text('Criar'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -368,41 +364,40 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
     final themeManager = context.read<ThemeManager>();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
-            title: Text(
-              'Excluir Orçamento',
-              style: TextStyle(
-                color: themeManager.getBudgetListCardTextColor(),
-              ),
-            ),
-            content: Text(
-              'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.',
-              style: TextStyle(
-                color: themeManager.getBudgetListCardTextColor(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: themeManager.getBudgetListHeaderColor(),
-                  ),
-                ),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Excluir'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
+        title: Text(
+          'Excluir Orçamento',
+          style: TextStyle(
+            color: themeManager.getBudgetListCardTextColor(),
           ),
+        ),
+        content: Text(
+          'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.',
+          style: TextStyle(
+            color: themeManager.getBudgetListCardTextColor(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: themeManager.getBudgetListHeaderColor(),
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true) {
@@ -500,8 +495,8 @@ class _BudgetCard extends StatelessWidget {
                 'Criado em: ${DateFormat('dd/MM/yyyy').format(budget.date)}',
                 style: TextStyle(
                   color: themeManager.getBudgetListCardTextColor().withAlpha(
-                    (0.7 * 255).toInt(),
-                  ),
+                        (0.7 * 255).toInt(),
+                      ),
                 ),
               ),
               const SizedBox(height: 16),
