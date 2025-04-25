@@ -1,10 +1,8 @@
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/report_service.dart';
-import 'package:economize/theme/app_themes.dart';
-import 'package:economize/theme/theme_manager.dart';
+// Imports não utilizados removidos
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -22,24 +20,50 @@ class _ReportScreenState extends State<ReportScreen> {
   bool _isLoading = false;
   double _total = 0;
   Map<String, double> _totalsByType = {};
+  Map<String, List<String>> _availableTypes = {'receitas': [], 'despesas': []};
 
   @override
   void initState() {
     super.initState();
-    _generateReport();
+    _fetchAvailableTypesAndGenerateReport();
   }
 
-  Future<void> _generateReport() async {
+  Future<void> _fetchAvailableTypesAndGenerateReport() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
+    try {
+      _availableTypes = await _reportService.getAvailableTypes();
+      await _generateReport(isInitialLoad: true);
+    } catch (e) {
+      if (mounted) {
+        _showError('Erro ao buscar tipos iniciais: $e');
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _generateReport({bool isInitialLoad = false}) async {
+    if (!isInitialLoad && mounted && !_isLoading) {
+      setState(() {
+        _isLoading = true;
+      });
+    } else if (!mounted) {
+      return;
+    }
 
     try {
       final now = DateTime.now();
       final period = '${now.month.toString().padLeft(2, '0')}/${now.year}';
+      _validateSelectedSpecificTypeOnDemand();
 
-      // Adiciona um pequeno delay para garantir que a UI atualize
-      await Future.delayed(const Duration(milliseconds: 300));
+      if (!isInitialLoad) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      if (!mounted) return;
 
       final result = await _reportService.generateReport(
         type: _selectedType,
@@ -53,14 +77,28 @@ class _ReportScreenState extends State<ReportScreen> {
             _reportData = result['items'];
             _total = result['total'];
             _totalsByType = Map<String, double>.from(result['totals']);
+            if (result['availableTypes'] != null) {
+              _availableTypes = result['availableTypes'];
+              _validateSelectedSpecificTypeOnDemand();
+            }
           });
         } else {
           _showError('Erro ao gerar relatório: ${result['error']}');
+          setState(() {
+            _reportData = [];
+            _total = 0;
+            _totalsByType = {};
+          });
         }
       }
     } catch (e) {
       if (mounted) {
         _showError('Erro ao gerar relatório: $e');
+        setState(() {
+          _reportData = [];
+          _total = 0;
+          _totalsByType = {};
+        });
       }
     } finally {
       if (mounted) {
@@ -71,11 +109,20 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  void _validateSelectedSpecificTypeOnDemand() {
+    final currentList = _availableTypes[
+            _selectedType == 'receitas' ? 'receitas' : 'despesas'] ??
+        [];
+    final validItems = ['Todas', ...currentList.where((t) => t != 'Todas')];
+    if (!validItems.contains(_selectedSpecificType)) {
+      _selectedSpecificType = 'Todas';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Usa o ResponsiveScreen como widget raiz
     return ResponsiveScreen(
       appBar: AppBar(
         title: const Text('Relatórios'),
@@ -85,57 +132,58 @@ class _ReportScreenState extends State<ReportScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            // Corrigido para /home
             onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
             tooltip: 'Ir para Home',
           ),
         ],
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
-      // Adiciona a localização do FAB, mesmo que não haja um FAB
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // O corpo da tela é passado para o child do ResponsiveScreen
       child: _buildContent(theme),
     );
   }
 
   Widget _buildContent(ThemeData theme) {
-    // O conteúdo permanece o mesmo, agora dentro do child do ResponsiveScreen
     return Column(
       children: [
-        _buildFilters(),
+        _buildFilters(), // A cor de fundo branca está aqui dentro
         Divider(
           color: theme.colorScheme.onSurface.withAlpha((0.2 * 255).toInt()),
+          height: 1,
         ),
-        if (_isLoading)
-          Expanded(
-            // Adiciona Expanded para centralizar o indicador
-            child: Center(
-              child: CircularProgressIndicator(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          )
-        else if (_reportData.isEmpty)
-          Expanded(
-            // Adiciona Expanded para centralizar o texto
-            child: Center(
-              child: Text(
-                'Nenhum dado encontrado para o período selecionado',
-                style: TextStyle(color: theme.colorScheme.onSurface),
-              ),
-            ),
-          )
-        else
-          Expanded(
-            child: Column(
-              children: [
-                _buildTotalsByType(),
-                Expanded(child: _buildReportList()),
-                _buildTotal(),
-              ],
-            ),
+        Expanded(
+          child: _buildScrollableArea(theme),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScrollableArea(ThemeData theme) {
+    if (_isLoading && _reportData.isEmpty) {
+      return Center(
+        child: CircularProgressIndicator(color: theme.colorScheme.primary),
+      );
+    }
+    if (!_isLoading && _reportData.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Nenhum dado encontrado para o período selecionado',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+            textAlign: TextAlign.center,
           ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _buildTotalsByType(),
+        _buildReportListItems(),
+        _buildTotal(),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -143,229 +191,216 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget _buildFilters() {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(
-                      value: 'receitas',
-                      label: Text(
-                        'Receitas',
-                        style: TextStyle(
-                          color:
-                              context.watch<ThemeManager>().currentThemeType ==
-                                      ThemeType.light
-                                  ? const Color.fromARGB(255, 0, 0, 0)
-                                  : const Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 16,
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.attach_money,
-                        // Cor do ícone ajustada para contraste
-                        color:
-                            _selectedType == 'receitas'
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface.withAlpha(
-                                  (0.6 * 255).toInt(),
-                                ),
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: 'despesas',
-                      label: Text(
-                        'Despesas',
-                        style: TextStyle(
-                          color:
-                              context.watch<ThemeManager>().currentThemeType ==
-                                      ThemeType.light
-                                  ? const Color.fromARGB(255, 0, 0, 0)
-                                  : const Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 16,
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.money_off,
-                        // Cor do ícone ajustada para contraste
-                        color:
-                            _selectedType == 'despesas'
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface.withAlpha(
-                                  (0.6 * 255).toInt(),
-                                ),
-                      ),
-                    ),
-                  ],
-                  selected: {_selectedType},
-                  onSelectionChanged: (Set<String> newSelection) {
-                    setState(() {
-                      _selectedType = newSelection.first;
-                      _selectedSpecificType = 'Todas';
-                    });
-                    _generateReport();
-                  },
-                  style: SegmentedButton.styleFrom(
-                    // Cor de fundo dos segmentos não selecionados
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest
-                        .withAlpha((0.6 * 255).toInt()),
-                    // Cor de fundo do segmento selecionado
-                    selectedBackgroundColor: theme.colorScheme.primaryContainer,
-                    // Cor do texto/ícone do segmento selecionado
-                    selectedForegroundColor:
-                        theme.colorScheme.onPrimaryContainer,
-                    // Cor do texto/ícone dos segmentos não selecionados
-                    foregroundColor: theme.colorScheme.onSurfaceVariant,
+    return Container(
+      color: Colors.white, // Mantido fundo branco para a área dos filtros
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          children: [
+            SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                  value: 'receitas',
+                  // --- TEXT STYLE REMOVIDO DAQUI ---
+                  label: const Text(
+                    'Receitas',
+                    // style: TextStyle(...) // Removido
+                  ),
+                  icon: Icon(
+                    Icons.attach_money,
+                    // Cor do ícone não selecionado será controlada pelo foregroundColor abaixo
+                    color: _selectedType == 'receitas'
+                        ? Colors.white // Ícone selecionado branco
+                        : Colors.black, // Ícone não selecionado preto
                   ),
                 ),
+                ButtonSegment(
+                  value: 'despesas',
+                  // --- TEXT STYLE REMOVIDO DAQUI ---
+                  label: const Text(
+                    'Despesas',
+                    // style: TextStyle(...) // Removido
+                  ),
+                  icon: Icon(
+                    Icons.money_off,
+                    // Cor do ícone não selecionado será controlada pelo foregroundColor abaixo
+                    color: _selectedType == 'despesas'
+                        ? Colors.white // Ícone selecionado branco
+                        : Colors.black, // Ícone não selecionado preto
+                  ),
+                ),
+              ],
+              selected: {_selectedType},
+              onSelectionChanged: (Set<String> newSelection) {
+                if (_selectedType != newSelection.first) {
+                  setState(() {
+                    _selectedType = newSelection.first;
+                    _selectedSpecificType = 'Todas';
+                  });
+                  _generateReport();
+                }
+              },
+              style: SegmentedButton.styleFrom(
+                // Cores de fundo mantidas
+                backgroundColor: theme.colorScheme.surfaceContainerHighest
+                    .withAlpha((0.6 * 255).toInt()),
+                selectedBackgroundColor: theme.colorScheme.primaryContainer,
+                // --- CORES DO TEXTO/ÍCONE AJUSTADAS ---
+                selectedForegroundColor:
+                    Colors.white, // Texto/Ícone SELECIONADO = Branco
+                foregroundColor:
+                    Colors.black, // Texto/Ícone NÃO SELECIONADO = Preto
+                textStyle:
+                    const TextStyle(fontSize: 16), // Tamanho da fonte mantido
+                minimumSize: const Size.fromHeight(45),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          FutureBuilder<Map<String, List<String>>>(
-            future: _reportService.getAvailableTypes(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox();
+            ),
+            const SizedBox(height: 30.0), // Mantido espaço aumentado
+            SizedBox(
+              width: double.infinity, // Mantida largura explícita
+              child: FutureBuilder<Map<String, List<String>>>(
+                future: Future.value(_availableTypes),
+                builder: (context, snapshot) {
+                  // ... (lógica do FutureBuilder e Dropdown inalterada) ...
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return SizedBox(
+                      height: 60,
+                      child: (snapshot.hasError)
+                          ? const Center(child: Text('Erro tipos'))
+                          : null,
+                    );
+                  }
 
-              final types =
-                  snapshot.data![_selectedType == 'receitas'
-                      ? 'receitas'
-                      : 'despesas'] ??
-                  [];
-              // Garante que 'Todas' esteja sempre presente e seja a primeira opção
-              final dropdownItems = [
-                'Todas',
-                ...types.where((t) => t != 'Todas'),
-              ];
+                  final typesMap = snapshot.data!;
+                  final currentTypeList = typesMap[_selectedType == 'receitas'
+                          ? 'receitas'
+                          : 'despesas'] ??
+                      [];
+                  final dropdownItems = [
+                    'Todas',
+                    ...currentTypeList.where((t) => t != 'Todas')
+                  ];
+                  final validSelectedValue =
+                      dropdownItems.contains(_selectedSpecificType)
+                          ? _selectedSpecificType
+                          : 'Todas';
 
-              return DropdownButtonFormField<String>(
-                value: _selectedSpecificType,
-                decoration: InputDecoration(
-                  labelText: 'Filtrar por Tipo Específico', // Adiciona um label
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      8,
-                    ), // Bordas arredondadas
-                    borderSide: BorderSide(color: theme.colorScheme.primary),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    // Borda quando não focado
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.onSurface.withAlpha(
-                        (0.4 * 255).toInt(),
+                  if (_selectedSpecificType != validSelectedValue) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _selectedSpecificType = validSelectedValue;
+                        });
+                      }
+                    });
+                  }
+
+                  return DropdownButtonFormField<String>(
+                    value: validSelectedValue,
+                    decoration: InputDecoration(
+                      labelText: 'Filtrar por Tipo Específico',
+                      labelStyle: TextStyle(
+                          color: theme.colorScheme.onSurface.withAlpha(180)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                            BorderSide(color: theme.colorScheme.primary),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: theme.colorScheme.onSurface
+                                .withAlpha((0.4 * 255).toInt())),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: theme.colorScheme.primary, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: theme.colorScheme.surface,
+                      contentPadding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    // Borda quando focado
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.primary,
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  labelStyle: TextStyle(color: theme.colorScheme.onSurface),
-                ),
-                dropdownColor: theme.colorScheme.surface,
-                isExpanded: true,
-                items:
-                    dropdownItems.map((tipo) {
-                      return DropdownMenuItem(
+                    dropdownColor: theme.colorScheme.surface,
+                    isExpanded: true,
+                    items: dropdownItems.map((tipo) {
+                      return DropdownMenuItem<String>(
                         value: tipo,
                         child: Row(
                           children: [
-                            // Checkbox visual
                             Container(
                               width: 24,
                               height: 24,
                               margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: theme.colorScheme.primary,
-                                  width: 2,
-                                ),
+                                    color: theme.colorScheme.primary, width: 2),
                                 borderRadius: BorderRadius.circular(4),
-                                // Cor de fundo se selecionado
-                                color:
-                                    _selectedSpecificType == tipo
-                                        ? theme.colorScheme.primary.withAlpha(
-                                          (0.1 * 255).toInt(),
-                                        )
-                                        : Colors.transparent,
+                                color: validSelectedValue == tipo
+                                    ? theme.colorScheme.primary
+                                        .withAlpha((0.1 * 255).toInt())
+                                    : Colors.transparent,
                               ),
-                              child:
-                                  _selectedSpecificType == tipo
-                                      ? Icon(
-                                        Icons.check,
-                                        size: 18,
-                                        color: theme.colorScheme.primary,
-                                      )
-                                      : null,
+                              child: validSelectedValue == tipo
+                                  ? Icon(Icons.check,
+                                      size: 18,
+                                      color: theme.colorScheme.primary)
+                                  : null,
                             ),
-                            // Texto do item
-                            Text(
-                              tipo,
-                              style: TextStyle(
-                                color:
-                                    _selectedSpecificType == tipo
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurface,
-                                fontWeight:
-                                    _selectedSpecificType == tipo
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+                            Expanded(
+                              child: Text(
+                                tipo,
+                                style: TextStyle(
+                                  color: validSelectedValue == tipo
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.onSurface,
+                                  fontWeight: validSelectedValue == tipo
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       );
                     }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedSpecificType = value);
-                    _generateReport();
-                  }
+                    onChanged: (value) {
+                      if (value != null && value != _selectedSpecificType) {
+                        setState(() => _selectedSpecificType = value);
+                        _generateReport();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.arrow_drop_down_circle,
+                      color: theme.colorScheme.primary,
+                    ),
+                  );
                 },
-                icon: Icon(
-                  Icons.arrow_drop_down_circle,
-                  color: theme.colorScheme.primary,
-                ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTotalsByType() {
+    // ... (código inalterado) ...
     final theme = Theme.of(context);
-
-    // Retorna um SizedBox se não houver totais por tipo para exibir
     if (_totalsByType.isEmpty) {
       return const SizedBox.shrink();
     }
+    final sortedEntries = _totalsByType.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return Card(
       margin: const EdgeInsets.all(8),
       color: theme.colorScheme.surface,
-      elevation: 2, // Adiciona uma leve sombra
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ), // Bordas arredondadas
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(12), // Aumenta o padding interno
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -373,44 +408,30 @@ class _ReportScreenState extends State<ReportScreen> {
               'Total por Tipo',
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.bold, // Deixa o título em negrito
+                fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
             Divider(
               color: theme.colorScheme.onSurface.withAlpha((0.2 * 255).toInt()),
-              height: 20, // Aumenta a altura (espaçamento) do divisor
-              thickness: 1, // Espessura do divisor
+              height: 20,
+              thickness: 1,
             ),
-            // Usa ListView.builder para melhor performance se houver muitos tipos
-            ListView.separated(
-              shrinkWrap: true, // Para usar dentro de um Column
-              physics:
-                  const NeverScrollableScrollPhysics(), // Desabilita scroll interno
-              itemCount: _totalsByType.length,
-              itemBuilder: (context, index) {
-                final entry =
-                    (_totalsByType.entries.toList()..sort(
-                      (a, b) => b.value.compareTo(a.value),
-                    ))[index]; // Ordena por valor decrescente
+            Column(
+              children: sortedEntries.map((entry) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6,
-                  ), // Ajusta padding vertical
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        // Permite que o nome do tipo quebre a linha se necessário
                         child: Text(
                           entry.key,
                           style: TextStyle(color: theme.colorScheme.onSurface),
-                          overflow:
-                              TextOverflow
-                                  .ellipsis, // Adiciona "..." se for muito longo
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 16), // Espaço entre nome e valor
+                      const SizedBox(width: 16),
                       Text(
                         _currencyFormat.format(entry.value),
                         style: TextStyle(
@@ -421,15 +442,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     ],
                   ),
                 );
-              },
-              separatorBuilder:
-                  (context, index) => Divider(
-                    // Divisor entre os itens
-                    color: theme.colorScheme.onSurface.withAlpha(
-                      (0.1 * 255).toInt(),
-                    ),
-                    height: 1,
-                  ),
+              }).toList(),
             ),
           ],
         ),
@@ -437,31 +450,30 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildReportList() {
+  Widget _buildReportListItems() {
+    // ... (código inalterado) ...
     final theme = Theme.of(context);
+    if (_reportData.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 8), // Adiciona padding inferior
-      itemCount: _reportData.length,
-      itemBuilder: (context, index) {
+    return Column(
+      children: List.generate(_reportData.length, (index) {
         final item = _reportData[index];
-        // Determina os textos com base no tipo (receita/despesa)
-        final titleText =
-            _selectedType == 'receitas'
-                ? item.descricaoDaReceita
-                : item.descricaoDaDespesa ?? 'Sem descrição';
-        final subtitleText =
-            _selectedType == 'receitas' ? item.tipoReceita : item.tipoDespesa;
+        final titleText = _selectedType == 'receitas'
+            ? (item['descricaoDaReceita'] ?? 'Sem descrição')
+            : (item['descricaoDaDespesa'] ?? 'Sem descrição');
+        final subtitleText = _selectedType == 'receitas'
+            ? (item['tipoReceita'] ?? 'Tipo não especificado')
+            : (item['tipoDespesa'] ?? 'Tipo não especificado');
+        final amount = item['preco'] ?? 0.0;
 
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           color: theme.colorScheme.surface,
-          elevation: 1, // Sombra sutil
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ), // Bordas arredondadas
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: ListTile(
-            // Ícone principal baseado no tipo
             leading: Icon(
               _selectedType == 'receitas'
                   ? Icons.arrow_upward
@@ -472,63 +484,49 @@ class _ReportScreenState extends State<ReportScreen> {
             title: Text(
               titleText,
               style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.w500, // Peso médio
-              ),
-              maxLines: 2, // Limita a 2 linhas
-              overflow: TextOverflow.ellipsis, // Adiciona "..." se exceder
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w500),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
               subtitleText,
               style: TextStyle(
-                color: theme.colorScheme.onSurface.withAlpha(
-                  (0.7 * 255).toInt(),
-                ),
-              ),
+                  color: theme.colorScheme.onSurface
+                      .withAlpha((0.7 * 255).toInt())),
             ),
             trailing: Text(
-              _currencyFormat.format(item.preco),
+              _currencyFormat.format(amount),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                // Cor baseada no tipo
-                color:
-                    _selectedType == 'receitas'
-                        ? theme
-                            .colorScheme
-                            .primary // Roxo para receita
-                        : theme.colorScheme.error, // Vermelho para despesa
+                color: _selectedType == 'receitas'
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.error,
               ),
             ),
           ),
         );
-      },
+      }),
     );
   }
 
   Widget _buildTotal() {
+    // ... (código inalterado) ...
     final theme = Theme.of(context);
-
     return Card(
-      margin: const EdgeInsets.all(8),
-      // Cor de destaque para o total
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       color: theme.colorScheme.primaryContainer,
-      elevation: 4, // Sombra mais pronunciada
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ), // Bordas arredondadas
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ), // Ajusta padding
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               'Total ${_selectedType == 'receitas' ? 'Recebido' : 'Gasto'}',
               style: TextStyle(
-                // Cor de texto que contrasta com primaryContainer
                 color: theme.colorScheme.onPrimaryContainer,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -537,7 +535,6 @@ class _ReportScreenState extends State<ReportScreen> {
             Text(
               _currencyFormat.format(_total),
               style: TextStyle(
-                // Cor de texto que contrasta com primaryContainer
                 color: theme.colorScheme.onPrimaryContainer,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -550,6 +547,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   void _showError(String message) {
+    // ... (código inalterado) ...
     if (!mounted) return;
     final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -559,11 +557,9 @@ class _ReportScreenState extends State<ReportScreen> {
           style: TextStyle(color: theme.colorScheme.onError),
         ),
         backgroundColor: theme.colorScheme.error,
-        behavior: SnackBarBehavior.floating, // SnackBar flutuante
-        margin: const EdgeInsets.all(8), // Margem para SnackBar flutuante
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ), // Bordas arredondadas
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
