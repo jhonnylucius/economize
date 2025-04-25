@@ -44,15 +44,10 @@ class CostsDAO {
   // Buscar despesas por período
   Future<List<Costs>> findByPeriod(DateTime start, DateTime end) async {
     final db = await _databaseHelper.database;
-    final startStr =
-        "${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year}";
-    final endStr =
-        "${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}";
-
     final List<Map<String, dynamic>> maps = await db.query(
       'costs',
       where: 'data BETWEEN ? AND ?',
-      whereArgs: [startStr, endStr],
+      whereArgs: [start.toIso8601String(), end.toIso8601String()],
       orderBy: 'data DESC',
     );
 
