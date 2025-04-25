@@ -1,6 +1,8 @@
 import 'package:economize/model/costs.dart';
+import 'package:economize/model/revenues.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +19,11 @@ class TrendChartScreen extends StatefulWidget {
 
 class _TrendChartScreenState extends State<TrendChartScreen> {
   final CostsService _costsService = CostsService();
+  final RevenuesService _revenuesService = RevenuesService(); // Adicionar
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
   bool _isLoading = true;
-  List<FlSpot> _spots = [];
+  List<FlSpot> _costSpots = []; // Renomear para _costSpots
+  List<FlSpot> _revenueSpots = []; // Adicionar para receitas
   double _maxY = 0;
   double _minY = 0;
 
@@ -34,43 +38,51 @@ class _TrendChartScreenState extends State<TrendChartScreen> {
     setState(() => _isLoading = true);
     try {
       final costs = await _costsService.getAllCosts();
-      _processData(costs);
+      final revenues = await _revenuesService.getAllRevenues();
+      _processData(costs, revenues);
     } catch (e) {
       debugPrint('Erro ao carregar dados: $e');
     } finally {
-      // Remove verificação 'mounted' se não estava no original anexo
-      // if (mounted) {
       setState(() => _isLoading = false);
-      // }
     }
   }
 
   // Método _processData **original** (sem alterações do anexo)
-  void _processData(List<Costs> costs) {
+  void _processData(List<Costs> costs, List<Revenues> revenues) {
     // Agrupa despesas por mês
-    final monthlyTotals = <int, double>{};
+    final monthlyTotalsCosts = <int, double>{};
+    final monthlyTotalsRevenues = <int, double>{};
 
     for (var cost in costs) {
-      final date = DateFormat('dd/MM/yyyy').parse(cost.data);
-      final month = date.month;
-      monthlyTotals[month] = (monthlyTotals[month] ?? 0) + cost.preco;
+      final month = cost.data.month;
+      monthlyTotalsCosts[month] = (monthlyTotalsCosts[month] ?? 0) + cost.preco;
+    }
+
+    for (var revenue in revenues) {
+      final month = revenue.data.month;
+      monthlyTotalsRevenues[month] =
+          (monthlyTotalsRevenues[month] ?? 0) + revenue.preco;
     }
 
     // Cria spots para o gráfico
-    _spots =
-        monthlyTotals.entries
-            .map((e) => FlSpot(e.key.toDouble(), e.value))
-            .toList()
-          ..sort((a, b) => a.x.compareTo(b.x));
+    _costSpots = monthlyTotalsCosts.entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value))
+        .toList()
+      ..sort((a, b) => a.x.compareTo(b.x));
 
-    // Calcula valores máximo e mínimo
-    if (_spots.isNotEmpty) {
-      _maxY = _spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
-      _minY = _spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
-      // Adiciona verificação para evitar divisão por zero no intervalo (boa prática, mas removível se não quiser)
+    _revenueSpots = monthlyTotalsRevenues.entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value))
+        .toList()
+      ..sort((a, b) => a.x.compareTo(b.x));
+
+    // Calcula valores máximo e mínimo considerando ambas as linhas
+    if (_costSpots.isNotEmpty || _revenueSpots.isNotEmpty) {
+      final allSpots = [..._costSpots, ..._revenueSpots];
+      _maxY = allSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+      _minY = allSpots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
       if (_maxY <= 0) _maxY = 1;
     } else {
-      _maxY = 1; // Valor padrão se não houver spots
+      _maxY = 1;
       _minY = 0;
     }
   }
@@ -79,55 +91,51 @@ class _TrendChartScreenState extends State<TrendChartScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
       appBar: AppBar(
-        // Mantém a AppBar original
-        title: const Text('Tendência de Despesas'),
+        title: const Text('Tendênciadas suas finanças'),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
         elevation: 0,
       ),
-      // Passa a cor de fundo original para o ResponsiveScreen
       backgroundColor: theme.colorScheme.onPrimary,
-      // Adiciona parâmetros obrigatórios/padrão do ResponsiveScreen
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.endFloat, // Padrão
-      resizeToAvoidBottomInset: true, // Padrão do Scaffold
-      // O body original agora é o child do ResponsiveScreen, **colocado por último**
-      child:
-          _isLoading
-              ? Center(
-                child: CircularProgressIndicator(
-                  color: theme.colorScheme.primary,
-                ),
-              )
-              : _spots.isEmpty
-              ? Center(
-                child: Text(
-                  'Nenhum dado disponível',
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                ),
-              )
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: RotatedBox(
-                  quarterTurns: 1, // Rotaciona para visualização paisagem
-                  child: _buildChart(theme), // Chama o _buildChart original
-                ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      resizeToAvoidBottomInset: true,
+      child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: theme.colorScheme.primary,
               ),
+            )
+          : _costSpots.isEmpty && _revenueSpots.isEmpty // Alterado aqui
+              ? Center(
+                  child: Text(
+                    'Nenhum dado disponível',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: _buildChart(theme),
+                  ),
+                ),
     );
   }
 
   // Método _buildChart **original** (sem alterações do anexo)
   Widget _buildChart(ThemeData theme) {
     final themeManager = context.watch<ThemeManager>();
+
     // Usa os cálculos de intervalo originais (com a proteção contra divisão por zero)
     final horizontalInterval = (_maxY > 0) ? _maxY / 5 : 1.0;
     final verticalInterval = 1.0;
-    // Usa os cálculos de min/max Y originais
-    final minYAdjusted = (_spots.isNotEmpty) ? _minY * 0.8 : 0.0;
-    final maxYAdjusted = (_spots.isNotEmpty) ? _maxY * 1.2 : 1.0;
+
+    // Usa os cálculos de min/max Y considerando ambas as listas
+    final hasData = _costSpots.isNotEmpty || _revenueSpots.isNotEmpty;
+    final minYAdjusted = hasData ? _minY * 0.8 : 0.0;
+    final maxYAdjusted = hasData ? _maxY * 1.2 : 1.0;
 
     return LineChart(
       LineChartData(
@@ -223,10 +231,11 @@ class _TrendChartScreenState extends State<TrendChartScreen> {
         minY: minYAdjusted, // Usa minY ajustado original
         maxY: maxYAdjusted, // Usa maxY ajustado original
         lineBarsData: [
+          // Linha de Despesas
           LineChartBarData(
-            spots: _spots,
+            spots: _costSpots,
             isCurved: true,
-            color: themeManager.getTipCardTextColor(), // Cor original
+            color: Colors.red, // Cor para despesas
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: FlDotData(
@@ -234,20 +243,38 @@ class _TrendChartScreenState extends State<TrendChartScreen> {
               getDotPainter: (spot, percent, barData, index) {
                 return FlDotCirclePainter(
                   radius: 4,
-                  color: themeManager.getTipCardTextColor(), // Cor original
-                  strokeWidth:
-                      2, // **Mantém strokeWidth: 2 como no último anexo original**
-                  strokeColor:
-                      themeManager.getChartBackgroundColor(), // Cor original
+                  color: Colors.red,
+                  strokeWidth: 2,
+                  strokeColor: themeManager.getChartBackgroundColor(),
                 );
               },
             ),
             belowBarData: BarAreaData(
               show: true,
-              color: themeManager.getTipCardTextColor().withAlpha(
-                // Cor original
-                (0.2 * 255).toInt(),
-              ),
+              color: Colors.red.withAlpha((0.2 * 255).toInt()),
+            ),
+          ),
+          // Linha de Receitas
+          LineChartBarData(
+            spots: _revenueSpots,
+            isCurved: true,
+            color: Colors.green, // Cor para receitas
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                return FlDotCirclePainter(
+                  radius: 4,
+                  color: Colors.green,
+                  strokeWidth: 2,
+                  strokeColor: themeManager.getChartBackgroundColor(),
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Colors.green.withAlpha((0.2 * 255).toInt()),
             ),
           ),
         ],
