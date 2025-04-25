@@ -1,28 +1,36 @@
 import 'package:economize/theme/app_themes.dart';
-import 'package:economize/theme/theme_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ThemeManager extends ChangeNotifier {
-  final ThemePreferences _preferences = ThemePreferences();
-  // Defina um tema padrão inicial, pode ser light ou o que preferir
+class ThemeManager with ChangeNotifier {
+  static const String _themeKey = 'app_theme';
+
+  // Alteração do tema padrão para roxoEscuro
   ThemeType _currentThemeType = ThemeType.roxoEscuro;
   ThemeData _currentTheme = AppThemes.roxoEscuro;
 
-  // Getters
-  ThemeData get currentTheme => _currentTheme;
   ThemeType get currentThemeType => _currentThemeType;
-  String get currentThemeName => _currentThemeType.displayName;
+  ThemeData get currentTheme => _currentTheme;
 
-  // Construtor
   ThemeManager() {
-    _loadSavedTheme();
+    _loadTheme();
   }
 
-  // Carrega o tema salvo
-  Future<void> _loadSavedTheme() async {
-    // Use um valor padrão se nada for encontrado nas preferências
-    final savedTheme = await _preferences.getTheme();
-    await setTheme(savedTheme);
+  Future<void> _loadTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedThemeIndex = prefs.getInt(_themeKey);
+
+      if (savedThemeIndex != null &&
+          savedThemeIndex < ThemeType.values.length) {
+        _currentThemeType = ThemeType.values[savedThemeIndex];
+        _currentTheme = AppThemes.getThemeByType(_currentThemeType);
+        notifyListeners();
+      }
+    } catch (e) {
+      // Em caso de erro, permanece com o tema padrão
+      debugPrint('Erro ao carregar tema: $e');
+    }
   }
 
   // --- Métodos get...Color() atualizados com ThemeType.dark ---
@@ -428,8 +436,7 @@ class ThemeManager extends ChangeNotifier {
         return const Color.fromARGB(255, 0, 0, 0);
       case ThemeType.roxoEscuro:
         return Colors
-            .grey
-            .shade800; // Um cinza bem escuro para header da tabela
+            .grey.shade800; // Um cinza bem escuro para header da tabela
     }
   }
 
@@ -889,14 +896,17 @@ class ThemeManager extends ChangeNotifier {
   }
 
   // Define o tema
-  Future<void> setTheme(ThemeType theme) async {
-    _currentThemeType = theme;
-    _currentTheme = AppThemes.getThemeByType(theme);
+  Future<void> setTheme(ThemeType themeType) async {
+    try {
+      _currentThemeType = themeType;
+      _currentTheme = AppThemes.getThemeByType(themeType);
 
-    await _preferences.setTheme(theme);
-    notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_themeKey, themeType.index);
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao salvar tema: $e');
+    }
   }
-
-  // Lista de temas disponíveis
-  List<ThemeType> get availableThemes => ThemeType.values;
 }
