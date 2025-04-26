@@ -26,6 +26,9 @@ class _RevenuesScreenState extends State<RevenuesScreen> {
     {'icon': Icons.savings, 'name': 'Investimentos'},
     {'icon': Icons.schedule, 'name': 'Meio Período'},
     {'icon': Icons.card_giftcard, 'name': 'Prêmios'},
+    {'icon': Icons.business, 'name': 'Empreendimentos'},
+    {'icon': Icons.attach_money, 'name': 'Vendas'},
+    {'icon': Icons.monetization_on, 'name': 'Comissões'},
     {'icon': Icons.more_horiz, 'name': 'Outros'},
   ];
 
