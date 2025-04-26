@@ -29,7 +29,7 @@ android {
         applicationId "com.lucianoribeiro.economize"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
-        versionCode 100
+        versionCode 101
         versionName "1.0.100"
     }
 
