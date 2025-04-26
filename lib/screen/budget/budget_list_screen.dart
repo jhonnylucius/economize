@@ -424,7 +424,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: themeManager.getBudgetListHeaderTextColor()),
+          style: TextStyle(color: themeManager.getBudgetListSearchIconColor()),
         ),
         backgroundColor: themeManager.getBudgetListHeaderColor(),
       ),
