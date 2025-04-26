@@ -1,13 +1,10 @@
 import 'package:economize/data/goal_dao.dart';
 import 'package:economize/screen/responsive_screen.dart';
-import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
-import 'package:provider/provider.dart';
-
 // Import da classe Goal (assumindo que está em data/goal_dao.dart ou similar)
-import 'package:economize/data/goal_dao.dart'; // Verifique o caminho correto
+// Verifique o caminho correto
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:economize/model/category.dart' as app;
 
 class CategoryProvider with ChangeNotifier {
-  List<app.Category> _categories = [];
+  final List<app.Category> _categories = [];
 
   List<app.Category> get categories => [..._categories];
 
