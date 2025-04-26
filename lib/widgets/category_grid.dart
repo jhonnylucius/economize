@@ -44,24 +44,34 @@ class CategoryGrid extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        category['icon'],
-                        size: 24,
-                        color: Theme.of(context).colorScheme.onSurface,
+                  // Centraliza completamente o conteúdo no card
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            category['icon'],
+                            size: 24,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          const SizedBox(height: 4),
+                          Flexible(
+                            child: Text(
+                              category['name'],
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        category['name'],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   if (isSelected)
                     Positioned(
