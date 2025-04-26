@@ -59,6 +59,10 @@ class _CostsScreenState extends State<CostsScreen> {
     {'icon': Icons.account_balance_wallet, 'name': 'Carteira'},
     {'icon': Icons.account_tree_outlined, 'name': 'Árvore de natal'},
     {'icon': Icons.access_alarm_outlined, 'name': 'Alarme'},
+    {'icon': Icons.admin_panel_settings, 'name': 'IPVA'},
+    {'icon': Icons.compost, 'name': 'IRPF'},
+    {'icon': Icons.security_update_warning, 'name': 'Seguros'},
+    {'icon': Icons.airplanemode_active, 'name': 'Passagens aéreas'},
     {'icon': Icons.add, 'name': 'Outros'},
   ];
 
