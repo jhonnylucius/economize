@@ -6,6 +6,7 @@ import 'package:economize/model/budget/item_template.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/budget_service.dart';
 import 'package:economize/service/price_history_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/budget/add_item_form.dart';
 import 'package:economize/widgets/budget/budget_item_card.dart';
@@ -164,9 +165,10 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     );
   }
 
-  // Método _buildLocationsTab original (sem alterações)
+  // Método _buildLocationsTab com cards atualizados
   Widget _buildLocationsTab() {
     final themeManager = context.watch<ThemeManager>();
+    final appThemes = AppThemes();
 
     if (currentBudget.locations.isEmpty) {
       return Center(
@@ -188,29 +190,31 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
       itemBuilder: (context, index) {
         final location = currentBudget.locations[index];
         return Card(
-          elevation: 4,
+          elevation: appThemes.getCardElevation(),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius:
+                BorderRadius.circular(appThemes.getCardBorderRadius()),
+            side: BorderSide(color: appThemes.getCardBorderColor(), width: 0.5),
           ),
-          color: themeManager.getDetailLocationCardColor(),
+          color: appThemes.getCardBackgroundColor(),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: themeManager.getDetailLocationCardIconBackgroundColor(),
+                color: appThemes.getTableHeaderBackgroundColor(),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.store,
-                color: themeManager.getDetailLocationCardIconColor(),
+                color: appThemes.getCardIconColor(),
                 size: 24,
               ),
             ),
             title: Text(
               location.name,
               style: TextStyle(
-                color: themeManager.getDetailLocationCardTextColor(),
+                color: appThemes.getCardTitleColor(),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -218,14 +222,13 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             subtitle: Text(
               location.address,
               style: TextStyle(
-                color: themeManager.getDetailLocationCardTextColor().withAlpha(
-                    (0.7 * 255).toInt()), // Ajustado para usar withAlpha
+                color: appThemes.getListTileSubtitleColor(),
                 fontSize: 14,
               ),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete),
-              color: Colors.red,
+              color: appThemes.getInputErrorColor(),
               onPressed: () => _confirmAndRemoveLocation(location),
             ),
           ),
@@ -342,19 +345,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     });
   }
 
-  // Método _showAddLocationDialog (mantendo SizedBox + SingleChildScrollView interno)
+  // Método _showAddLocationDialog com diálogo atualizado
   Future<void> _showAddLocationDialog() async {
-    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
     final nameController = TextEditingController();
     final addressController = TextEditingController();
 
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        backgroundColor: appThemes.getDialogBackgroundColor(),
         title: Text(
           'Adicionar Local',
-          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+          style: appThemes.getDialogTitleStyle(),
         ),
         content: SizedBox(
           // Mantém SizedBox para limitar altura interna
@@ -367,38 +370,27 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nome do Local',
-                    labelStyle: TextStyle(
-                      color: themeManager.getDetailTextFieldLabelColor(),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: themeManager.getDetailTextFieldBorderColor(),
-                      ),
-                    ),
+                  decoration: appThemes.getStandardInputDecoration(
+                    'Nome do Local',
+                    hint: 'Ex: Mercado Central',
                   ),
                   style: TextStyle(
-                    color: themeManager.getDetailTextFieldTextColor(),
+                    color: appThemes.getInputTextColor(),
                   ),
+                  cursorColor: appThemes.getInputCursorColor(),
                   autofocus: true,
                 ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: addressController,
-                  decoration: InputDecoration(
-                    labelText: 'Endereço',
-                    labelStyle: TextStyle(
-                      color: themeManager.getDetailTextFieldLabelColor(),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: themeManager.getDetailTextFieldBorderColor(),
-                      ),
-                    ),
+                  decoration: appThemes.getStandardInputDecoration(
+                    'Endereço',
+                    hint: 'Ex: Rua Principal, 123',
                   ),
                   style: TextStyle(
-                    color: themeManager.getDetailTextFieldTextColor(),
+                    color: appThemes.getInputTextColor(),
                   ),
+                  cursorColor: appThemes.getInputCursorColor(),
                 ),
               ],
             ),
@@ -407,12 +399,11 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: themeManager.getDetailDialogButtonTextColor(),
-              ),
+            style: TextButton.styleFrom(
+              foregroundColor: appThemes.getDialogCancelButtonTextColor(),
+              backgroundColor: appThemes.getDialogCancelButtonColor(),
             ),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () {
@@ -429,8 +420,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
               }
             },
             style: FilledButton.styleFrom(
-              backgroundColor: themeManager.getDetailHeaderColor(),
-              foregroundColor: themeManager.getDetailHeaderTextColor(),
+              backgroundColor: appThemes.getDialogButtonColor(),
+              foregroundColor: appThemes.getDialogButtonTextColor(),
             ),
             child: const Text('Adicionar'),
           ),
@@ -439,14 +430,14 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     );
   }
 
-  // Método _showAddItemDialog original (sem alterações)
+  // Método _showAddItemDialog com diálogo atualizado
   Future<void> _showAddItemDialog() async {
-    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
     return showDialog(
       context: context,
       // Usa Dialog em vez de AlertDialog para mais controle sobre o tamanho
       builder: (context) => Dialog(
-        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        backgroundColor: appThemes.getDialogBackgroundColor(),
         // Define o preenchimento e o tamanho do Dialog
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -565,36 +556,35 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
     }
   }
 
-  // Método _showConfirmDialog original (sem alterações)
+  // Método _showConfirmDialog com diálogo atualizado
   Future<bool?> _showConfirmDialog(String title, String message) async {
-    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: themeManager.getDetailDialogBackgroundColor(),
+        backgroundColor: appThemes.getDialogBackgroundColor(),
         title: Text(
           title,
-          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+          style: appThemes.getDialogTitleStyle(),
         ),
         content: Text(
           message,
-          style: TextStyle(color: themeManager.getDetailDialogTextColor()),
+          style: TextStyle(color: appThemes.getDialogTextColor()),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: themeManager.getDetailDialogButtonTextColor(),
-              ),
+            style: TextButton.styleFrom(
+              foregroundColor: appThemes.getDialogCancelButtonTextColor(),
+              backgroundColor: appThemes.getDialogCancelButtonColor(),
             ),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: themeManager.getDetailErrorColor(),
-              foregroundColor: themeManager.getDetailErrorTextColor(),
+              backgroundColor: appThemes.getInputErrorColor(),
+              foregroundColor: Colors.white,
             ),
             child: const Text('Remover'),
           ),
