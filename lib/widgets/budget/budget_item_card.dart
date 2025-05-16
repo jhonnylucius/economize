@@ -3,6 +3,7 @@ import 'package:economize/model/budget/budget_item.dart';
 import 'package:economize/model/budget/price_history.dart';
 import 'package:economize/service/budget_service.dart';
 import 'package:economize/service/price_history_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/utils/budget_utils.dart';
 import 'package:flutter/material.dart';
@@ -183,17 +184,16 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
               value: _selectedUnit,
               dropdownColor: theme.colorScheme.surface,
               style: TextStyle(color: theme.colorScheme.onSurface),
-              onChanged:
-                  _isEditing
-                      ? (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _selectedUnit = newValue;
-                            _hasChanges = true;
-                          });
-                        }
+              onChanged: _isEditing
+                  ? (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedUnit = newValue;
+                          _hasChanges = true;
+                        });
                       }
-                      : null,
+                    }
+                  : null,
               items: const [
                 DropdownMenuItem(value: 'un', child: Text('Unidade')),
                 DropdownMenuItem(value: 'kg', child: Text('Quilograma')),
@@ -213,39 +213,66 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
   }
 
   Widget _buildPriceInput(String locationId, double? currentPrice) {
-    final theme = Theme.of(context);
+    context.watch<ThemeManager>();
+    final appThemes = AppThemes();
 
     if (_isEditing) {
+      // Modo edição - campo de entrada com borda e fundo consistente
       return TextFormField(
         controller: _priceControllers[locationId],
         enabled: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(
-          prefix: Text('R\$ ', style: TextStyle(color: Colors.black87)),
+        decoration: InputDecoration(
+          prefixText: 'R\$ ',
+          prefixStyle: TextStyle(color: appThemes.getInputTextColor()),
           isDense: true,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: appThemes.getInputBackgroundColor(),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(
+              color: appThemes.getCardBorderColor(),
+              width: 1,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(
+              color: appThemes.getCardBorderColor(),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(
+              color: appThemes.getInputFocusBorderColor(),
+              width: 2,
+            ),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
-        style: const TextStyle(color: Colors.black87),
+        style: TextStyle(color: appThemes.getInputTextColor()),
+        cursorColor: appThemes.getInputCursorColor(),
       );
     } else {
-      // Modo visualização - apenas mostra o preço
+      // Modo visualização - apenas mostra o preço com borda consistente
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(
-              alpha: (0.2 * 255).toDouble(),
-            ),
+            color: appThemes.getCardBorderColor(),
+            width: 1,
           ),
           borderRadius: BorderRadius.circular(4),
+          color: appThemes.getCardBackgroundColor(),
         ),
         child: Text(
           currentPrice != null
               ? currencyFormat.format(currentPrice)
               : 'R\$ 0,00',
           style: TextStyle(
-            color: theme.colorScheme.onSurface,
+            color: appThemes.getCardTextColor(),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -268,112 +295,104 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
   void _showHistory(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.95,
-              height:
-                  MediaQuery.of(context).size.height *
-                  0.8, // Aumentado para 80%
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Text(
-                    'Comparativo de Preços',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Table(
-                          border: TableBorder.all(
-                            color: Colors.grey.shade300,
-                            width: 1,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.95,
+          height:
+              MediaQuery.of(context).size.height * 0.8, // Aumentado para 80%
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text(
+                'Comparativo de Preços',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Table(
+                      border: TableBorder.all(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                      columnWidths: {
+                        0: const FixedColumnWidth(100), // Item
+                        for (var i = 0; i < widget.locationNames.length; i++)
+                          i + 1: const FixedColumnWidth(85), // Locais
+                        widget.locationNames.length + 1:
+                            const FixedColumnWidth(85), // Melhor Local
+                        widget.locationNames.length + 2:
+                            const FixedColumnWidth(85), // Melhor Preço
+                      },
+                      children: [
+                        // Cabeçalho
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                           ),
-                          columnWidths: {
-                            0: const FixedColumnWidth(100), // Item
-                            for (
-                              var i = 0;
-                              i < widget.locationNames.length;
-                              i++
-                            )
-                              i + 1: const FixedColumnWidth(85), // Locais
-                            widget.locationNames.length +
-                                1: const FixedColumnWidth(85), // Melhor Local
-                            widget.locationNames.length +
-                                2: const FixedColumnWidth(85), // Melhor Preço
-                          },
                           children: [
-                            // Cabeçalho
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
+                            _buildTableCell('Item', isHeader: true),
+                            ...widget.locationNames.entries.map(
+                              (entry) => _buildTableCell(
+                                entry.value,
+                                isHeader: true,
                               ),
-                              children: [
-                                _buildTableCell('Item', isHeader: true),
-                                ...widget.locationNames.entries.map(
-                                  (entry) => _buildTableCell(
-                                    entry.value,
-                                    isHeader: true,
-                                  ),
-                                ),
-                                _buildTableCell(
-                                  'Melhor Local',
-                                  isHeader: true,
-                                  isGreen: true,
-                                ),
-                                _buildTableCell(
-                                  'Melhor Preço',
-                                  isHeader: true,
-                                  isGreen: true,
-                                ),
-                              ],
                             ),
-                            // Linhas para todos os itens do orçamento
-                            ...widget.budget.items.map(
-                              (budgetItem) => TableRow(
-                                children: [
-                                  _buildTableCell(budgetItem.name),
-                                  ...widget.locationNames.entries.map((entry) {
-                                    final price =
-                                        budgetItem.prices[entry.key] ?? 0;
-                                    return _buildTableCell(
-                                      currencyFormat.format(price),
-                                      isGreen: price == budgetItem.bestPrice,
-                                    );
-                                  }),
-                                  _buildTableCell(
-                                    widget.locationNames[budgetItem
-                                            .bestPriceLocation] ??
-                                        'N/A',
-                                    isGreen: true,
-                                  ),
-                                  _buildTableCell(
-                                    currencyFormat.format(budgetItem.bestPrice),
-                                    isGreen: true,
-                                  ),
-                                ],
-                              ),
+                            _buildTableCell(
+                              'Melhor Local',
+                              isHeader: true,
+                              isGreen: true,
+                            ),
+                            _buildTableCell(
+                              'Melhor Preço',
+                              isHeader: true,
+                              isGreen: true,
                             ),
                           ],
                         ),
-                      ),
+                        // Linhas para todos os itens do orçamento
+                        ...widget.budget.items.map(
+                          (budgetItem) => TableRow(
+                            children: [
+                              _buildTableCell(budgetItem.name),
+                              ...widget.locationNames.entries.map((entry) {
+                                final price = budgetItem.prices[entry.key] ?? 0;
+                                return _buildTableCell(
+                                  currencyFormat.format(price),
+                                  isGreen: price == budgetItem.bestPrice,
+                                );
+                              }),
+                              _buildTableCell(
+                                widget.locationNames[
+                                        budgetItem.bestPriceLocation] ??
+                                    'N/A',
+                                isGreen: true,
+                              ),
+                              _buildTableCell(
+                                currencyFormat.format(budgetItem.bestPrice),
+                                isGreen: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Fechar'),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Fechar'),
+              ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
@@ -652,10 +671,8 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
           ),
           icon: Icon(
             _isEditing ? Icons.cancel : Icons.edit,
-            color:
-                theme
-                    .colorScheme
-                    .onPrimary, // <<< ADICIONE A COR AQUI DIRETAMENTE
+            color: theme
+                .colorScheme.onPrimary, // <<< ADICIONE A COR AQUI DIRETAMENTE
           ),
           label: Text(
             _isEditing ? 'Cancelar' : 'Editar',
@@ -666,10 +683,9 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
         if (_isEditing) ...[
           const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed:
-                _hasChanges
-                    ? _saveChanges
-                    : null, // Desabilita se não houver mudanças
+            onPressed: _hasChanges
+                ? _saveChanges
+                : null, // Desabilita se não houver mudanças
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
