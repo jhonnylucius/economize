@@ -2,6 +2,7 @@ import 'package:economize/data/default_items.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/service/budget_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/utils/budget_utils.dart';
 import 'package:flutter/material.dart';
@@ -108,8 +109,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
         ),
         icon: Icon(
           MyFlutterApp.building,
-          color: themeManager
-              .getBudgetListCardTextColor(), // Ajustado para usar cor do texto do card
+          color: themeManager.getBudgetListHeaderTextColor(),
         ),
         backgroundColor: themeManager.getBudgetListHeaderColor(),
       ),
@@ -194,6 +194,8 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   }
 
   Widget _buildCategoryFilter(ThemeManager themeManager) {
+    final appThemes = AppThemes();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -210,6 +212,8 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
             onSelected: (selected) => setState(() => _selectedCategory = null),
             backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
             selectedColor: themeManager.getBudgetListCardBackgroundColor(),
+            checkmarkColor: themeManager.getBudgetListCardTextColor(),
+            side: BorderSide(color: appThemes.getCardBorderColor(), width: 1),
           ),
           ...defaultItems.map((e) => e['category'] as String).toSet().map(
                 (category) => Padding(
@@ -229,6 +233,9 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                         themeManager.getBudgetListCardBackgroundColor(),
                     selectedColor:
                         themeManager.getBudgetListCardBackgroundColor(),
+                    checkmarkColor: themeManager.getBudgetListCardTextColor(),
+                    side: BorderSide(
+                        color: appThemes.getCardBorderColor(), width: 1),
                   ),
                 ),
               ),
@@ -275,6 +282,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
           onTap: () => _navigateToBudgetDetail(budget),
           onDelete: () => _deleteBudget(budget),
           currencyFormat: currencyFormat,
+          themeManager: themeManager,
         );
       },
     );
@@ -285,50 +293,43 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   }
 
   Future<void> _showCreateBudgetDialog(BuildContext context) async {
-    final themeManager = context.read<ThemeManager>();
+    context.read<ThemeManager>();
+    final appThemes = AppThemes();
     final titleController = TextEditingController();
 
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
+        backgroundColor: appThemes.getDialogBackgroundColor(),
         title: Text(
           'Novo Orçamento',
           style: TextStyle(
-            color: themeManager.getBudgetListCardTextColor(),
+            color: appThemes.getDialogTitleColor(),
+            fontWeight: FontWeight.bold,
           ),
         ),
-        // --- OVERFLOW FIX: Adicionado SingleChildScrollView ---
         content: SingleChildScrollView(
           child: TextField(
             controller: titleController,
-            decoration: InputDecoration(
-              labelText: 'Título do Orçamento',
-              hintText: 'Ex: Compras do Mês',
-              labelStyle: TextStyle(
-                color: themeManager.getBudgetListCardTextColor(),
-              ),
-              hintStyle: TextStyle(
-                color: themeManager.getBudgetListCardTextColor().withAlpha(
-                      (0.7 * 255).toInt(),
-                    ),
-              ),
+            decoration: appThemes.getStandardInputDecoration(
+              'Título do Orçamento',
+              hint: 'Ex: Compras do Mês',
             ),
             style: TextStyle(
-              color: themeManager.getBudgetListCardTextColor(),
+              color: appThemes.getInputTextColor(),
             ),
+            cursorColor: appThemes.getInputCursorColor(),
             autofocus: true,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: themeManager.getBudgetListHeaderColor(),
-              ),
+            style: TextButton.styleFrom(
+              foregroundColor: appThemes.getDialogCancelButtonTextColor(),
+              backgroundColor: appThemes.getDialogCancelButtonColor(),
             ),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () async {
@@ -350,8 +351,8 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
               }
             },
             style: FilledButton.styleFrom(
-              backgroundColor: themeManager.getBudgetListHeaderColor(),
-              foregroundColor: themeManager.getBudgetListHeaderTextColor(),
+              backgroundColor: appThemes.getDialogButtonColor(),
+              foregroundColor: appThemes.getDialogButtonTextColor(),
             ),
             child: const Text('Criar'),
           ),
@@ -361,37 +362,37 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   }
 
   Future<void> _deleteBudget(Budget budget) async {
-    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: themeManager.getBudgetListCardBackgroundColor(),
+        backgroundColor: appThemes.getDialogBackgroundColor(),
         title: Text(
           'Excluir Orçamento',
           style: TextStyle(
-            color: themeManager.getBudgetListCardTextColor(),
+            color: appThemes.getDialogTitleColor(),
+            fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.',
           style: TextStyle(
-            color: themeManager.getBudgetListCardTextColor(),
+            color: appThemes.getDialogTextColor(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: themeManager.getBudgetListHeaderColor(),
-              ),
+            style: TextButton.styleFrom(
+              foregroundColor: appThemes.getDialogCancelButtonTextColor(),
+              backgroundColor: appThemes.getDialogCancelButtonColor(),
             ),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: appThemes.getInputErrorColor(),
               foregroundColor: Colors.white,
             ),
             child: const Text('Excluir'),
@@ -449,23 +450,30 @@ class _BudgetCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final NumberFormat currencyFormat;
+  final ThemeManager themeManager;
 
   const _BudgetCard({
     required this.budget,
     required this.onTap,
     required this.onDelete,
     required this.currencyFormat,
+    required this.themeManager,
   });
 
   @override
   Widget build(BuildContext context) {
-    final themeManager = context.watch<ThemeManager>();
+    final appThemes = AppThemes();
 
     return Card(
-      color: Colors.white, // Card branco fixo
+      color: appThemes.getCardBackgroundColor(),
+      elevation: appThemes.getCardElevation(),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(appThemes.getCardBorderRadius()),
+        side: BorderSide(color: appThemes.getCardBorderColor(), width: 0.5),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(appThemes.getCardBorderRadius()),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -477,7 +485,7 @@ class _BudgetCard extends StatelessWidget {
                     child: Text(
                       budget.title,
                       style: TextStyle(
-                        color: themeManager.getBudgetListCardTitleColor(),
+                        color: appThemes.getCardTitleColor(),
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -486,7 +494,7 @@ class _BudgetCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(MyFlutterApp.trash_alt),
                     onPressed: onDelete,
-                    color: Colors.red,
+                    color: appThemes.getInputErrorColor(),
                   ),
                 ],
               ),
@@ -494,32 +502,31 @@ class _BudgetCard extends StatelessWidget {
               Text(
                 'Criado em: ${DateFormat('dd/MM/yyyy').format(budget.date)}',
                 style: TextStyle(
-                  color: themeManager.getBudgetListCardTextColor().withAlpha(
+                  color: appThemes.getCardTextColor().withAlpha(
                         (0.7 * 255).toInt(),
                       ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Divider(color: appThemes.getCardDividerColor()),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _InfoColumn(
                     label: 'Total Original',
                     value: currencyFormat.format(budget.summary.totalOriginal),
-                    labelColor: themeManager.getBudgetListCardTextColor(),
-                    valueColor: themeManager.getBudgetListCardTextColor(),
+                    appThemes: appThemes,
                   ),
                   _InfoColumn(
                     label: 'Melhor Preço',
                     value: currencyFormat.format(budget.summary.totalOptimized),
-                    labelColor: themeManager.getBudgetListCardTextColor(),
-                    valueColor: themeManager.getBudgetListCardTextColor(),
+                    appThemes: appThemes,
                   ),
                   _InfoColumn(
                     label: 'Economia',
                     value: currencyFormat.format(budget.summary.savings),
-                    labelColor: themeManager.getBudgetListCardTextColor(),
-                    valueColor: themeManager.getBudgetListCardTextColor(),
+                    appThemes: appThemes,
                   ),
                 ],
               ),
@@ -534,14 +541,12 @@ class _BudgetCard extends StatelessWidget {
 class _InfoColumn extends StatelessWidget {
   final String label;
   final String value;
-  final Color labelColor;
-  final Color valueColor;
+  final AppThemes appThemes;
 
   const _InfoColumn({
     required this.label,
     required this.value,
-    required this.labelColor,
-    required this.valueColor,
+    required this.appThemes,
   });
 
   @override
@@ -552,7 +557,7 @@ class _InfoColumn extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: labelColor.withAlpha((0.7 * 255).toInt()),
+            color: appThemes.getListTileSubtitleColor(),
             fontSize: 12,
           ),
         ),
@@ -560,7 +565,7 @@ class _InfoColumn extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            color: valueColor,
+            color: appThemes.getCardTextColor(),
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
