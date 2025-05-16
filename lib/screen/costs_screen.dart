@@ -86,12 +86,12 @@ class _CostsScreenState extends State<CostsScreen> {
     {'icon': Icons.compost, 'name': 'IRPF'},
     {'icon': Icons.security_update_warning, 'name': 'Seguros'},
     {'icon': Icons.airplanemode_active, 'name': 'Passagens aéreas'},
-    {'icon': Icons.add, 'name': 'Outros'},
     {'icon': Icons.wallet_rounded, 'name': 'Energia'},
     {'icon': Icons.wifi, 'name': 'Internet'},
     {'icon': Icons.water_drop, 'name': 'Água'},
     {'icon': Icons.food_bank, 'name': 'Alimentação'},
     {'icon': Icons.local_offer, 'name': 'Ofertas'},
+    {'icon': Icons.add, 'name': 'Outros'},
   ];
 
   @override
