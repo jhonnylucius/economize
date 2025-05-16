@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:economize/model/budget/budget_item.dart';
 import 'package:economize/model/budget/item_template.dart';
 import 'package:economize/service/item_template_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/widgets/budget/unit_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -62,19 +63,17 @@ class _AddItemFormState extends State<AddItemForm> {
       try {
         final List<ItemTemplate> results;
         if (_searchController.text.isEmpty) {
-          results =
-              _selectedCategory.isEmpty || _selectedCategory == 'Todas'
-                  ? await _itemService.getAllTemplates()
-                  : await _itemService.getTemplatesByCategory(
-                    _selectedCategory,
-                  );
+          results = _selectedCategory.isEmpty || _selectedCategory == 'Todas'
+              ? await _itemService.getAllTemplates()
+              : await _itemService.getTemplatesByCategory(
+                  _selectedCategory,
+                );
         } else {
           results = await _itemService.searchTemplates(
             _searchController.text,
-            category:
-                _selectedCategory.isEmpty || _selectedCategory == 'Todas'
-                    ? null
-                    : _selectedCategory,
+            category: _selectedCategory.isEmpty || _selectedCategory == 'Todas'
+                ? null
+                : _selectedCategory,
           );
         }
 
@@ -94,8 +93,14 @@ class _AddItemFormState extends State<AddItemForm> {
 
   @override
   Widget build(BuildContext context) {
+    final appThemes = AppThemes();
+
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+          color: appThemes.getCardIconColor(),
+        ),
+      );
     }
 
     if (_error != null) {
@@ -103,9 +108,17 @@ class _AddItemFormState extends State<AddItemForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(
+              _error!,
+              style: TextStyle(color: appThemes.getInputErrorColor()),
+            ),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _loadInitialData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appThemes.getDialogButtonColor(),
+                foregroundColor: appThemes.getDialogButtonTextColor(),
+              ),
               child: const Text('Tentar Novamente'),
             ),
           ],
@@ -120,7 +133,9 @@ class _AddItemFormState extends State<AddItemForm> {
           future: _itemService.getCategories(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
+              return CircularProgressIndicator(
+                color: appThemes.getCardIconColor(),
+              );
             }
 
             // Adiciona "Todas" como primeira opção
@@ -128,17 +143,15 @@ class _AddItemFormState extends State<AddItemForm> {
 
             return DropdownButtonFormField<String>(
               value: _selectedCategory.isEmpty ? 'Todas' : _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'Categoria',
-                border: OutlineInputBorder(),
-              ),
-              items:
-                  categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
+              decoration: appThemes.getStandardInputDecoration('Categoria'),
+              dropdownColor: appThemes.getDialogBackgroundColor(),
+              style: TextStyle(color: appThemes.getInputTextColor()),
+              items: categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
               onChanged: (value) async {
                 if (value != null) {
                   setState(
@@ -153,23 +166,23 @@ class _AddItemFormState extends State<AddItemForm> {
         const SizedBox(height: 16),
         TextField(
           controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Pesquisar itens...',
-            prefixIcon: const Icon(Icons.search),
-            suffixIcon:
-                _searchController.text.isNotEmpty
-                    ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _updateFilteredItems();
-                      },
-                    )
-                    : null,
-            border: const OutlineInputBorder(),
+          decoration: appThemes.getStandardInputDecoration(
+            'Pesquisar itens...',
+            prefixIcon:
+                Icon(Icons.search, color: appThemes.getInputIconColor()),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon:
+                        Icon(Icons.clear, color: appThemes.getInputIconColor()),
+                    onPressed: () {
+                      _searchController.clear();
+                      _updateFilteredItems();
+                    },
+                  )
+                : null,
           ),
-          // Remove textInputAction para evitar comportamento automático
-          // textInputAction: TextInputAction.search,
+          style: TextStyle(color: appThemes.getInputTextColor()),
+          cursorColor: appThemes.getInputCursorColor(),
           onChanged: (value) {
             // Não chama setState aqui para evitar rebuild desnecessário
             _updateFilteredItems();
@@ -180,28 +193,55 @@ class _AddItemFormState extends State<AddItemForm> {
         ),
         const SizedBox(height: 16),
         Expanded(
-          child:
-              _filteredItems.isEmpty
-                  ? const Center(child: Text('Nenhum item encontrado'))
-                  : ListView.builder(
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _filteredItems[index];
-                      final isSelected = _selectedItems.contains(item);
+          child: _filteredItems.isEmpty
+              ? Center(
+                  child: Text(
+                    'Nenhum item encontrado',
+                    style: TextStyle(color: appThemes.getCardTextColor()),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _filteredItems.length,
+                  itemBuilder: (context, index) {
+                    final item = _filteredItems[index];
+                    final isSelected = _selectedItems.contains(item);
 
-                      return CheckboxListTile(
+                    return Card(
+                      color: appThemes.getCardBackgroundColor(),
+                      elevation: appThemes.getCardElevation(),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 2, horizontal: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            appThemes.getCardBorderRadius()),
+                        side: BorderSide(
+                            color: appThemes.getCardBorderColor(), width: 0.5),
+                      ),
+                      child: CheckboxListTile(
                         value: isSelected,
-                        title: Text(item.name),
+                        title: Text(
+                          item.name,
+                          style:
+                              TextStyle(color: appThemes.getCardTitleColor()),
+                        ),
                         subtitle: Text(
                           '${item.category} • ${item.defaultUnit}',
+                          style: TextStyle(
+                            color: appThemes.getListTileSubtitleColor(),
+                          ),
                         ),
-                        secondary:
-                            isSelected
-                                ? const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                )
-                                : null,
+                        secondary: isSelected
+                            ? Icon(
+                                Icons.check_circle,
+                                color: appThemes.getCardIconColor(),
+                              )
+                            : null,
+                        checkColor: appThemes.getCheckboxCheckColor(),
+                        activeColor: appThemes.getCheckboxActiveColor(),
+                        side: BorderSide(
+                          color: appThemes.getCheckboxBorderColor(),
+                          width: 1.5,
+                        ),
                         onChanged: (checked) {
                           setState(() {
                             if (checked!) {
@@ -211,9 +251,10 @@ class _AddItemFormState extends State<AddItemForm> {
                             }
                           });
                         },
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
+                ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -221,11 +262,23 @@ class _AddItemFormState extends State<AddItemForm> {
             children: [
               Text(
                 'Selecionados: ${_selectedItems.length}',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: appThemes.getCardTextColor(),
+                ),
               ),
               const SizedBox(height: 8),
               FilledButton(
                 onPressed: _selectedItems.isEmpty ? null : _addItems,
+                style: FilledButton.styleFrom(
+                  backgroundColor: appThemes.getDialogButtonColor(),
+                  foregroundColor: appThemes.getDialogButtonTextColor(),
+                  disabledBackgroundColor:
+                      appThemes.getDialogButtonColor().withOpacity(0.5),
+                  disabledForegroundColor:
+                      appThemes.getDialogButtonTextColor().withOpacity(0.5),
+                ),
                 child: const Text('Adicionar Selecionados'),
               ),
               const SizedBox(height: 8), // Espaçamento entre os botões
@@ -238,7 +291,8 @@ class _AddItemFormState extends State<AddItemForm> {
                   });
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  backgroundColor: appThemes.getCardButtonColor(),
+                  foregroundColor: appThemes.getCardButtonTextColor(),
                 ),
                 child: const Text('Adicionar novo item'),
               ),
@@ -250,22 +304,21 @@ class _AddItemFormState extends State<AddItemForm> {
   }
 
   void _addItems() {
-    final items =
-        _selectedItems
-            .map(
-              (template) => BudgetItem(
-                id: const Uuid().v4(),
-                budgetId: widget.budgetId,
-                name: template.name,
-                category: template.category,
-                unit: template.defaultUnit,
-                quantity: 1,
-                prices: {},
-                bestPriceLocation: '',
-                bestPrice: 0,
-              ),
-            )
-            .toList();
+    final items = _selectedItems
+        .map(
+          (template) => BudgetItem(
+            id: const Uuid().v4(),
+            budgetId: widget.budgetId,
+            name: template.name,
+            category: template.category,
+            unit: template.defaultUnit,
+            quantity: 1,
+            prices: {},
+            bestPriceLocation: '',
+            bestPrice: 0,
+          ),
+        )
+        .toList();
 
     widget.onItemsAdded(items);
     Navigator.of(context).pop();
