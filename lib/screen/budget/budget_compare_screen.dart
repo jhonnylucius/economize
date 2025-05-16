@@ -76,12 +76,11 @@ class BudgetCompareScreen extends StatelessWidget {
   // Método _buildSavingsAnalysis original (sem alterações)
   Widget _buildSavingsAnalysis(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
-    final savings =
-        budget.items.map((item) {
-            final saving = item.calculateSavings();
-            return MapEntry(item.name, saving);
-          }).toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
+    final savings = budget.items.map((item) {
+      final saving = item.calculateSavings();
+      return MapEntry(item.name, saving);
+    }).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return Card(
       color: themeManager.getCompareCardBackgroundColor(),
@@ -119,43 +118,40 @@ class BudgetCompareScreen extends StatelessWidget {
       height: 100,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children:
-            savings.map((entry) {
-              // Calcula a altura da barra de forma segura
-              double barHeight = entry.value > 0 ? entry.value / 2 : 0;
-              // Limita a altura máxima se necessário para evitar barras gigantes
-              barHeight = barHeight.clamp(0.0, 80.0); // Ex: Limita a 80 pixels
+        children: savings.map((entry) {
+          // Calcula a altura da barra de forma segura
+          double barHeight = entry.value > 0 ? entry.value / 2 : 0;
+          // Limita a altura máxima se necessário para evitar barras gigantes
+          barHeight = barHeight.clamp(0.0, 80.0); // Ex: Limita a 80 pixels
 
-              return Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment.end, // Alinha barra na base
-                  children: [
-                    Container(
-                      width: 50,
-                      height: barHeight, // Usa altura calculada e limitada
-                      color: themeManager.getCompareChartBarColor(),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      // Limita a largura do texto para evitar overflow
-                      width: 50,
-                      child: Text(
-                        entry.key,
-                        style: TextStyle(
-                          color: themeManager.getCompareCardTitleColor(),
-                          fontSize: 12, // Reduzido para caber melhor
-                        ),
-                        overflow:
-                            TextOverflow.ellipsis, // Evita quebra de texto
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+          return Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end, // Alinha barra na base
+              children: [
+                Container(
+                  width: 50,
+                  height: barHeight, // Usa altura calculada e limitada
+                  color: themeManager.getCompareChartBarColor(),
                 ),
-              );
-            }).toList(),
+                const SizedBox(height: 8),
+                SizedBox(
+                  // Limita a largura do texto para evitar overflow
+                  width: 50,
+                  child: Text(
+                    entry.key,
+                    style: TextStyle(
+                      color: themeManager.getCompareCardTitleColor(),
+                      fontSize: 12, // Reduzido para caber melhor
+                    ),
+                    overflow: TextOverflow.ellipsis, // Evita quebra de texto
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -170,37 +166,36 @@ class BudgetCompareScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
-      children:
-          savings.asMap().entries.map((entry) {
-            final index = entry.key + 1;
-            final item = entry.value;
-            return ListTile(
-              leading: CircleAvatar(
-                // *** CORREÇÃO: Usa a cor primária do tema para o fundo do círculo ***
-                backgroundColor: colorScheme.primary,
-                radius: 12,
-                child: Text(
-                  '$index',
-                  style: TextStyle(
-                    // *** CORREÇÃO: Usa a cor 'onPrimary' do tema para o texto ***
-                    color: colorScheme.onPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+      children: savings.asMap().entries.map((entry) {
+        final index = entry.key + 1;
+        final item = entry.value;
+        return ListTile(
+          leading: CircleAvatar(
+            // *** CORREÇÃO: Usa a cor primária do tema para o fundo do círculo ***
+            backgroundColor: colorScheme.primary,
+            radius: 12,
+            child: Text(
+              '$index',
+              style: TextStyle(
+                // *** CORREÇÃO: Usa a cor 'onPrimary' do tema para o texto ***
+                color: colorScheme.onPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
-              title: Text(
-                item.key,
-                style: TextStyle(color: themeManager.getCompareCardTextColor()),
-              ),
-              subtitle: Text(
-                'Economia: ${currencyFormat.format(item.value)}',
-                style: TextStyle(
-                  color: themeManager.getCompareSavingsTextColor(),
-                ),
-              ),
-            );
-          }).toList(),
+            ),
+          ),
+          title: Text(
+            item.key,
+            style: TextStyle(color: themeManager.getCompareCardTextColor()),
+          ),
+          subtitle: Text(
+            'Economia: ${currencyFormat.format(item.value)}',
+            style: TextStyle(
+              color: themeManager.getCompareSavingsTextColor(),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -231,14 +226,13 @@ class BudgetCompareScreen extends StatelessWidget {
               final item = entry.value;
               final location = budget.locations.firstWhere(
                 (loc) => loc.id == item.bestPriceLocation,
-                orElse:
-                    () => BudgetLocation(
-                      id: '',
-                      budgetId: budget.id,
-                      name: 'Desconhecido',
-                      address: '',
-                      priceDate: DateTime.now(),
-                    ),
+                orElse: () => BudgetLocation(
+                  id: '',
+                  budgetId: budget.id,
+                  name: 'Desconhecido',
+                  address: '',
+                  priceDate: DateTime.now(),
+                ),
               );
 
               return ListTile(
