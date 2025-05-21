@@ -34,7 +34,6 @@ class _RevenuesScreenState extends State<RevenuesScreen> {
     {'icon': Icons.work, 'name': 'Freelancer'},
     {'icon': Icons.business_center, 'name': 'Consultoria'},
     {'icon': Icons.emoji_events, 'name': 'Bônus'},
-    {'icon': Icons.card_membership, 'name': 'Assinaturas'},
     {'icon': Icons.local_offer, 'name': 'Promoções'},
     {'icon': Icons.local_activity, 'name': 'Eventos'},
     {'icon': Icons.more_horiz, 'name': 'Outros'},
@@ -189,11 +188,12 @@ class _RevenuesScreenState extends State<RevenuesScreen> {
                 'R\$ ${revenue.preco.toStringAsFixed(2)}',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              // Mostrar apenas a descrição, removendo duplicação
               Text(
-                revenue.tipoReceita,
+                revenue.descricaoDaReceita, // Manter apenas a descrição
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface
                       .withAlpha((0.7 * 255).toInt()),
