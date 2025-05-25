@@ -176,7 +176,7 @@ Agradecemos a todos os estudantes e professores que contribuíram para este proj
 ---
 
 Desenvolvido com 💜 para a comunidade Flutter brasileira.  
-© 2023-2025 Economize$ Team
+© 2025 Union Dev Team
 
 ## 📞 Contato
 
