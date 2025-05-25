@@ -75,8 +75,8 @@ Cadastre receitas e despesas com categorias personalizáveis:
 Crie orçamentos e compare preços entre estabelecimentos:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto3.jpg" width="45%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto4.jpg" width="45%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto3.jpg" width="40%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto4.jpg" width="40%" />
 </p>
 
 ### Tendência de Finanças
