@@ -56,15 +56,12 @@ lib/
 
 ## 🧩 Funcionalidades
 
-### Dashboard
+### Dashboard e Saldo Mensal
 Visão geral das suas finanças com gráficos intuitivos:
 
-![Dashboard](https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg)
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg" width="45%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg" width="45%" />
 
-### Saldo Mensal
-Acompanhe sua situação financeira atual com visualização de receitas e despesas:
-
-![Saldo](https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg)
 
 ### Lançamentos
 Cadastre receitas e despesas com categorias personalizáveis:
@@ -85,7 +82,9 @@ Crie orçamentos e compare preços entre estabelecimentos:
 ### Tendência de Finanças
 Visualize gráficos de evolução de receitas e despesas ao longo do tempo:
 
-![Tendências](https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/capa1.png)
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/capa1.png" width="60%" />
+  </p>
 
 ### Ferramentas Educacionais
 Dicas financeiras e calculadora de metas para planejamento:
