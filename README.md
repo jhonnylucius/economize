@@ -171,7 +171,7 @@ Acesse nossa [galeria completa de screenshots](https://github.com/jhonnylucius/e
 
 ## 🙏 Agradecimentos
 
-Agradecemos a todos os estudantes e professores que contribuíram para este projeto educacional.
+Agradecemos a todos os testadores da App que contribuiram para o resultado final e aprovação na loja da Google.
 
 ---
 
