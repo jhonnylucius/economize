@@ -166,7 +166,7 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 
 ## 📸 Galeria Completa
 
-Acesse nossa [galeria completa de screenshots](https://github.com/jhonnylucius/economize/blob/main/GALLERY.md) para ver todas as telas do aplicativo.
+Acesse nossa [galeria completa de screenshots](https://github.com/jhonnylucius/economize/main/docs) para ver todas as telas do aplicativo.
 
 
 ## 🙏 Agradecimentos
