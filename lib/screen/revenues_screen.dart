@@ -353,7 +353,8 @@ class _RevenuesScreenState extends State<RevenuesScreen> {
                                   data: DateFormat('dd/MM/yyyy')
                                       .parse(dataController.text),
                                   preco: double.parse(precoController.text),
-                                  descricaoDaReceita: descricaoController.text,
+                                  // Usar selectedTipo diretamente em vez de descricaoController.text
+                                  descricaoDaReceita: selectedTipo,
                                   tipoReceita: selectedTipo,
                                 );
 

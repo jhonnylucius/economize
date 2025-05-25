@@ -1,6 +1,7 @@
 import 'package:economize/features/financial_education/screens/goal_calculator_screen.dart';
 import 'package:economize/features/financial_education/screens/tips_screen.dart';
 import 'package:economize/model/budget/budget.dart';
+import 'package:economize/screen/balance_screen.dart';
 import 'package:economize/screen/budget/budget_compare_screen.dart';
 import 'package:economize/screen/budget/budget_detail_screen.dart';
 import 'package:economize/screen/budget/budget_list_screen.dart';
@@ -77,6 +78,7 @@ class MyApp extends StatelessWidget {
             '/trend': (context) => const TrendChartScreen(),
             '/tips': (context) => const TipsScreen(),
             '/goals': (context) => const GoalsScreen(),
+            '/balance': (context) => const BalanceScreen(),
             '/budget/detail': (context) {
               final budget =
                   ModalRoute.of(context)?.settings.arguments as Budget?;

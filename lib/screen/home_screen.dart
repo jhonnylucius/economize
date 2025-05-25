@@ -67,11 +67,16 @@ class _HomeScreenState extends State<HomeScreen> {
           unselectedItemColor: theme.colorScheme.onSurface.withValues(
             alpha: (0.6 * 255).toDouble(),
           ), // Cor onSurface com opacidade quando não selecionado
+          type: BottomNavigationBarType.fixed, // Importante para 4+ itens
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.palette), label: 'Temas'),
             BottomNavigationBarItem(
               icon: Icon(Icons.calculate),
               label: 'Calcular Meta',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet),
+              label: 'Saldo',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.emoji_objects),
@@ -87,6 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/calculator');
                 break;
               case 2:
+                Navigator.pushNamed(context, '/balance');
+                break;
+              case 3:
                 Navigator.pushNamed(context, '/goals');
                 break;
             }
