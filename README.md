@@ -59,9 +59,10 @@ lib/
 ### Dashboard e Saldo Mensal
 Visão geral das suas finanças com gráficos intuitivos:
 
+<p float="left">
 <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg" width="45%" />
 <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg" width="45%" />
-
+</p>
 
 ### Lançamentos
 Cadastre receitas e despesas com categorias personalizáveis:
