@@ -16,7 +16,7 @@ O aplicativo oferece ferramentas para:
 - Dicas de educação financeira
 - Calculadora de metas
 
-[![Vídeo de demonstração](https://img.shields.io/badge/YouTube-Assista_ao_vídeo_de_demonstração-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/[https://youtu.be/Hlzw3-Sy5Bg])
+[![Vídeo de demonstração](https://img.shields.io/badge/YouTube-Assista_ao_vídeo_de_demonstração-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/Hlzw3-Sy5Bg)
 
 ## 🛠️ Tecnologias e Pacotes Utilizados
 
