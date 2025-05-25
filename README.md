@@ -60,16 +60,16 @@ lib/
 Visão geral das suas finanças com gráficos intuitivos:
 
 <p float="left">
-<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg" width="45%" />
-<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg" width="45%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg" width="40%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg" width="40%" />
 </p>
 
 ### Lançamentos
 Cadastre receitas e despesas com categorias personalizáveis:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto6.jpg" width="45%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto5.jpg" width="45%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto6.jpg" width="40%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto5.jpg" width="40%" />
 </p>
 
 ### Orçamentos
@@ -84,14 +84,14 @@ Crie orçamentos e compare preços entre estabelecimentos:
 Visualize gráficos de evolução de receitas e despesas ao longo do tempo:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/capa1.png" width="60%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/capa1.png" width="50%" />
   </p>
 
 ### Ferramentas Educacionais
 Dicas financeiras e calculadora de metas para planejamento:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto11.jpg" width="45%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto11.jpg" width="40%" />
 </p>
 
 ## 🚀 Como Executar o Projeto
