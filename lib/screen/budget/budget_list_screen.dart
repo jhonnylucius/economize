@@ -421,11 +421,13 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
 
   void _showSuccess(String message) {
     final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: themeManager.getBudgetListSearchIconColor()),
+          style: TextStyle(color: appThemes.getCardButtonTextColor()),
         ),
         backgroundColor: themeManager.getBudgetListHeaderColor(),
       ),
@@ -433,8 +435,16 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   }
 
   void _showError(String message) {
+    final appThemes = AppThemes();
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(
+          message,
+          style: TextStyle(color: appThemes.getCardButtonTextColor()),
+        ),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
