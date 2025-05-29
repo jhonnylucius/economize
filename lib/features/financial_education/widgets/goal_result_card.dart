@@ -1,7 +1,7 @@
+import 'package:economize/data/goal_dao.dart';
 import 'package:economize/features/financial_education/models/savings_goal.dart';
 import 'package:economize/features/financial_education/utils/goal_calculator.dart';
 import 'package:flutter/material.dart';
-
 import 'package:intl/intl.dart';
 
 class GoalResultCard extends StatelessWidget {
@@ -32,11 +32,120 @@ class GoalResultCard extends StatelessWidget {
             const SizedBox(height: 24),
             _buildRecommendation(theme),
             const SizedBox(height: 24),
-            _buildActionButton(theme),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    context,
+                    theme,
+                    'Recalcular',
+                    Icons.refresh,
+                    onRecalculate,
+                    outlined: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    context,
+                    theme,
+                    'Salvar Meta',
+                    Icons.save,
+                    () => _saveGoal(context),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  // Método para salvar a meta
+  void _saveGoal(BuildContext context) async {
+    final goalsDAO = GoalsDAO();
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Converter SavingsGoal para Goal
+    final goalToSave = Goal(
+      name: goal.title,
+      targetValue: goal.targetValue,
+      currentValue: 0.0, // Começa em zero
+      createdAt: DateTime.now(), // Data atual como criação
+    );
+
+    try {
+      await goalsDAO.save(goalToSave);
+
+      // Mostrar feedback positivo
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Meta salva com sucesso!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Navegar após mostrar o SnackBar
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Navigator.of(context).pushReplacementNamed(
+            '/goals'); // Ajuste o nome da rota conforme necessário
+      });
+    } catch (e) {
+      // Mostrar feedback de erro
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar meta: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildActionButton(
+    BuildContext context,
+    ThemeData theme,
+    String label,
+    IconData icon,
+    VoidCallback onPressed, {
+    bool outlined = false,
+  }) {
+    if (outlined) {
+      return TextButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: theme.colorScheme.primary),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: theme.colorScheme.primary),
+          ),
+        ),
+      );
+    } else {
+      return ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildHeader(ThemeData theme) {
@@ -53,7 +162,7 @@ class GoalResultCard extends StatelessWidget {
         Text(
           'Meta: ${_currencyFormat.format(goal.targetValue)}',
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            color: theme.colorScheme.onSurface.withAlpha((0.7 * 255).toInt()),
             fontSize: 16,
           ),
         ),
@@ -121,10 +230,10 @@ class GoalResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withValues(alpha: 0.1),
+        color: theme.colorScheme.errorContainer.withAlpha((0.1 * 255).toInt()),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.colorScheme.error.withValues(alpha: 0.3),
+          color: theme.colorScheme.error..withAlpha((0.3 * 255).toInt()),
         ),
       ),
       child: Column(
@@ -184,30 +293,6 @@ class GoalResultCard extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButton(ThemeData theme) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton.icon(
-        onPressed: onRecalculate,
-        icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
-        label: Text(
-          'Recalcular',
-          style: TextStyle(
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: theme.colorScheme.primary),
-          ),
-        ),
-      ),
     );
   }
 }
