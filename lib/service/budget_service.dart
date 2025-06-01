@@ -8,8 +8,22 @@ import 'package:economize/model/budget/budget_location.dart';
 import 'package:economize/model/budget/budget_summary.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:flutter/foundation.dart';
+
 class BudgetService {
   final BudgetDAO _budgetDAO = BudgetDAO();
+
+  // Removido método duplicado getAllBudgets para evitar conflito de nomes.
+
+  Future<Budget?> getBudgetByCategory(String category) async {
+    try {
+      return await _budgetDAO.findByCategory(category);
+    } catch (e) {
+      debugPrint('Erro ao buscar orçamento por categoria: $e');
+      return null;
+    }
+  }
+
   final BudgetLocationDAO _locationDAO = BudgetLocationDAO();
 
   Future<Budget> createBudget(String title) async {
@@ -183,31 +197,28 @@ class BudgetService {
         'totalOptimized': budget.summary.totalOptimized,
         'savings': budget.summary.savings,
         'savingsPercentage': budget.summary.getSavingsPercentage(),
-        'bestPricesByItem':
-            budget.items.map((item) {
-              final location = budget.locations.firstWhere(
-                (loc) => loc.id == item.bestPriceLocation,
-                orElse:
-                    () => BudgetLocation(
-                      id: '',
-                      budgetId: budgetId,
-                      name: 'Desconhecido',
-                      address: '',
-                      priceDate: DateTime.now(),
-                    ),
-              );
+        'bestPricesByItem': budget.items.map((item) {
+          final location = budget.locations.firstWhere(
+            (loc) => loc.id == item.bestPriceLocation,
+            orElse: () => BudgetLocation(
+              id: '',
+              budgetId: budgetId,
+              name: 'Desconhecido',
+              address: '',
+              priceDate: DateTime.now(),
+            ),
+          );
 
-              return {
-                'name': item.name,
-                'bestPrice': item.bestPrice,
-                'bestLocation': location.name,
-                'potentialSavings':
-                    item.prices.values.isNotEmpty
-                        ? item.prices.values.reduce((a, b) => a > b ? a : b) -
-                            (item.bestPrice)
-                        : 0.0,
-              };
-            }).toList(),
+          return {
+            'name': item.name,
+            'bestPrice': item.bestPrice,
+            'bestLocation': location.name,
+            'potentialSavings': item.prices.values.isNotEmpty
+                ? item.prices.values.reduce((a, b) => a > b ? a : b) -
+                    (item.bestPrice)
+                : 0.0,
+          };
+        }).toList(),
       };
     } catch (e) {
       throw Exception('Erro ao gerar relatório: $e');
