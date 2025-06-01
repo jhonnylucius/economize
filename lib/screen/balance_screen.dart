@@ -10,6 +10,7 @@ import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'dart:math' as math;
 
@@ -160,21 +161,28 @@ class _BalanceScreenState extends State<BalanceScreen>
 
     try {
       final now = DateTime.now();
-      final firstDayOfMonth = DateTime(now.year, now.month, 1);
-      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+      final currentYear = now.year;
+      final currentMonth = now.month;
 
       final List<Costs> costs = await _costsService.getAllCosts();
       final List<Revenues> revenues = await _revenuesService.getAllRevenues();
 
+      // Filtragem mais simples e robusta usando ano e mês
       final currentMonthCosts = costs.where((cost) {
-        return cost.data.isAfter(firstDayOfMonth) &&
-            cost.data.isBefore(lastDayOfMonth.add(const Duration(days: 1)));
+        return cost.data.year == currentYear && cost.data.month == currentMonth;
       }).toList();
 
       final currentMonthRevenues = revenues.where((revenue) {
-        return revenue.data.isAfter(firstDayOfMonth) &&
-            revenue.data.isBefore(lastDayOfMonth.add(const Duration(days: 1)));
+        return revenue.data.year == currentYear &&
+            revenue.data.month == currentMonth;
       }).toList();
+
+      // Log para depuração - mantém para verificar se está carregando corretamente
+      Logger().e('Mês atual: $currentMonth/$currentYear');
+      Logger().e('Total de despesas encontradas: ${costs.length}');
+      Logger().e('Despesas do mês atual: ${currentMonthCosts.length}');
+      Logger().e('Total de receitas encontradas: ${revenues.length}');
+      Logger().e('Receitas do mês atual: ${currentMonthRevenues.length}');
 
       final totalCosts =
           currentMonthCosts.fold<double>(0, (sum, cost) => sum + cost.preco);
