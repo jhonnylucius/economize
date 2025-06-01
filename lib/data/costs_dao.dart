@@ -170,6 +170,21 @@ class CostsDAO {
     );
   }
 
+  Future<void> createTable(Database db) async {
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS $tableName (
+      id TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      preco REAL NOT NULL,
+      descricaoDaDespesa TEXT NOT NULL,
+      tipoDespesa TEXT NOT NULL,
+      recorrente INTEGER DEFAULT 0,
+      pago INTEGER DEFAULT 0,
+      category TEXT
+    )
+  ''');
+  }
+
   // Obter maiores despesas do período
   Future<List<Costs>> getTopExpenses(
     DateTime start,
