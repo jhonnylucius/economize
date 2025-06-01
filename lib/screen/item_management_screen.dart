@@ -1,3 +1,10 @@
+import 'package:economize/animations/celebration_animations.dart';
+import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
+import 'package:economize/animations/interactive_animations.dart';
+import 'package:economize/animations/loading_animations.dart';
+import 'package:economize/animations/scale_animation.dart';
+import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/data/database_helper.dart';
 import 'package:economize/model/budget/item_template.dart';
 import 'package:economize/screen/responsive_screen.dart';
@@ -15,7 +22,8 @@ class ItemManagementScreen extends StatefulWidget {
   State<ItemManagementScreen> createState() => _ItemManagementScreenState();
 }
 
-class _ItemManagementScreenState extends State<ItemManagementScreen> {
+class _ItemManagementScreenState extends State<ItemManagementScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   String _selectedUnit = 'un';
@@ -25,6 +33,8 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
   List<ItemTemplate> _filteredItems = [];
   List<ItemTemplate> _allItems = [];
   bool _isLoading = true;
+  bool _showCelebration = false;
+  late AnimationController _animationController;
 
   // Lista completa de categorias (mantida do original)
   final List<String> _allCategories = [
@@ -93,6 +103,12 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
     super.initState();
     _searchController.addListener(_filterItems);
     _loadItems();
+
+    // Inicializa o controlador de animação
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
   }
 
   // Método _loadItems original (sem alterações)
@@ -103,14 +119,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
       _filteredItems = _allItems;
     } catch (e) {
       debugPrint('Erro ao carregar itens: $e');
-      // Adiciona feedback de erro se não estava no original
-      // if (mounted) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text('Erro ao carregar itens: $e')),
-      //   );
-      // }
     } finally {
-      // Adiciona verificação 'mounted' se não estava no original
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -121,11 +130,10 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredItems =
-          _allItems.where((item) {
-            return item.name.toLowerCase().contains(query) ||
-                item.category.toLowerCase().contains(query);
-          }).toList();
+      _filteredItems = _allItems.where((item) {
+        return item.name.toLowerCase().contains(query) ||
+            item.category.toLowerCase().contains(query);
+      }).toList();
     });
   }
 
@@ -137,157 +145,348 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
     // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
       appBar: AppBar(
-        // Mantém a AppBar original
-        title: const Text('Gerenciar Produtos'),
+        title: SlideAnimation.fromTop(
+          child: const Text('Gerenciar Produtos'),
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () async {
-              setState(() => _isLoading = true);
-              try {
-                await _loadItems();
-                _filterItems();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Lista atualizada!',
-                        style: TextStyle(color: theme.colorScheme.onPrimary),
+          SlideAnimation.fromTop(
+            delay: const Duration(milliseconds: 100),
+            child: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () async {
+                setState(() => _isLoading = true);
+                try {
+                  await _loadItems();
+                  _filterItems();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            AnimatedCheckmark(
+                              color: theme.colorScheme.onPrimary,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Lista atualizada!'),
+                          ],
+                        ),
+                        backgroundColor: theme.colorScheme.primary,
+                        behavior: SnackBarBehavior.floating,
+                        margin: const EdgeInsets.all(12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                      backgroundColor: theme.colorScheme.primary,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Erro ao atualizar: $e',
-                        style: TextStyle(color: theme.colorScheme.onError),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Erro ao atualizar: $e',
+                          style: TextStyle(color: theme.colorScheme.onError),
+                        ),
+                        backgroundColor: theme.colorScheme.error,
+                        behavior: SnackBarBehavior.floating,
+                        margin: const EdgeInsets.all(12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                      backgroundColor: theme.colorScheme.error,
-                    ),
-                  );
+                    );
+                  }
+                } finally {
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                  }
                 }
-              } finally {
-                if (mounted) {
-                  setState(() => _isLoading = false);
-                }
-              }
-            },
+              },
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+          SlideAnimation.fromTop(
+            delay: const Duration(milliseconds: 200),
+            child: IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            ),
           ),
         ],
       ),
-      // Passa a cor de fundo original para o ResponsiveScreen
-      backgroundColor: theme.scaffoldBackgroundColor, // Usa cor do tema
-      // Passa o FloatingActionButton original para o ResponsiveScreen
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDialog,
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        child: const Icon(Icons.add),
-      ),
-      // Passa o floatingActionButtonLocation original para o ResponsiveScreen
-      // (Obrigatório pela definição do seu ResponsiveScreen)
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // Passa o resizeToAvoidBottomInset (padrão true)
-      resizeToAvoidBottomInset: true,
-      // O body original agora é o child do ResponsiveScreen, **colocado por último**
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SearchBar(
-              controller: _searchController,
-              hintText: 'Pesquisar produtos...',
-              leading: Icon(Icons.search, color: theme.colorScheme.onSurface),
-              trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: Icon(Icons.clear, color: theme.colorScheme.onSurface),
-                    onPressed: () {
-                      _searchController.clear();
-                      // setState(() {}); // Removido se não estava no original
-                    },
-                  ),
-              ],
-              // Usa WidgetStateProperty se MaterialStateProperty não existir
-              backgroundColor: WidgetStateProperty.all(
-                theme.colorScheme.surface,
-              ),
-              // Adiciona style se necessário para cor do texto digitado
-              // textStyle: WidgetStateProperty.all(
-              //   TextStyle(color: theme.colorScheme.onSurface),
-              // ),
-            ),
+      backgroundColor: Colors.white, // Fundo sempre branco
+      floatingActionButton: ScaleAnimation.bounceIn(
+        delay: const Duration(milliseconds: 300),
+        child: PressableCard(
+          onPress: _showAddDialog,
+          pressedScale: 0.9,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withAlpha((0.3 * 255).toInt()),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
+            ],
           ),
-          Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredItems.isEmpty
-                    ? Center(
-                      child: Text(
-                        'Nenhum produto encontrado',
-                        style: TextStyle(color: theme.colorScheme.onSurface),
+          padding: const EdgeInsets.all(16),
+          child: Icon(
+            Icons.add,
+            color: theme.colorScheme.onPrimary,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      resizeToAvoidBottomInset: true,
+      child: Stack(
+        children: [
+          // Conteúdo principal
+          Column(
+            children: [
+              // Barra de pesquisa com animação
+              SlideAnimation.fromTop(
+                delay: const Duration(milliseconds: 150),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GlassContainer(
+                    blur: 3,
+                    opacity: 0.1,
+                    borderRadius: 24,
+                    child: SearchBar(
+                      controller: _searchController,
+                      hintText: 'Pesquisar produtos...',
+                      leading: Icon(Icons.search,
+                          color: theme.colorScheme.onSurface),
+                      trailing: [
+                        if (_searchController.text.isNotEmpty)
+                          IconButton(
+                            icon: Icon(Icons.clear,
+                                color: theme.colorScheme.onSurface),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          ),
+                      ],
+                      backgroundColor: WidgetStateProperty.all(
+                        theme.colorScheme.surface
+                            .withAlpha((0.7 * 255).toInt()),
                       ),
-                    )
-                    : ListView.builder(
-                      itemCount: _filteredItems.length,
-                      itemBuilder: (context, index) {
-                        final item = _filteredItems[index];
-                        return Card(
-                          color: theme.colorScheme.surface,
-                          // Adiciona margem se necessário
-                          // margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: ListTile(
-                            title: Text(
-                              item.name,
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                              ),
+                      padding: const WidgetStatePropertyAll(
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+                    ),
+                  ),
+                ),
+              ),
+
+              Expanded(
+                child: _isLoading
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SpinKitLoadingAnimation(
+                              color: theme.colorScheme.primary,
+                              size: 50,
                             ),
-                            subtitle: Text(
-                              '${item.category} - ${item.defaultUnit}',
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface.withAlpha(
-                                  (0.7 * 255).toInt(),
+                            const SizedBox(height: 20),
+                            FadeAnimation(
+                              child: Text(
+                                'Carregando produtos...',
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontSize: 16,
                                 ),
                               ),
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              color: theme.colorScheme.error,
-                              onPressed: () => _deleteItem(item),
+                          ],
+                        ),
+                      )
+                    : _filteredItems.isEmpty
+                        ? FadeAnimation(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 80,
+                                    color: theme.colorScheme.primary
+                                        .withAlpha((0.3 * 255).toInt()),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Nenhum produto encontrado',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tente um termo diferente ou adicione um novo produto',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface
+                                          .withAlpha((0.7 * 255).toInt()),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            // Adiciona onTap para edição se necessário
-                            // onTap: () => _editItem(item),
+                          )
+                        : ListView.builder(
+                            itemCount: _filteredItems.length,
+                            itemBuilder: (context, index) {
+                              final item = _filteredItems[index];
+
+                              return SlideAnimation.fromRight(
+                                delay:
+                                    Duration(milliseconds: 100 * index % 500),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 4),
+                                  child: PressableCard(
+                                    onPress: () => _editItem(item),
+                                    pressedScale: 0.98,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withAlpha((0.2 * 255).toInt()),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withAlpha((0.3 * 255).toInt()),
+                                          blurRadius: 5,
+                                          offset: const Offset(0, 2),
+                                        )
+                                      ],
+                                    ),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: ListTile(
+                                      leading: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary
+                                              .withAlpha((0.1 * 255).toInt()),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          _getCategoryIcon(item.category),
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                      title: Text(
+                                        item.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        '${item.category} - ${item.defaultUnit}',
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete_outline),
+                                        color: theme.colorScheme.error,
+                                        onPressed: () => _deleteItem(item),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
+              ),
+            ],
           ),
+
+          // Animação de celebração quando adiciona um item
+          if (_showCelebration)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ConfettiAnimation(
+                  particleCount: 30,
+                  direction: ConfettiDirection.down,
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary,
+                    theme.colorScheme.tertiary,
+                    Colors.amber,
+                  ],
+                  animationController: _animationController,
+                  duration: const Duration(seconds: 3),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  // Método _showAddDialog original (sem alterações)
+  // Novo método para editar item
+  void _editItem(ItemTemplate item) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Implementação da edição virá em breve!'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // Novo método para obter ícones baseados na categoria
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'alimentos':
+        return Icons.restaurant;
+      case 'bebidas':
+        return Icons.local_drink;
+      case 'limpeza':
+      case 'materiais de limpeza':
+        return Icons.cleaning_services;
+      case 'higiene':
+      case 'higiene pessoal':
+        return Icons.spa;
+      case 'frutas':
+      case 'verduras':
+      case 'hortifruti':
+        return Icons.eco;
+      case 'carnes':
+        return Icons.set_meal;
+      case 'frios':
+      case 'laticínios':
+        return Icons.egg;
+      case 'padaria':
+        return Icons.bakery_dining;
+      case 'congelados':
+        return Icons.ac_unit;
+      case 'farmácia':
+        return Icons.medical_services;
+      case 'materiais de construção':
+        return Icons.construction;
+      case 'utensílios de casa':
+        return Icons.home;
+      default:
+        return Icons.shopping_basket;
+    }
+  }
+
+  // Método _showAddDialog melhorado
   Future<void> _showAddDialog() async {
     final theme = Theme.of(context);
     _nameController.clear();
-    // Reseta para valores padrão do diálogo
     _selectedCategory = 'Alimentos';
     _selectedUnit = 'un';
 
-    // Função auxiliar para verificar duplicatas (mantida do original)
     bool isDuplicate(String name) {
       return _allItems.any(
         (item) => item.name.toLowerCase() == name.toLowerCase(),
@@ -296,179 +495,218 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
 
     await showDialog(
       context: context,
-      // barrierDismissible: false, // Impede fechar clicando fora
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: theme.colorScheme.surface,
-            title: Text(
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha((0.1 * 255).toInt()),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add_shopping_cart,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
               'Adicionar Produto',
-              style: TextStyle(color: theme.colorScheme.onSurface),
+              style: TextStyle(color: Colors.black87),
             ),
-            content: SingleChildScrollView(
-              // Garante rolagem se o teclado aparecer
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize:
-                      MainAxisSize.min, // Importante para SingleChildScrollView
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      style: TextStyle(color: theme.colorScheme.onSurface),
-                      decoration: InputDecoration(
-                        labelText: 'Nome do Produto',
-                        border: const OutlineInputBorder(),
-                        labelStyle: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        // Adiciona counterText vazio para remover contador padrão
-                        // counterText: '',
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ScaleAnimation(
+                  delay: const Duration(milliseconds: 100),
+                  fromScale: 0.9,
+                  child: TextFormField(
+                    controller: _nameController,
+                    style: TextStyle(color: Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: 'Nome do Produto',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      // maxLength: 50, // Limita o tamanho do nome se desejado
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Nome é obrigatório';
-                        }
-                        if (isDuplicate(value.trim())) {
-                          // Usa trim para evitar espaços
-                          return 'Este produto já existe';
-                        }
-                        return null;
-                      },
-                      // Remove onChanged se não estava no original
-                      // onChanged: (value) {
-                      //   _formKey.currentState?.validate();
-                      // },
-                      autovalidateMode:
-                          AutovalidateMode
-                              .onUserInteraction, // Valida ao interagir
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedCategory,
-                      dropdownColor: theme.colorScheme.surface,
-                      style: TextStyle(color: theme.colorScheme.onSurface),
-                      decoration: InputDecoration(
-                        labelText: 'Categoria',
-                        border: const OutlineInputBorder(),
-                        labelStyle: TextStyle(
-                          color: theme.colorScheme.onSurface,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
                         ),
                       ),
-                      // isExpanded: true, // Ocupa largura total
-                      items:
-                          _allCategories.map((category) {
-                            return DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        // Usa setState dentro do builder do Dialog
-                        // Precisamos de um StatefulWidget para o Dialog ou passar um callback
-                        // Solução mais simples: Manter como estava, mas pode não atualizar visualmente
-                        // _selectedCategory = value!;
-                        // Solução com StatefulWidget no Dialog (recomendado):
-                        if (value != null) {
-                          // Se o Dialog for Stateful, use setState aqui
-                          // setState(() => _selectedCategory = value);
-                          // Se não, apenas atualize a variável (pode não refletir na UI imediatamente)
-                          _selectedCategory = value;
-                        }
-                      },
-                      validator:
-                          (value) =>
-                              value == null ? 'Selecione uma categoria' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedUnit,
-                      dropdownColor: theme.colorScheme.surface,
-                      style: TextStyle(color: theme.colorScheme.onSurface),
-                      decoration: InputDecoration(
-                        labelText: 'Unidade',
-                        border: const OutlineInputBorder(),
-                        labelStyle: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                        ),
+                      labelStyle: TextStyle(
+                        color: Colors.black87,
                       ),
-                      // isExpanded: true,
-                      items:
-                          _allUnits.map((unit) {
-                            return DropdownMenuItem(
-                              value: unit,
-                              child: Text(unit),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          // Mesma questão do setState do Dropdown anterior
-                          _selectedUnit = value;
-                        }
-                      },
-                      validator:
-                          (value) =>
-                              value == null ? 'Selecione uma unidade' : null,
+                      prefixIcon: Icon(
+                        Icons.inventory_2,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                  ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Nome é obrigatório';
+                      }
+                      if (isDuplicate(value.trim())) {
+                        return 'Este produto já existe';
+                      }
+                      return null;
+                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                SlideAnimation.fromRight(
+                  delay: const Duration(milliseconds: 200),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    dropdownColor: Colors.white,
+                    style: TextStyle(color: Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: 'Categoria',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.black87,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.category,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    items: _allCategories.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _selectedCategory = value;
+                      }
+                    },
+                    validator: (value) =>
+                        value == null ? 'Selecione uma categoria' : null,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SlideAnimation.fromLeft(
+                  delay: const Duration(milliseconds: 300),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedUnit,
+                    dropdownColor: Colors.white,
+                    style: TextStyle(color: Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: 'Unidade',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.black87,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.straighten,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    items: _allUnits.map((unit) {
+                      return DropdownMenuItem(
+                        value: unit,
+                        child: Text(unit),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _selectedUnit = value;
+                      }
+                    },
+                    validator: (value) =>
+                        value == null ? 'Selecione uma unidade' : null,
+                  ),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(color: theme.colorScheme.primary),
-                ),
-              ),
-              FilledButton(
-                // onPressed só habilita se o formulário for válido
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _saveItem(context);
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                ),
-                child: const Text('Salvar'),
-              ),
-            ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
+          ),
+          PressableCard(
+            onPress: () {
+              if (_formKey.currentState?.validate() ?? false) {
+                _saveItem(context);
+              }
+            },
+            pressedScale: 0.95,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Salvar',
+              style: TextStyle(
+                color: theme.colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // Método _saveItem original (sem alterações)
+  // Método _saveItem melhorado
   Future<void> _saveItem(BuildContext context) async {
-    // A validação já foi feita no onPressed do botão
-    // if (!_formKey.currentState!.validate()) return;
-
-    // Adiciona indicador de loading
-    // showDialog(context: context, builder: (_) => Center(child: CircularProgressIndicator()));
-
+    final theme = Theme.of(context);
     try {
       final newItem = ItemTemplate(
-        name: _nameController.text.trim(), // Usa trim
+        name: _nameController.text.trim(),
         category: _selectedCategory,
-        subcategory: '', // Campo obrigatório no modelo
+        subcategory: '',
         defaultUnit: _selectedUnit,
-        availableUnits: [], // Será preenchido depois
+        availableUnits: [],
       );
 
-      // Salva o item e pega o ID gerado
       final db = await DatabaseHelper.instance.database;
-      // Usa transaction para garantir atomicidade
       await db.transaction((txn) async {
-        final id = await txn.insert('default_items', {
-          'name': newItem.name,
-          'category': newItem.category,
-          'subcategory': newItem.subcategory, // Mantido vazio
-          'defaultUnit': newItem.defaultUnit,
-        }, conflictAlgorithm: ConflictAlgorithm.replace); // Ou ignore/fail
+        final id = await txn.insert(
+            'default_items',
+            {
+              'name': newItem.name,
+              'category': newItem.category,
+              'subcategory': newItem.subcategory,
+              'defaultUnit': newItem.defaultUnit,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
 
-        // Define unidades disponíveis baseado na categoria (mantido do original)
         List<String> units = [];
         switch (_selectedCategory) {
           case 'Bebidas':
@@ -479,47 +717,84 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
             break;
           case 'Higiene':
             units = ['un', 'pct'];
-            break; // 'pct' estava no original?
-          // Adicionar mais casos específicos se necessário
+            break;
           default:
-            units = _allUnits; // Considerar uma lista mais restrita por padrão?
+            units = _allUnits;
         }
 
-        // Insere unidades para o item
         for (var unit in units) {
-          await txn.insert('item_units', {
-            'item_id': id,
-            'unit': unit,
-          }, conflictAlgorithm: ConflictAlgorithm.ignore);
+          await txn.insert(
+              'item_units',
+              {
+                'item_id': id,
+                'unit': unit,
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore);
         }
       });
 
       if (mounted) {
-        Navigator.pop(context); // Fecha o Dialog
-        // Navigator.pop(context); // Fecha o loading indicator se adicionado
+        Navigator.pop(context);
 
-        // Recarrega os itens e atualiza a pesquisa
+        // Inicia animação de celebração
+        setState(() {
+          _showCelebration = true;
+        });
+
+        _animationController.forward(from: 0.0);
+
+        // Esconde celebração após 3 segundos
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _showCelebration = false;
+            });
+          }
+        });
+
+        // Recarrega os itens
         await _loadItems();
-        _filterItems(); // Aplica o filtro atual nos itens atualizados
+        _filterItems();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Produto adicionado com sucesso!')),
+          SnackBar(
+            content: Row(
+              children: [
+                AnimatedCheckmark(
+                  color: Colors.white,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                const Text('Produto adicionado com sucesso!'),
+              ],
+            ),
+            backgroundColor: theme.colorScheme.primary,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Fecha o Dialog
-        // Navigator.pop(context); // Fecha o loading indicator se adicionado
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
+            backgroundColor: theme.colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
       }
     }
   }
 
-  // Método _deleteItem original (sem alterações)
+  // Método _deleteItem melhorado
   Future<void> _deleteItem(ItemTemplate item) async {
-    // Verifica ID nulo (mantido do original)
     if (item.id == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -533,107 +808,188 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: theme.colorScheme.surface,
-            title: Text(
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error.withAlpha((0.1 * 255).toInt()),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.delete,
+                color: theme.colorScheme.error,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
               'Confirmar Exclusão',
-              style: TextStyle(color: theme.colorScheme.onSurface),
+              style: TextStyle(color: Colors.black87),
             ),
-            content: Text(
-              'Deseja excluir o item "${item.name}"?',
-              style: TextStyle(color: theme.colorScheme.onSurface),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Deseja excluir o item:',
+              style: TextStyle(color: Colors.black87),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(color: theme.colorScheme.primary),
+            const SizedBox(height: 16),
+            GlassContainer(
+              blur: 3,
+              opacity: 0.08,
+              borderRadius: 12,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary
+                            .withAlpha((0.1 * 255).toInt()),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _getCategoryIcon(item.category),
+                        color: theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '${item.category} - ${item.defaultUnit}',
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.error,
-                  foregroundColor: theme.colorScheme.onError,
-                ),
-                child: const Text('Excluir'),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Esta ação não pode ser desfeita.',
+              style: TextStyle(
+                color: theme.colorScheme.error,
+                fontSize: 12,
               ),
-            ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
           ),
+          PressableCard(
+            onPress: () => Navigator.pop(context, true),
+            pressedScale: 0.95,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.error,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.delete_outline,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Excluir',
+                  style: TextStyle(
+                    color: theme.colorScheme.onError,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirm == true) {
-      // Adiciona indicador de loading
-      // setState(() => _isLoading = true);
       try {
-        // 1. Excluir do banco usando transaction
         final db = await DatabaseHelper.instance.database;
         await db.transaction((txn) async {
           await txn.delete(
-            'item_units', // Tabela de unidades
+            'item_units',
             where: 'item_id = ?',
             whereArgs: [item.id],
           );
           await txn.delete(
-            'default_items', // Tabela principal
+            'default_items',
             where: 'id = ?',
             whereArgs: [item.id],
           );
         });
-        // O service.removeTemplate pode ser redundante se ele faz o mesmo que acima
-        // await _service.removeTemplate(item.id!);
-
-        // 2. Pequeno delay (mantido do original, mas talvez não necessário)
-        // await Future.delayed(const Duration(milliseconds: 300));
-
-        // 3. Recarregar lista atualizada
-        // Otimização: remover localmente em vez de recarregar tudo
-        // final updatedItems = await _service.getAllTemplates();
 
         if (mounted) {
-          // 4. Atualizar estado localmente (mais eficiente)
           setState(() {
             _allItems.removeWhere((i) => i.id == item.id);
-            _filterItems(); // Reaplica o filtro aos itens atualizados
-            // _isLoading = false; // Desativa loading indicator
+            _filterItems();
           });
 
-          // 5. Feedback visual (mantido do original)
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Produto removido com sucesso!',
-                style: TextStyle(color: theme.colorScheme.onPrimary),
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text('Produto removido com sucesso!'),
+                ],
               ),
               backgroundColor: theme.colorScheme.primary,
-              duration: const Duration(seconds: 2),
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: theme.colorScheme.onPrimary,
-                onPressed: () {},
-              ),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
           );
         }
       } catch (e) {
         if (mounted) {
-          // setState(() => _isLoading = false); // Desativa loading indicator
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Erro ao excluir: $e',
-                style: TextStyle(color: theme.colorScheme.onError),
-              ),
+              content: Text('Erro ao excluir: $e'),
               backgroundColor: theme.colorScheme.error,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
               duration: const Duration(seconds: 4),
-              // Remove ação de tentar novamente se não estava no original
-              // action: SnackBarAction(
-              //   label: 'Tentar Novamente',
-              //   textColor: theme.colorScheme.onError,
-              //   onPressed: () => _deleteItem(item),
-              // ),
             ),
           );
         }
@@ -641,12 +997,13 @@ class _ItemManagementScreenState extends State<ItemManagementScreen> {
     }
   }
 
-  // Método dispose original (sem alterações)
+  // Método dispose com inclusão do controller de animação
   @override
   void dispose() {
-    _searchController.removeListener(_filterItems); // Remove listener
+    _searchController.removeListener(_filterItems);
     _searchController.dispose();
     _nameController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 }
