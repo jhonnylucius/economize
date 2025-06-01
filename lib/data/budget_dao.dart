@@ -22,43 +22,55 @@ class BudgetDAO {
 
     await db.transaction((txn) async {
       // 1. Insere o orçamento básico
-      await txn.insert(tableName, {
-        'id': budget.id,
-        'title': budget.title,
-        'date': budget.date.millisecondsSinceEpoch,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
+      await txn.insert(
+          tableName,
+          {
+            'id': budget.id,
+            'title': budget.title,
+            'date': budget.date.millisecondsSinceEpoch,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace);
 
       // 2. Insere os locais
       for (var location in budget.locations) {
-        await txn.insert(locationsTable, {
-          'id': location.id,
-          'budget_id': budget.id,
-          'name': location.name,
-          'address': location.address,
-          'price_date': location.priceDate.millisecondsSinceEpoch,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            locationsTable,
+            {
+              'id': location.id,
+              'budget_id': budget.id,
+              'name': location.name,
+              'address': location.address,
+              'price_date': location.priceDate.millisecondsSinceEpoch,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 3. Insere os itens
       for (var item in budget.items) {
-        await txn.insert(itemsTable, {
-          'id': item.id,
-          'budget_id': budget.id,
-          'name': item.name,
-          'category': item.category,
-          'unit': item.unit,
-          'quantity': item.quantity,
-          'best_price_location': item.bestPriceLocation,
-          'best_price': item.bestPrice,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            itemsTable,
+            {
+              'id': item.id,
+              'budget_id': budget.id,
+              'name': item.name,
+              'category': item.category,
+              'unit': item.unit,
+              'quantity': item.quantity,
+              'best_price_location': item.bestPriceLocation,
+              'best_price': item.bestPrice,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
 
         // 4. Insere os preços de cada item
         for (var entry in item.prices.entries) {
-          await txn.insert(pricesTable, {
-            'item_id': item.id,
-            'location_id': entry.key,
-            'price': entry.value,
-          }, conflictAlgorithm: ConflictAlgorithm.replace);
+          await txn.insert(
+              pricesTable,
+              {
+                'item_id': item.id,
+                'location_id': entry.key,
+                'price': entry.value,
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace);
         }
       }
 
@@ -70,6 +82,20 @@ class BudgetDAO {
         budget.summary,
       ); // Passa a transação (txn)
     });
+  }
+
+  Future<Budget?> findByCategory(String category) async {
+    final db = await _databaseHelper.database;
+    final result = await db.query(
+      tableName,
+      where: 'category = ?',
+      whereArgs: [category],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return _loadBudgetComplete(db, result.first);
+    }
+    return null;
   }
 
   Future<List<Budget>> findAll() async {
@@ -133,21 +159,20 @@ class BudgetDAO {
       whereArgs: [budgetMap['id']],
     );
 
-    final locationsList =
-        locations
-            .map(
-              (l) => BudgetLocation(
-                id: l['id'] as String,
-                name: l['name'] as String,
-                address: l['address'] as String,
-                priceDate: DateTime.fromMillisecondsSinceEpoch(
-                  l['price_date'] as int,
-                ),
-                budgetId:
-                    budgetMap['id'] as String, // Corrigido: era 'id' hardcoded
-              ),
-            )
-            .toList();
+    final locationsList = locations
+        .map(
+          (l) => BudgetLocation(
+            id: l['id'] as String,
+            name: l['name'] as String,
+            address: l['address'] as String,
+            priceDate: DateTime.fromMillisecondsSinceEpoch(
+              l['price_date'] as int,
+            ),
+            budgetId:
+                budgetMap['id'] as String, // Corrigido: era 'id' hardcoded
+          ),
+        )
+        .toList();
 
     // 2. Carrega itens com seus preços
     final items = await db.query(
@@ -185,15 +210,14 @@ class BudgetDAO {
     );
 
     // Carrega o summary
-    final summary =
-        await _summaryDAO.load(db, budgetMap['id']) ?? // Passa o db
-              BudgetSummary(
-                totalOriginal: 0,
-                totalOptimized: 0,
-                savings: 0,
-                totalByLocation: {},
-              )
-          ..calculateSummary(itemsList);
+    final summary = await _summaryDAO.load(db, budgetMap['id']) ?? // Passa o db
+        BudgetSummary(
+          totalOriginal: 0,
+          totalOptimized: 0,
+          savings: 0,
+          totalByLocation: {},
+        )
+      ..calculateSummary(itemsList);
 
     // 3. Cria o objeto Budget completo
     return Budget(
@@ -270,10 +294,9 @@ class BudgetDAO {
 
   Future<void> cleanOldData(int daysToKeep) async {
     final db = await _databaseHelper.database;
-    final cutoffDate =
-        DateTime.now()
-            .subtract(Duration(days: daysToKeep))
-            .millisecondsSinceEpoch;
+    final cutoffDate = DateTime.now()
+        .subtract(Duration(days: daysToKeep))
+        .millisecondsSinceEpoch;
 
     await db.transaction((txn) async {
       final oldBudgets = await txn.query(
@@ -389,43 +412,56 @@ class BudgetDAO {
 
   Future<void> insertWithTransaction(Transaction txn, Budget budget) async {
     // Usa as constantes definidas no topo da classe
-    await txn.insert(tableName, {
-      'id': budget.id,
-      'title': budget.title,
-      'date': budget.date.millisecondsSinceEpoch,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await txn.insert(
+        tableName,
+        {
+          'id': budget.id,
+          'title': budget.title,
+          'date': budget.date.millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
 
     // Usa locationsTable em vez de 'budget_locations'
     for (var location in budget.locations) {
-      await txn.insert(locationsTable, {
-        'id': location.id,
-        'budget_id': budget.id,
-        'name': location.name,
-        'address': location.address,
-        'price_date': location.priceDate.millisecondsSinceEpoch, // Adicionado
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
+      await txn.insert(
+          locationsTable,
+          {
+            'id': location.id,
+            'budget_id': budget.id,
+            'name': location.name,
+            'address': location.address,
+            'price_date':
+                location.priceDate.millisecondsSinceEpoch, // Adicionado
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
     // Usa itemsTable em vez de 'budget_items'
     for (var item in budget.items) {
-      await txn.insert(itemsTable, {
-        'id': item.id,
-        'budget_id': budget.id,
-        'name': item.name,
-        'category': item.category,
-        'quantity': item.quantity,
-        'unit': item.unit,
-        'best_price': item.bestPrice,
-        'best_price_location': item.bestPriceLocation,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
+      await txn.insert(
+          itemsTable,
+          {
+            'id': item.id,
+            'budget_id': budget.id,
+            'name': item.name,
+            'category': item.category,
+            'quantity': item.quantity,
+            'unit': item.unit,
+            'best_price': item.bestPrice,
+            'best_price_location': item.bestPriceLocation,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace);
 
       // Usa pricesTable em vez de 'prices'
       for (var entry in item.prices.entries) {
-        await txn.insert(pricesTable, {
-          'item_id': item.id,
-          'location_id': entry.key,
-          'price': entry.value,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            pricesTable,
+            {
+              'item_id': item.id,
+              'location_id': entry.key,
+              'price': entry.value,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
       }
     }
 
