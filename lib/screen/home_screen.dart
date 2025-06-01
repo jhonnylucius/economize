@@ -2054,8 +2054,8 @@ class _HomeScreenState extends State<HomeScreen>
                         iconColor: Colors.orange,
                         content:
                             "As barras mostram o andamento dos seus gastos e economias.\n\n"
-                            "• Meta de Economia: quanto você já alcançou da meta de economia (geralmente % da receita)\n\n" // Ajustei o texto levemente
-                            "• Gastos do Orçamento: quanto você já gastou do orçamento planejado (geralmente % da receita)", // Ajustei o texto levemente
+                            "• Meta de Economia: quanto você já alcançou da meta de economia (30% da receita total)\n\n"
+                            "• Gastos do Orçamento: quanto você já gastou do orçamento planejado (70% da receita total)",
                       ),
                     ),
 
