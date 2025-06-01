@@ -4,11 +4,15 @@ import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
-import 'package:economize/data/goal_dao.dart';
+import 'package:economize/data/goal_dao.dart'; // Importante usar o correto
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'dart:math' as math;
+
+import 'package:uuid/uuid.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -26,6 +30,7 @@ class _GoalsScreenState extends State<GoalsScreen>
   late AnimationController _celebrationController;
   bool _showCelebration = false;
   int? _celebratingGoalIndex;
+  final Logger logger = Logger();
 
   @override
   void initState() {
@@ -50,23 +55,29 @@ class _GoalsScreenState extends State<GoalsScreen>
     super.dispose();
   }
 
-  // Método _loadGoals original (sem alterações)
   Future<void> _loadGoals() async {
     setState(() => _isLoading = true);
     try {
       final goals = await _goalsDAO.findAll();
-      // Adiciona verificação 'mounted' que pode estar faltando no original
+
+      // Log para depuração
+      logger.d('Metas carregadas: ${goals.length}');
+      for (var goal in goals) {
+        logger.d(
+            'Meta: ${goal.name}, Progresso: ${goal.currentValue}/${goal.targetValue}');
+      }
+
+      // A linha abaixo é crucial: ela cria uma nova lista de Goal
       if (mounted) {
         setState(() {
-          _goals = goals;
+          _goals = List<Goal>.from(goals); // Cria uma nova lista
+          _isLoading = false;
         });
       }
     } catch (e) {
+      logger.e('Erro ao carregar metas: $e');
       if (mounted) {
         _showError('Erro ao carregar metas: $e');
-      }
-    } finally {
-      if (mounted) {
         setState(() => _isLoading = false);
       }
     }
@@ -92,17 +103,21 @@ class _GoalsScreenState extends State<GoalsScreen>
         actions: [
           SlideAnimation.fromTop(
             child: IconButton(
-              icon: const Icon(Icons.calculate),
-              onPressed: () => Navigator.pushNamed(context, '/calculator'),
+              icon: const Icon(Icons.calculate_outlined),
               tooltip: 'Calculadora de Metas',
+              onPressed: () {
+                Navigator.pushNamed(context, '/goal_calculator');
+              },
             ),
           ),
           SlideAnimation.fromTop(
             delay: const Duration(milliseconds: 100),
             child: IconButton(
               icon: const Icon(Icons.home),
-              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
               tooltip: 'Ir para Home',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/home');
+              },
             ),
           ),
         ],
@@ -202,7 +217,6 @@ class _GoalsScreenState extends State<GoalsScreen>
     );
   }
 
-  // Método _buildEmptyState com o novo botão ADICIONADO
   Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: FadeAnimation(
@@ -279,13 +293,14 @@ class _GoalsScreenState extends State<GoalsScreen>
                       ),
                     ),
                   ),
-                  // Botão adicional para calculadora de metas (ADICIONADO AQUI)
-                  const SizedBox(height: 16), // Espaço entre os botões
+                  // Botão adicional para calculadora de metas
+                  const SizedBox(height: 16),
                   PressableCard(
-                    onPress: () => Navigator.pushNamed(context, '/calculator'),
+                    onPress: () =>
+                        Navigator.pushNamed(context, '/goal_calculator'),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: Colors.amber, // Cor amarela conforme seu snippet
+                      color: Colors.amber,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.amber.withAlpha((0.3 * 255).toInt()),
@@ -303,13 +318,13 @@ class _GoalsScreenState extends State<GoalsScreen>
                         children: [
                           Icon(
                             Icons.calculate,
-                            color: Colors.white, // Ícone branco
+                            color: Colors.white,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Usar calculadora de metas',
                             style: TextStyle(
-                              color: Colors.white, // Texto branco
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -329,16 +344,15 @@ class _GoalsScreenState extends State<GoalsScreen>
   Widget _buildGoalsList(ThemeData theme) {
     return ListView.builder(
       itemCount: _goals.length,
-      padding:
-          const EdgeInsets.fromLTRB(16, 16, 16, 80), // Extra padding for FAB
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemBuilder: (context, index) {
         final goal = _goals[index];
-        final percentComplete = goal.percentComplete.clamp(0.0, 1.0);
-        final isCompleted = percentComplete >= 1.0;
-
         return SlideAnimation.fromRight(
           delay: Duration(milliseconds: 100 * index),
-          child: _buildGoalCard(goal, index, theme),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: _buildGoalCard(goal, index, theme),
+          ),
         );
       },
     );
@@ -363,7 +377,7 @@ class _GoalsScreenState extends State<GoalsScreen>
             ? Colors.green.withAlpha((0.3 * 255).toInt())
             : theme.colorScheme.primary.withAlpha((0.3 * 255).toInt()),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
               // Goal header
@@ -385,64 +399,59 @@ class _GoalsScreenState extends State<GoalsScreen>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    goal.name,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                goal.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              if (isCompleted)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green
+                                        .withAlpha((0.15 * 255).toInt()),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                        size: 16,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Completa',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                if (isCompleted)
-                                  PulseAnimation(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green
-                                            .withAlpha((0.15 * 255).toInt()),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green,
-                                            size: 16,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'Completa',
-                                            style: TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Meta criada ${_formatElapsedDays(daysElapsed)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Meta criada ${_formatElapsedDays(daysElapsed)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -454,67 +463,76 @@ class _GoalsScreenState extends State<GoalsScreen>
                 ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Progress section
+              // LAYOUT MODIFICADO: Progress section with button to the right
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Progress circular indicator
                   CircularPercentIndicator(
                     radius: 50,
                     lineWidth: 10,
                     percent: percentComplete,
-                    center: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedCounter(
-                          begin: 0,
-                          end: (percentComplete * 100).toInt(),
-                          duration: const Duration(seconds: 2),
-                          curve: Curves.easeOutCubic,
-                          formatter: (value) => '$value%',
-                          textStyle: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: progressColor,
-                          ),
-                        ),
-                      ],
+                    center: Text(
+                      '${(percentComplete * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: progressColor,
+                      ),
                     ),
                     progressColor: progressColor,
                     backgroundColor:
                         progressColor.withAlpha((0.15 * 255).toInt()),
                     animation: true,
-                    animationDuration: 2000,
+                    animationDuration: 1500,
                     circularStrokeCap: CircularStrokeCap.round,
                   ),
 
                   const SizedBox(width: 20),
 
-                  // Goal values
+                  // BOTÃO ATUALIZAR (movido para a direita do círculo)
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _buildValueRow(
-                          label: 'Meta',
-                          value: goal.targetValue,
-                          icon: Icons.flag,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildValueRow(
-                          label: 'Economizado',
-                          value: goal.currentValue,
-                          icon: Icons.savings,
-                          color: Colors.green.shade700,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildValueRow(
-                          label: 'Faltam',
-                          value: goal.remainingValue,
-                          icon: Icons.update,
-                          color: Colors.orange.shade700,
+                        // Update Progress Button (faded if complete)
+                        Opacity(
+                          opacity: isCompleted ? 0.5 : 1.0,
+                          child: PressableCard(
+                            onPress: isCompleted
+                                ? null
+                                : () => _updateProgress(goal),
+                            pressedScale: 0.95,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: theme.colorScheme.primary
+                                  .withAlpha((0.1 * 255).toInt()),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.add_circle_outline,
+                                  size: 16,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Atualizar',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -522,46 +540,41 @@ class _GoalsScreenState extends State<GoalsScreen>
                 ],
               ),
 
+              // VALORES MOVIDOS PARA BAIXO DO CÍRCULO
               const SizedBox(height: 16),
 
-              // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Update Progress Button (faded if complete)
-                  Opacity(
-                    opacity: isCompleted ? 0.5 : 1.0,
-                    child: PressableCard(
-                      onPress: isCompleted ? null : () => _updateProgress(goal),
-                      pressedScale: 0.95,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: theme.colorScheme.primary
-                            .withAlpha((0.1 * 255).toInt()),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline,
-                            size: 16,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Atualizar',
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+              // Goal values
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color:
+                      theme.colorScheme.primary.withAlpha((0.05 * 255).toInt()),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _buildValueRow(
+                      label: 'Meta',
+                      value: goal.targetValue,
+                      icon: Icons.flag,
+                      color: theme.colorScheme.primary,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    _buildValueRow(
+                      label: 'Economizado',
+                      value: goal.currentValue,
+                      icon: Icons.savings,
+                      color: Colors.green.shade700,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildValueRow(
+                      label: 'Faltam',
+                      value: goal.remainingValue,
+                      icon: Icons.update,
+                      color: Colors.orange.shade700,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -621,6 +634,9 @@ class _GoalsScreenState extends State<GoalsScreen>
   void _showGoalDetails(Goal goal) {
     final theme = Theme.of(context);
     final percentComplete = goal.percentComplete.clamp(0.0, 1.0);
+    final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final daysElapsed =
+        DateTime.now().difference(goal.createdAt ?? DateTime.now()).inDays;
 
     showModalBottomSheet(
       context: context,
@@ -699,7 +715,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                                 ),
                               ),
                               Text(
-                                'R\$${goal.currentValue.toStringAsFixed(2)} / R\$${goal.targetValue.toStringAsFixed(2)}',
+                                '${formatter.format(goal.currentValue)} / ${formatter.format(goal.targetValue)}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -728,7 +744,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildDetailCard(
                         title: 'Faltam',
-                        value: 'R\$${goal.remainingValue.toStringAsFixed(2)}',
+                        value: formatter.format(goal.remainingValue),
                         icon: Icons.timeline,
                         color: Colors.orange,
                         theme: theme,
@@ -790,14 +806,30 @@ class _GoalsScreenState extends State<GoalsScreen>
                             child: _buildActionButton(
                               label: 'Atualizar',
                               icon: Icons.update,
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _updateProgress(goal);
-                              },
+                              onPressed: percentComplete >= 1.0
+                                  ? null
+                                  : () {
+                                      Navigator.pop(context);
+                                      _updateProgress(goal);
+                                    },
                               color: Colors.green,
+                              isDisabled: percentComplete >= 1.0,
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ScaleAnimation(
+                      delay: const Duration(milliseconds: 800),
+                      child: _buildActionButton(
+                        label: 'Excluir Meta',
+                        icon: Icons.delete,
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _deleteGoal(goal);
+                        },
+                        color: theme.colorScheme.error,
                       ),
                     ),
                   ],
@@ -869,68 +901,58 @@ class _GoalsScreenState extends State<GoalsScreen>
   Widget _buildActionButton({
     required String label,
     required IconData icon,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required Color color,
+    bool isDisabled = false,
   }) {
-    return PressableCard(
-      onPress: onPressed,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: color,
-        boxShadow: [
-          BoxShadow(
-            color: color.withAlpha((0.3 * 255).toInt()),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: PressableCard(
+        onPress: onPressed,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: color,
+          boxShadow: [
+            BoxShadow(
+              color: color.withAlpha((0.3 * 255).toInt()),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  String formatElapsedDays(int days) {
-    if (days == 0) return 'hoje';
-    if (days == 1) return 'há 1 dia';
-    if (days < 30) return 'há $days dias';
-
-    final months = (days / 30).floor();
-    if (months == 1) return 'há 1 mês';
-    if (months < 12) return 'há $months meses';
-
-    final years = (months / 12).floor();
-    if (years == 1) return 'há 1 ano';
-    return 'há $years anos';
-  }
-
   String _formatDate(DateTime date) {
-    // Returns date in dd/MM/yyyy format
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   void _showGoalOptions(Goal goal, int index) {
     final theme = Theme.of(context);
+    final isCompleted = goal.percentComplete >= 1.0;
 
     showModalBottomSheet(
       context: context,
@@ -948,25 +970,26 @@ class _GoalsScreenState extends State<GoalsScreen>
               child: Text(
                 goal.name,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            SlideAnimation.fromBottom(
-              delay: const Duration(milliseconds: 100),
-              child: _buildOptionItem(
-                label: 'Atualizar progresso',
-                icon: Icons.update,
-                color: Colors.green,
-                onTap: () {
-                  Navigator.pop(context);
-                  _updateProgress(goal);
-                },
+            if (!isCompleted)
+              SlideAnimation.fromBottom(
+                delay: const Duration(milliseconds: 100),
+                child: _buildOptionItem(
+                  label: 'Atualizars progresso',
+                  icon: Icons.update,
+                  color: Colors.green,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _updateProgress(goal);
+                  },
+                ),
               ),
-            ),
             SlideAnimation.fromBottom(
               delay: const Duration(milliseconds: 150),
               child: _buildOptionItem(
@@ -979,9 +1002,21 @@ class _GoalsScreenState extends State<GoalsScreen>
                 },
               ),
             ),
-            if (goal.percentComplete >= 1.0)
+            SlideAnimation.fromBottom(
+              delay: const Duration(milliseconds: 200),
+              child: _buildOptionItem(
+                label: 'Ver detalhes',
+                icon: Icons.visibility_outlined,
+                color: theme.colorScheme.secondary,
+                onTap: () {
+                  Navigator.pop(context);
+                  _showGoalDetails(goal);
+                },
+              ),
+            ),
+            if (isCompleted)
               SlideAnimation.fromBottom(
-                delay: const Duration(milliseconds: 200),
+                delay: const Duration(milliseconds: 250),
                 child: _buildOptionItem(
                   label: 'Comemorar conquista',
                   icon: Icons.celebration,
@@ -993,7 +1028,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                 ),
               ),
             SlideAnimation.fromBottom(
-              delay: const Duration(milliseconds: 250),
+              delay: const Duration(milliseconds: 300),
               child: _buildOptionItem(
                 label: 'Excluir meta',
                 icon: Icons.delete_outline,
@@ -1057,7 +1092,8 @@ class _GoalsScreenState extends State<GoalsScreen>
     });
   }
 
-  // Método _addNewGoal com diálogo melhorado
+  // MÉTODOS CORRIGIDOS PARA FUNCIONAREM CORRETAMENTE
+
   void _addNewGoal() async {
     final result = await showDialog<Goal>(
       context: context,
@@ -1066,20 +1102,37 @@ class _GoalsScreenState extends State<GoalsScreen>
 
     if (result != null) {
       try {
-        await _goalsDAO.save(result);
+        // Verificar o ID antes de salvar
+        logger.d('ID da nova meta: ${result.id}');
+        logger.d('Nome da meta: ${result.name}');
+        logger.d('Valor alvo: ${result.targetValue}');
+
+        // Sempre garantir que há um ID válido
+        final goalToSave = (result.id == null || result.id!.isEmpty)
+            ? Goal(
+                id: const Uuid().v4(),
+                name: result.name,
+                targetValue: result.targetValue,
+                currentValue: result.currentValue,
+                createdAt: result.createdAt,
+              )
+            : result;
+
+        await _goalsDAO.save(goalToSave);
         await _loadGoals();
+
         if (mounted) {
           _showSuccess('Meta adicionada com sucesso!');
         }
       } catch (e) {
         if (mounted) {
           _showError('Erro ao adicionar meta: $e');
+          logger.e('Erro detalhado: $e'); // Log para depuração
         }
       }
     }
   }
 
-  // Método _editGoal original (sem alterações)
   void _editGoal(Goal goal) async {
     final result = await showDialog<Goal>(
       context: context,
@@ -1088,8 +1141,18 @@ class _GoalsScreenState extends State<GoalsScreen>
 
     if (result != null) {
       try {
-        await _goalsDAO.update(result);
+        // Mantenha o ID original para a meta editada
+        final updatedGoal = Goal(
+          id: goal.id,
+          name: result.name,
+          targetValue: result.targetValue,
+          currentValue: result.currentValue,
+          createdAt: result.createdAt,
+        );
+
+        await _goalsDAO.update(updatedGoal);
         await _loadGoals();
+
         if (mounted) {
           _showSuccess('Meta atualizada com sucesso!');
         }
@@ -1101,8 +1164,12 @@ class _GoalsScreenState extends State<GoalsScreen>
     }
   }
 
-  // Improved _updateProgress with modern dialog
   void _updateProgress(Goal goal) async {
+    final goalIndex = _goals.indexWhere((g) => g.id == goal.id);
+    if (goalIndex == -1) return;
+
+    logger.d('Atualizando meta com ID: ${goal.id}');
+
     final result = await showDialog<double>(
       context: context,
       builder: (context) => _UpdateProgressDialog(
@@ -1114,31 +1181,45 @@ class _GoalsScreenState extends State<GoalsScreen>
     if (result != null) {
       try {
         final oldValue = goal.currentValue;
-        goal.currentValue = result;
-        await _goalsDAO.update(goal);
+
+        // Criar uma nova instância de meta com o valor atualizado
+        final updatedGoal = Goal(
+          id: goal.id,
+          name: goal.name,
+          targetValue: goal.targetValue,
+          currentValue: result,
+          createdAt: goal.createdAt,
+        );
+
+        // Atualizar no banco de dados
+        await _goalsDAO.update(updatedGoal);
+
+        // Atualizar na lista local
+        setState(() {
+          _goals[goalIndex] = updatedGoal;
+        });
+
+        // Log para depuração
+        logger.d(
+            'Meta atualizada: ${updatedGoal.name}, Progresso: ${updatedGoal.currentValue}/${updatedGoal.targetValue}');
+        logger.d('Percentual: ${updatedGoal.percentComplete}');
+
+        // Para garantir sincronização com o banco de dados
         await _loadGoals();
 
-        if (mounted) {
-          // Celebrate if the goal is completed with this update
-          if (oldValue < goal.targetValue && result >= goal.targetValue) {
-            // Find the index of the updated goal
-            final goalIndex = _goals.indexWhere((g) => g.id == goal.id);
-            if (goalIndex >= 0) {
-              _celebrateGoal(goalIndex);
-            }
-          }
+        // Celebrar a conclusão da meta se foi atingida agora
+        if (oldValue < goal.targetValue && result >= goal.targetValue) {
+          _celebrateGoal(goalIndex);
+        }
 
-          _showSuccess('Progresso atualizado com sucesso!');
-        }
+        _showSuccess('Progresso atualizado com sucesso!');
       } catch (e) {
-        if (mounted) {
-          _showError('Erro ao atualizar progresso: $e');
-        }
+        logger.e('Erro ao atualizar progresso: $e');
+        _showError('Erro ao atualizar progresso: $e');
       }
     }
   }
 
-  // Método _deleteGoal with modern confirmation dialog
   void _deleteGoal(Goal goal) async {
     final theme = Theme.of(context);
 
@@ -1220,10 +1301,12 @@ class _GoalsScreenState extends State<GoalsScreen>
       ),
     );
 
-    if (confirm == true) {
+    if (confirm == true && goal.id != null) {
+      // Verificar se há um ID
       try {
         await _goalsDAO.delete(goal.id!);
         await _loadGoals();
+
         if (mounted) {
           _showSuccess('Meta excluída com sucesso!');
         }
@@ -1243,11 +1326,7 @@ class _GoalsScreenState extends State<GoalsScreen>
       SnackBar(
         content: Row(
           children: [
-            AnimatedCheckmark(
-              color: Colors.white,
-              size: 24,
-              duration: const Duration(milliseconds: 500),
-            ),
+            const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 12),
             Text(message),
           ],
@@ -1286,7 +1365,6 @@ class _GoalsScreenState extends State<GoalsScreen>
   }
 }
 
-// Background painter for goals screen
 class _GoalsBackgroundPainter extends CustomPainter {
   final Color color;
   final double progress;
@@ -1486,117 +1564,6 @@ class _SpinKitPainter extends CustomPainter {
   }
 }
 
-// Animated checkmark for snackbar
-class AnimatedCheckmark extends StatefulWidget {
-  final Color color;
-  final double size;
-  final Duration duration;
-
-  const AnimatedCheckmark({
-    super.key,
-    this.color = Colors.white,
-    this.size = 24,
-    this.duration = const Duration(milliseconds: 500),
-  });
-
-  @override
-  State<AnimatedCheckmark> createState() => _AnimatedCheckmarkState();
-}
-
-class _AnimatedCheckmarkState extends State<AnimatedCheckmark>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
-    _animation =
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutQuint);
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.size,
-      height: widget.size,
-      child: CustomPaint(
-        painter: _CheckmarkPainter(
-          animation: _animation,
-          color: widget.color,
-        ),
-      ),
-    );
-  }
-}
-
-class _CheckmarkPainter extends CustomPainter {
-  final Animation<double> animation;
-  final Color color;
-
-  _CheckmarkPainter({required this.animation, required this.color})
-      : super(repaint: animation);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 2.0;
-
-    final path = Path();
-    // Start of the checkmark
-    final double startX = size.width * 0.15;
-    final double startY = size.height * 0.5;
-
-    // Middle point of the checkmark
-    final double midX = size.width * 0.4;
-    final double midY = size.height * 0.75;
-
-    // End point of the checkmark
-    final double endX = size.width * 0.85;
-    final double endY = size.height * 0.25;
-
-    // Animate the path drawing
-    if (animation.value < 0.5) {
-      // Draw the first part
-      final currentMidX = startX + (midX - startX) * (animation.value / 0.5);
-      final currentMidY = startY + (midY - startY) * (animation.value / 0.5);
-      path.moveTo(startX, startY);
-      path.lineTo(currentMidX, currentMidY);
-    } else {
-      // Draw the first part fully
-      path.moveTo(startX, startY);
-      path.lineTo(midX, midY);
-      // Draw the second part
-      final currentEndX =
-          midX + (endX - midX) * ((animation.value - 0.5) / 0.5);
-      final currentEndY =
-          midY + (endY - midY) * ((animation.value - 0.5) / 0.5);
-      path.lineTo(currentEndX, currentEndY);
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_CheckmarkPainter oldDelegate) {
-    return oldDelegate.animation.value != animation.value;
-  }
-}
-
 // Enhanced version of the GoalDialog
 class _GoalDialog extends StatefulWidget {
   final Goal? goal;
@@ -1619,6 +1586,13 @@ class _GoalDialogState extends State<_GoalDialog> {
       _nameController.text = widget.goal!.name;
       _valueController.text = widget.goal!.targetValue.toString();
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _valueController.dispose();
+    super.dispose();
   }
 
   @override
@@ -1700,7 +1674,7 @@ class _GoalDialogState extends State<_GoalDialog> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Valor é obrigatório';
                 }
-                final number = double.tryParse(value);
+                final number = double.tryParse(value.replaceAll(',', '.'));
                 if (number == null || number <= 0) {
                   return 'Digite um valor válido maior que zero';
                 }
@@ -1755,7 +1729,7 @@ class _GoalDialogState extends State<_GoalDialog> {
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       final name = _nameController.text;
-      final value = double.tryParse(_valueController.text) ?? 0;
+      final value = double.parse(_valueController.text.replaceAll(',', '.'));
 
       final goal = Goal(
         id: widget.goal?.id,
@@ -1807,7 +1781,8 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
   }
 
   void _updateSliderFromText() {
-    final value = double.tryParse(_valueController.text) ?? 0.0;
+    final value =
+        double.tryParse(_valueController.text.replaceAll(',', '.')) ?? 0.0;
     setState(() {
       _sliderValue = value.clamp(0.0, widget.targetValue);
     });
@@ -1820,7 +1795,6 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final percent = (widget.currentValue / widget.targetValue).clamp(0.0, 1.0);
     final newPercent = (_sliderValue / widget.targetValue).clamp(0.0, 1.0);
 
     return AlertDialog(
@@ -1837,6 +1811,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
             child: const Icon(
               Icons.update,
               color: Colors.green,
+              size: 18, // Reduzir o tamanho do ícone
             ),
           ),
           const SizedBox(width: 12),
@@ -1845,6 +1820,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
             style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
+              fontSize: 16, // Aumentar o tamanho do texto
             ),
           ),
         ],
@@ -1943,9 +1919,12 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Valor é obrigatório';
                 }
-                final number = double.tryParse(value);
+                final number = double.tryParse(value.replaceAll(',', '.'));
                 if (number == null || number < 0) {
                   return 'Digite um valor válido maior ou igual a zero';
+                }
+                if (number > widget.targetValue) {
+                  return 'O valor não pode exceder o valor da meta';
                 }
                 return null;
               },
@@ -1997,7 +1976,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      final value = double.tryParse(_valueController.text) ?? 0;
+      final value = double.parse(_valueController.text.replaceAll(',', '.'));
       Navigator.pop(context, value);
     }
   }
