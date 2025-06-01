@@ -44,6 +44,27 @@ class ThemeManager with ChangeNotifier {
     }
   }
 
+  Color getCurrentPrimaryColor() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return const Color.fromARGB(255, 0, 0, 0); // Cor primária do tema claro
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(
+            255, 43, 3, 138); // Roxo como cor primária do tema escuro
+    }
+  }
+
+// Retorna a cor secundária do tema atual
+  Color getCurrentSecondaryColor() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return const Color.fromARGB(
+            255, 43, 3, 138); // Cor secundária do tema claro
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 81, 45, 168); // Tom mais claro do roxo
+    }
+  }
+
   Color getHeaderTextColor() {
     switch (currentThemeType) {
       case ThemeType.light:
