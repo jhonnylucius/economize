@@ -3,20 +3,21 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 class Goal {
-  String id;
+  String? id; // Alterado para poder ser nulo em casos específicos
   String name;
   double targetValue;
   double currentValue;
-  DateTime createdAt;
+  DateTime? createdAt; // Alterado para poder ser nulo
 
   Goal({
-    String? id,
+    this.id,
     required this.name,
     required this.targetValue,
     this.currentValue = 0,
-    DateTime? createdAt,
-  }) : id = id ?? const Uuid().v4(),
-       createdAt = createdAt ?? DateTime.now();
+    this.createdAt,
+  }) {
+    createdAt = createdAt ?? DateTime.now();
+  }
 
   double get percentComplete => currentValue / targetValue;
   double get remainingValue => targetValue - currentValue;
@@ -28,7 +29,7 @@ class Goal {
       'name': name,
       'target_value': targetValue,
       'current_value': currentValue,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt!.toIso8601String(),
     };
   }
 
@@ -62,6 +63,22 @@ class GoalsDAO {
     final db = await DatabaseHelper.instance.database;
     final maps = await db.query(tableName);
     return maps.map((map) => Goal.fromMap(map)).toList();
+  }
+
+  // Novo método findById para buscar uma meta específica pelo ID
+  Future<Goal?> findById(String id) async {
+    final db = await DatabaseHelper.instance.database;
+    final maps = await db.query(
+      tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    return Goal.fromMap(maps.first);
   }
 
   Future<void> save(Goal goal) async {
