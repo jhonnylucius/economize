@@ -34,7 +34,7 @@ class DatabaseHelper {
         logger.d('Banco já existe, abrindo...');
         return await openDatabase(
           path,
-          version: 12,
+          version: 13, // Atualizamos de 12 para 13
           onUpgrade: (db, oldVersion, newVersion) async {
             logger.d('Atualizando banco de $oldVersion para $newVersion');
             await _onUpgrade(db, oldVersion, newVersion);
@@ -46,7 +46,7 @@ class DatabaseHelper {
       logger.d('Criando novo banco...');
       return await openDatabase(
         path,
-        version: 12,
+        version: 13, // Atualizamos de 12 para 13
         onCreate: (db, version) async {
           logger.d('Criando banco de dados pela primeira vez');
           await _createDB(db, version);
@@ -149,13 +149,17 @@ class DatabaseHelper {
         'CREATE INDEX IF NOT EXISTS idx_price_history ON price_history(item_id, location_id, date)',
       );
 
+      // Tabela costs atualizada com os novos campos
       await db.execute('''
         CREATE TABLE IF NOT EXISTS costs(
           id TEXT PRIMARY KEY,
           data TEXT NOT NULL,
           preco REAL NOT NULL,
           descricaoDaDespesa TEXT,
-          tipoDespesa TEXT NOT NULL
+          tipoDespesa TEXT NOT NULL,
+          recorrente INTEGER DEFAULT 0,
+          pago INTEGER DEFAULT 0,
+          category TEXT
         )
       ''');
 
@@ -230,7 +234,71 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     try {
+      logger.d(
+          'Iniciando upgrade do banco de dados de $oldVersion para $newVersion');
+
+      // Migração específica da versão 12 para 13
+      if (oldVersion < 13) {
+        logger.d('Aplicando migrações para versão 13');
+
+        // Verificação e adição da coluna recorrente
+        try {
+          var tableInfo = await db.rawQuery("PRAGMA table_info(costs)");
+          bool recorrenteExists =
+              tableInfo.any((column) => column['name'] == 'recorrente');
+
+          if (!recorrenteExists) {
+            logger.d('Adicionando coluna recorrente à tabela costs');
+            await db.execute(
+                'ALTER TABLE costs ADD COLUMN recorrente INTEGER DEFAULT 0');
+          }
+        } catch (e) {
+          logger.e('Erro ao adicionar coluna recorrente: $e');
+          // Continua mesmo com erro
+        }
+
+        // Verificação e adição da coluna pago
+        try {
+          var tableInfo = await db.rawQuery("PRAGMA table_info(costs)");
+          bool pagoExists = tableInfo.any((column) => column['name'] == 'pago');
+
+          if (!pagoExists) {
+            logger.d('Adicionando coluna pago à tabela costs');
+            await db
+                .execute('ALTER TABLE costs ADD COLUMN pago INTEGER DEFAULT 0');
+          }
+        } catch (e) {
+          logger.e('Erro ao adicionar coluna pago: $e');
+          // Continua mesmo com erro
+        }
+
+        // Verificação e adição da coluna category
+        try {
+          var tableInfo = await db.rawQuery("PRAGMA table_info(costs)");
+          bool categoryExists =
+              tableInfo.any((column) => column['name'] == 'category');
+
+          if (!categoryExists) {
+            logger.d('Adicionando coluna category à tabela costs');
+            await db.execute('ALTER TABLE costs ADD COLUMN category TEXT');
+          }
+
+          // Atualizar valores existentes (categoria baseada no tipoDespesa)
+          logger.d('Atualizando valores existentes para category');
+          await db.execute(
+              'UPDATE costs SET category = tipoDespesa WHERE category IS NULL');
+        } catch (e) {
+          logger.e('Erro ao adicionar coluna category: $e');
+          // Continua mesmo com erro
+        }
+
+        logger.d('Migração para versão 13 concluída com sucesso');
+      }
+
+      // Migrações da versão anterior
       if (oldVersion < 12) {
+        logger.d('Aplicando migrações anteriores à versão 12');
+
         // 1. Backup dos dados existentes com segurança
         Map<String, List<Map<String, dynamic>>> backupData = {};
 
@@ -312,11 +380,16 @@ class DatabaseHelper {
           ]) {
             if (backupData[table] != null) {
               for (var item in backupData[table]!) {
-                await db.insert(
-                  table,
-                  item,
-                  conflictAlgorithm: ConflictAlgorithm.replace,
-                );
+                try {
+                  await db.insert(
+                    table,
+                    item,
+                    conflictAlgorithm: ConflictAlgorithm.replace,
+                  );
+                } catch (e) {
+                  logger.w('Erro ao restaurar item na tabela $table: $e');
+                  // Continua mesmo com erro
+                }
               }
             }
           }
@@ -325,6 +398,7 @@ class DatabaseHelper {
           // Continua mesmo com erro para garantir que o banco fique utilizável
         }
       }
+
       logger.d('Atualização do banco concluída com sucesso');
     } catch (e, stack) {
       logger.e('Erro durante upgrade:', error: e, stackTrace: stack);
