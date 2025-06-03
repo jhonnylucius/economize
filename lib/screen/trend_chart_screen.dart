@@ -381,36 +381,42 @@ class _TrendChartScreenState extends State<TrendChartScreen>
 
   // Novo método para navegar de volta com transição suave e restaurar orientação (Adicionado)
   void _navigateBackSafely() {
-    // Primeiro mostramos um overlay para cobrir a transição
+    // Primeiro alteramos a orientação ANTES de qualquer navegação
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+
+    // Mostramos um overlay para cobrir a transição
     showDialog(
       context: context,
-      barrierDismissible: false, // Não permite fechar clicando fora
-      barrierColor: Colors.black, // Fundo preto
+      barrierDismissible: false,
+      barrierColor: Colors.black,
       builder: (dialogContext) => PopScope(
-        canPop:
-            false, // Impedir que o diálogo seja fechado pelo botão voltar físico/gesture
+        canPop: false,
         child: Center(
           child: CircularProgressIndicator(
-            // Indicador de carregamento
             valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary), // Cor primária do tema
+                Theme.of(context).colorScheme.primary),
           ),
         ),
       ),
     );
 
-    // Aguarde um momento para garantir que o diálogo seja exibido
-    Future.delayed(const Duration(milliseconds: 100), () {
+    // Aumentamos o delay para dar tempo suficiente ao dispositivo para mudar de orientação
+    // e para o layout se reajustar adequadamente
+    Future.delayed(const Duration(milliseconds: 600), () {
       // Navegue de volta para a tela anterior
-      Navigator.of(context).pop(); // Fecha o diálogo
+      if (mounted) {
+        Navigator.of(context).pop(); // Fecha o diálogo
+      }
 
-      // Restaura orientações apenas após navegação ser concluída
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]);
-
-      // Voltar para a tela anterior
-      Navigator.of(context).pop();
+      // Adicione um pequeno delay entre fechar o diálogo e navegar de volta
+      Future.delayed(const Duration(milliseconds: 100), () {
+        // Voltar para a tela anterior
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
     });
   }
 
