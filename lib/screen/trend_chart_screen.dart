@@ -65,6 +65,8 @@ class _TrendChartScreenState extends State<TrendChartScreen>
   // Estado de orientação
   bool isLandscape = true;
 
+  bool _isExiting = false;
+
   @override
   void initState() {
     super.initState();
@@ -101,8 +103,12 @@ class _TrendChartScreenState extends State<TrendChartScreen>
 
   @override
   void dispose() {
-    // Não restaurar orientações aqui! (Conforme solicitado)
-    // O restauro será feito pelo método _navigateBackSafely.
+    // Restaurar orientação portrait apenas se não estiver saindo
+    if (!_isExiting) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+    }
     _chartAnimationController.dispose();
     _highlightController.dispose();
     super.dispose();
@@ -379,8 +385,10 @@ class _TrendChartScreenState extends State<TrendChartScreen>
     });
   }
 
-  // Novo método para navegar de volta com transição suave e restaurar orientação (Adicionado)
   void _navigateBackSafely() {
+    if (_isExiting) return;
+    _isExiting = true;
+
     // Primeiro alteramos a orientação ANTES de qualquer navegação
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -403,20 +411,11 @@ class _TrendChartScreenState extends State<TrendChartScreen>
     );
 
     // Aumentamos o delay para dar tempo suficiente ao dispositivo para mudar de orientação
-    // e para o layout se reajustar adequadamente
-    Future.delayed(const Duration(milliseconds: 600), () {
-      // Navegue de volta para a tela anterior
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         Navigator.of(context).pop(); // Fecha o diálogo
+        Navigator.of(context).pop(); // Volta para a tela anterior
       }
-
-      // Adicione um pequeno delay entre fechar o diálogo e navegar de volta
-      Future.delayed(const Duration(milliseconds: 100), () {
-        // Voltar para a tela anterior
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      });
     });
   }
 
@@ -430,10 +429,10 @@ class _TrendChartScreenState extends State<TrendChartScreen>
     isLandscape = screenSize.width > screenSize.height;
 
     return PopScope(
-      // Envolve o Scaffold com WillPopScope (Adicionado)
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          _navigateBackSafely(); // Chama o método personalizado ao tentar voltar
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _navigateBackSafely();
         }
       },
       child: Scaffold(
