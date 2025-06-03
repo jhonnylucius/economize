@@ -12,6 +12,7 @@ import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/theme_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
@@ -122,6 +123,10 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    // Garantir orientação portrait ao iniciar/inicializar
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
 
     // Inicializar o serviço de notificações (Adicionado)
     _notificationService.initialize();
