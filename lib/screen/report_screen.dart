@@ -31,6 +31,9 @@ class _ReportScreenState extends State<ReportScreen>
   Map<String, List<String>> _availableTypes = {'receitas': [], 'despesas': []};
   late AnimationController _filterAnimationController;
   bool _isFiltering = false;
+  // chaves para uso no tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -204,10 +207,15 @@ class _ReportScreenState extends State<ReportScreen>
         SlideAnimation.fromTop(
           delay: const Duration(milliseconds: 200),
           child: IconButton(
-            icon: const Icon(Icons.home, color: Colors.white),
-            onPressed: () =>
-                Navigator.of(context).pushReplacementNamed('/home'),
-            tooltip: 'Ir para Home',
+            key: _helpButtonKey, // Chave para tutorial
+            tooltip: 'Ajuda', // Texto do tooltip
+            icon: const Icon(
+              Icons.help_outline, // Ícone de ajuda
+              color: Colors.white,
+            ),
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _helpKey
+            },
           ),
         ),
         const SizedBox(width: 8),
