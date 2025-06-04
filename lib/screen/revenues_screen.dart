@@ -33,6 +33,9 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   DateTime? _startDate;
   DateTime? _endDate;
   late AnimationController _animationController;
+  // chaves para tutorial
+  final GlobalKey _backKey = GlobalKey();
+  final GlobalKey _helpKey = GlobalKey();
 
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
@@ -190,13 +193,15 @@ class _RevenuesScreenState extends State<RevenuesScreen>
         SlideAnimation.fromTop(
           delay: const Duration(milliseconds: 200),
           child: IconButton(
-            tooltip: "Voltar para a tela inicial",
+            key: _helpKey, // Chave para tutorial
+            tooltip: 'Ajuda', // Texto do tooltip
             icon: const Icon(
-              Icons.home,
-              color: Colors.white, // Garante que o ícone seja branco
+              Icons.help_outline, // Ícone de ajuda
+              color: Colors.white,
             ),
-            onPressed: () =>
-                Navigator.of(context).pushReplacementNamed('/home'),
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _helpKey
+            },
           ),
         ),
         const SizedBox(width: 8),
