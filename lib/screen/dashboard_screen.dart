@@ -37,6 +37,9 @@ class DashBoardScreenState extends State<DashBoardScreen>
   bool _showSuccessMessage = false;
   bool _showCharts = false;
   bool _pulseInfo = false;
+  // chaves para tutorial
+  final GlobalKey _backKey = GlobalKey();
+  final GlobalKey _helpKey = GlobalKey();
 
   // Controladores de animação
   late AnimationController _chartAnimationController;
@@ -440,12 +443,17 @@ class DashBoardScreenState extends State<DashBoardScreen>
           ),
           SlideAnimation.fromRight(
             distance: 0.3,
-            duration: const Duration(milliseconds: 600),
+            duration: const Duration(milliseconds: 200),
             child: IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-              tooltip: 'Ir para Home',
-              color: themeManager.getDashboardHeaderIconColor(),
+              key: _helpKey, // Chave para tutorial
+              tooltip: 'Ajuda', // Texto do tooltip
+              icon: const Icon(
+                Icons.help_outline, // Ícone de ajuda
+                color: Colors.white,
+              ),
+              onPressed: () {
+                // TODO: disparar tutorial interativo usando _helpKey
+              },
             ),
           ),
         ],
