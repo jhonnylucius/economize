@@ -22,6 +22,9 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
   bool _showResult = false;
   late AnimationController _celebrationController;
   bool _showCelebration = false;
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   // Cor roxa para elementos que manteremos roxos
   final Color _primaryPurple = const Color(0xFF6200EE);
@@ -73,22 +76,38 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
     Theme.of(context);
 
     return Scaffold(
-      // Definindo o fundo como SEMPRE branco, ignorando o tema
       backgroundColor: Colors.white,
       appBar: AppBar(
+        // seta de voltar com GlobalKey
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context),
+        ),
         title: SlideAnimation.fromTop(
           child: const Text(
             'Calculadora de Metas',
             style: TextStyle(
-              color: Colors.white, // Texto branco na AppBar
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        elevation: 0,
-        // Mantemos a AppBar roxa
         backgroundColor: _primaryPurple,
-        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          // ícone de ajuda para futuro tutorial
+          IconButton(
+            key: _helpButtonKey,
+            icon: const Icon(Icons.help_outline),
+            color: Colors.white,
+            tooltip: 'Ajuda',
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
