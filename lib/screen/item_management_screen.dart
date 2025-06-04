@@ -35,6 +35,9 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
   bool _isLoading = true;
   bool _showCelebration = false;
   late AnimationController _animationController;
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   // Lista completa de categorias (mantida do original)
   final List<String> _allCategories = [
@@ -208,8 +211,15 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
           SlideAnimation.fromTop(
             delay: const Duration(milliseconds: 200),
             child: IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              key: _helpButtonKey, // Chave para tutorial
+              tooltip: 'Ajuda', // Texto do tooltip
+              icon: const Icon(
+                Icons.help_outline, // Ícone de ajuda
+                color: Colors.white,
+              ),
+              onPressed: () {
+                // TODO: disparar tutorial interativo usando _helpKey
+              },
             ),
           ),
         ],
