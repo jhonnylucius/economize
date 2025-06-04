@@ -24,6 +24,9 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   bool _isLoading = false;
   List<Budget>? _budgets;
   String? _error;
+  // chaves para uso no tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -76,6 +79,13 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // seta de voltar visível e com GlobalKey
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: themeManager.getBudgetListHeaderTextColor(),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Meus Orçamentos',
           style: TextStyle(
@@ -92,9 +102,12 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
             color: themeManager.getBudgetListHeaderTextColor(),
           ),
           IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            key: _helpButtonKey,
+            icon: const Icon(Icons.help_outline),
             color: themeManager.getBudgetListHeaderTextColor(),
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando as chaves
+            },
           ),
         ],
       ),
