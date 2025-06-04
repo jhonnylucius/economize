@@ -17,6 +17,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 // Importar o serviço de notificações e o modelo de notificação (Adicionado)
 
 class HomeScreen extends StatefulWidget {
@@ -28,6 +30,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  final ScrollController _gridController = ScrollController();
+  static const String _lastTipShownKey = 'last_tip_shown_date';
   // Returns the route for each functionality index
   String _getRouteForIndex(int index) {
     switch (index) {
@@ -143,18 +147,51 @@ class _HomeScreenState extends State<HomeScreen>
 
     _controller.forward();
 
-    // Mostrar o painel flutuante após um delay.withAlpha((0.01 * 255).round())
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
-        _showFloatingPanel.value = true;
-      }
-    });
-
-    // Definir a saudação baseada na hora atual
+    _checkIfTipShouldBeShown();
     _updateGreeting();
 
     loadPreviousBalance();
     _loadFinancialData();
+  }
+
+  Future<void> _checkIfTipShouldBeShown() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? lastShownDate = prefs.getString(_lastTipShownKey);
+
+      // Obtém a data atual no formato YYYY-MM-DD
+      final today = DateTime.now().toString().split(' ')[0];
+
+      if (lastShownDate != today) {
+        // Se a data for diferente ou não existir, mostrar a dica
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (mounted) {
+              _showFloatingPanel.value = true;
+              // Salvar a data atual
+              prefs.setString(_lastTipShownKey, today);
+            }
+          });
+        }
+      } else {
+        // Já mostrou hoje, não mostrar novamente
+        _showFloatingPanel.value = false;
+      }
+    } catch (e) {
+      debugPrint('Erro ao verificar data da última dica: $e');
+      // Em caso de erro, não mostrar a dica
+      _showFloatingPanel.value = false;
+    }
+  }
+
+  void scrollToTop() {
+    if (_gridController.hasClients) {
+      _gridController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _updateGreeting() {
@@ -273,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen>
     _scrollProgress.dispose();
     _showFloatingPanel.dispose();
     _controller.dispose();
+    _gridController.dispose();
     // Não dispose _notificationService aqui se ele for um singleton global
     // ou gerenciado por Provider ou GetIt. Se ele for local a este widget, dispose.
     // Assumindo que é um singleton ou gerenciado globalmente.
@@ -827,6 +865,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // Abas de categorias
+  // Abas de categorias
   Widget _buildCategoryTabs(ThemeData theme, ThemeManager themeManager) {
     final bool isDark = themeManager.currentThemeType != ThemeType.light;
 
@@ -842,11 +881,18 @@ class _HomeScreenState extends State<HomeScreen>
             itemCount: _categories.length,
             itemBuilder: (context, index) {
               final isSelected = selectedCategoryTab == index;
-
               return GestureDetector(
                 onTap: () {
-                  setState(() {
-                    selectedCategoryTab = index;
+                  setState(() => selectedCategoryTab = index);
+                  // Rola para o topo imediatamente quando um filtro é selecionado
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_gridController.hasClients) {
+                      _gridController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
                   });
                 },
                 child: Container(
@@ -862,19 +908,14 @@ class _HomeScreenState extends State<HomeScreen>
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: theme.colorScheme.primary
-                                  .withAlpha((0.4 * 255).round()),
+                              color: theme.colorScheme.primary.withAlpha(102),
                               blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
+                            )
                           ]
                         : null,
                     border: isSelected
                         ? null
-                        : Border.all(
-                            color: theme.dividerColor,
-                            width: 1,
-                          ),
+                        : Border.all(color: theme.dividerColor, width: 1),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -902,11 +943,28 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildGridView(Size screenSize, ThemeManager themeManager) {
     final isDark = themeManager.currentThemeType != ThemeType.light;
 
+    // Filtrar os índices com base na categoria selecionada
+    List<int> filteredIndices = [];
+
+    if (selectedCategoryTab == 0) {
+      // Se for "Principais", mostrar todos os itens
+      filteredIndices = List.generate(8, (index) => index);
+    } else if (selectedCategoryTab == 1) {
+      // Financeiro
+      filteredIndices = [0, 1, 2, 3];
+    } else if (selectedCategoryTab == 2) {
+      // Gestão
+      filteredIndices = [4, 5];
+    } else if (selectedCategoryTab == 3) {
+      // Relatórios
+      filteredIndices = [6, 7];
+    }
+
     return Column(
       children: [
         // Alternador de modos de visualização
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -947,43 +1005,46 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
 
-        // Grade de funcionalidades
+        // Grade de funcionalidades com NotificationListener para detectar rolagem
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-            ),
-            itemCount: 8,
-            itemBuilder: (context, index) {
-              // Filtrar com base na categoria selecionada
-              if (selectedCategoryTab != 0) {
-                // Simplificado - na prática você usaria uma estrutura mais robusta
-                if (selectedCategoryTab == 1 && ![0, 1, 2, 3].contains(index)) {
-                  return const SizedBox.shrink();
-                } else if (selectedCategoryTab == 2 &&
-                    ![4, 5].contains(index)) {
-                  return const SizedBox.shrink();
-                } else if (selectedCategoryTab == 3 &&
-                    ![6, 7].contains(index)) {
-                  return const SizedBox.shrink();
-                }
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (scrollNotification) {
+              // Atualiza o progresso da rolagem para possíveis usos futuros
+              if (_gridController.hasClients) {
+                _scrollProgress.value = _gridController.offset /
+                    (_gridController.position.maxScrollExtent + 0.0001);
               }
-
-              return FadeAnimation.fadeIn(
-                delay: Duration(milliseconds: 700 + (index * 100)),
-                child: _buildGridItemWithAnimation(
-                  index: index,
-                  icon: _getIconForIndex(index),
-                  label: _getLabelForIndex(index),
-                  route: _getRouteForIndex(index),
-                  themeManager: themeManager,
-                ),
-              );
+              return false;
             },
+            child: GridView.builder(
+              key: ValueKey<int>(
+                  selectedCategoryTab), // Mantém a chave para reconstrução
+              controller: _gridController,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+              ),
+              itemCount:
+                  filteredIndices.length, // Usa o comprimento da lista filtrada
+              itemBuilder: (context, index) {
+                // Pega o índice real do item a partir da lista filtrada
+                final realIndex = filteredIndices[index];
+
+                return FadeAnimation.fadeIn(
+                  delay: Duration(milliseconds: 700 + (index * 100)),
+                  child: _buildGridItemWithAnimation(
+                    index: realIndex,
+                    icon: _getIconForIndex(realIndex),
+                    label: _getLabelForIndex(realIndex),
+                    route: _getRouteForIndex(realIndex),
+                    themeManager: themeManager,
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -2219,6 +2280,30 @@ class _HomeScreenState extends State<HomeScreen>
       ],
     );
   }
+
+  // Retorna o ícone apropriado para cada índice de funcionalidade
+  IconData _getIconForIndex(int index) {
+    switch (index) {
+      case 0:
+        return Icons.account_balance_wallet; // Orçamento
+      case 1:
+        return Icons.money_off; // Despesas
+      case 2:
+        return Icons.attach_money; // Receitas
+      case 3:
+        return Icons.dashboard; // Dashboard
+      case 4:
+        return Icons.bar_chart; // Relatórios
+      case 5:
+        return Icons.inventory_2; // Gerenciar Produtos
+      case 6:
+        return Icons.lightbulb_outline; // Dicas
+      case 7:
+        return Icons.trending_up; // Tendências
+      default:
+        return Icons.apps;
+    }
+  }
 }
 
 // Delegado de busca
@@ -2257,11 +2342,6 @@ class AppSearchDelegate extends SearchDelegate<String> {
     'Gerenciar Produtos',
     'Dicas Importantes',
     'Tendências',
-    'Metas Financeiras',
-    'Economias Mensais',
-    'Cartões de Crédito',
-    'Contas Bancárias',
-    'Investimentos',
   ];
 
   @override
@@ -2414,15 +2494,7 @@ class AppSearchDelegate extends SearchDelegate<String> {
       case 'tendências':
         return '/trend';
       case 'metas financeiras':
-        return '/goals'; // Certifique-se de ter esta rota definida
-      case 'economias mensais':
-        return '/savings'; // Rota de exemplo
-      case 'cartões de crédito':
-        return '/cards'; // Rota de exemplo
-      case 'contas bancárias':
-        return '/accounts'; // Rota de exemplo
-      case 'investimentos':
-        return '/investments'; // Rota de exemplo
+        return '/goals';
       default:
         return '/home'; // Rota padrão
     }
@@ -2495,36 +2567,7 @@ class _SafeBackgroundPatternPainter extends CustomPainter {
       oldDelegate.isDark != isDark || oldDelegate.primaryColor != primaryColor;
 }
 
-// Retorna o ícone apropriado para cada índice de funcionalidade
-IconData _getIconForIndex(int index) {
-  switch (index) {
-    case 0:
-      return Icons.account_balance_wallet; // Orçamento
-    case 1:
-      return Icons.money_off; // Despesas
-    case 2:
-      return Icons.attach_money; // Receitas
-    case 3:
-      return Icons.dashboard; // Dashboard
-    case 4:
-      return Icons.bar_chart; // Relatórios
-    case 5:
-      return Icons.inventory_2; // Gerenciar Produtos
-    case 6:
-      return Icons.lightbulb_outline; // Dicas
-    case 7:
-      return Icons.trending_up; // Tendências
-    default:
-      return Icons.apps;
-  }
-}
-
-// Extensão para GlassContainer para aceitar bordas coloridas (mantida se necessário)
 extension GlassContainerExtension on GlassContainer {
-  // O construtor GlassContainer já aceita borderColor,
-  // então esta extensão talvez não seja estritamente necessária
-  // dependendo de como GlassContainer é implementado,
-  // mas a mantenho caso haja uma razão específica para ela na sua base de código.
   static GlassContainer create({
     required Widget child,
     double borderRadius = 16,
