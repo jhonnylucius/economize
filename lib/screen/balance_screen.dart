@@ -23,6 +23,8 @@ class BalanceScreen extends StatefulWidget {
 
 class _BalanceScreenState extends State<BalanceScreen>
     with TickerProviderStateMixin {
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
   final CostsService _costsService = CostsService();
   final RevenuesService _revenuesService = RevenuesService();
   final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
@@ -254,9 +256,32 @@ class _BalanceScreenState extends State<BalanceScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saldo Mensal'),
+        // seta de voltar com GlobalKey
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: theme.colorScheme.onPrimary,
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Saldo Mensal',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
+        elevation: 0,
+        actions: [
+          // ícone de ajuda para futuro tutorial
+          IconButton(
+            key: _helpButtonKey,
+            icon: const Icon(Icons.help_outline),
+            color: theme.colorScheme.onPrimary,
+            tooltip: 'Ajuda',
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
+            },
+          ),
+        ],
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: _isLoading
