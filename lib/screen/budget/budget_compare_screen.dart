@@ -11,6 +11,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class BudgetCompareScreen extends StatelessWidget {
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
   final Budget budget;
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
@@ -25,7 +28,13 @@ class BudgetCompareScreen extends StatelessWidget {
     // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
       appBar: AppBar(
-        // Mantém a AppBar original
+        // seta de voltar visível e identificável
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: themeManager.getCompareHeaderTextColor(),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Comparação - ${budget.title}',
           style: TextStyle(
@@ -34,13 +43,19 @@ class BudgetCompareScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        // Deixe o header igual ao das outras telas:
         backgroundColor: themeManager.getCompareHeaderColor(),
+        foregroundColor: themeManager.getCompareHeaderTextColor(),
         elevation: 0,
         actions: [
+          // ícone de ajuda em vez de casa
           IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            key: _helpButtonKey,
+            icon: const Icon(Icons.help_outline),
             color: themeManager.getCompareHeaderTextColor(),
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
+            },
           ),
         ],
       ),
