@@ -26,6 +26,9 @@ class _TipsScreenState extends State<TipsScreen>
   final List<FinancialTip> _tips = TipsRepository.tips;
   bool _isFirstLoad = true;
   int _previousIndex = 0;
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -63,6 +66,13 @@ class _TipsScreenState extends State<TipsScreen>
 
     return Scaffold(
       appBar: AppBar(
+        // seta de voltar visível e identificável
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: theme.colorScheme.onPrimary,
+          onPressed: () => Navigator.pop(context),
+        ),
         title: SlideAnimation.fromTop(
           child: Text(
             'Dicas Financeiras',
@@ -75,12 +85,16 @@ class _TipsScreenState extends State<TipsScreen>
         backgroundColor: theme.colorScheme.primary,
         elevation: 0,
         actions: [
+          // ícone de ajuda em vez de casa
           SlideAnimation.fromRight(
             child: IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-              tooltip: 'Ir para Home',
+              key: _helpButtonKey,
+              icon: const Icon(Icons.help_outline),
               color: theme.colorScheme.onPrimary,
+              tooltip: 'Ajuda',
+              onPressed: () {
+                // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
+              },
             ),
           ),
         ],
