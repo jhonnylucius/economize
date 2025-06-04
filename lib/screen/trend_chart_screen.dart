@@ -35,6 +35,9 @@ class _TrendChartScreenState extends State<TrendChartScreen>
   int _selectedPeriod = 0; // 0: mensal, 1: trimestral, 2: semestral
   int _selectedYear = DateTime.now().year;
   int _selectedPointIndex = -1;
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   List<FlSpot> _costSpots = [];
   List<FlSpot> _revenueSpots = [];
@@ -431,35 +434,31 @@ class _TrendChartScreenState extends State<TrendChartScreen>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          _navigateBackSafely();
-        }
+        if (!didPop) _navigateBackSafely();
       },
       child: Scaffold(
-        // O Scaffold original
+        // AppBar permanece como está
         appBar: AppBar(
-          title: SlideAnimation.fromLeft(
-            distance: 0.3,
-            duration: const Duration(milliseconds: 400),
-            child: Text(
-              'Tendência de Finanças - $_selectedYear',
-              style: TextStyle(
-                color: themeManager.getDashboardHeaderTextColor(),
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
+          leading: IconButton(
+            key: _backButtonKey,
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: _navigateBackSafely,
+          ),
+          title: const Text(
+            'Tendência de Finanças',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: theme.colorScheme.primary,
-          foregroundColor: theme.colorScheme.onPrimary,
           elevation: 0,
-          leading: IconButton(
-            // Modifica o botão de voltar (Modificado)
-            icon: const Icon(Icons.arrow_back),
-            onPressed:
-                _navigateBackSafely, // Usa o método personalizado para voltar
-          ),
           actions: [
+            IconButton(
+              key: _helpButtonKey,
+              icon: const Icon(Icons.help_outline, color: Colors.white),
+              tooltip: 'Ajuda',
+              onPressed: () {
+                // TODO: disparar tutorial
+              },
+            ),
             // Seletor de ano
             SlideAnimation.fromRight(
               distance: 0.3,
@@ -509,15 +508,13 @@ class _TrendChartScreenState extends State<TrendChartScreen>
             ),
           ],
         ),
+
+        // Mova estes parâmetros para dentro do Scaffold, não do AppBar:
         backgroundColor: theme.colorScheme.surface,
         floatingActionButton: ScaleAnimation.bounceIn(
           delay: const Duration(milliseconds: 600),
           child: FloatingActionButton(
-            onPressed: () {
-              setState(() {
-                _showDataLabels = !_showDataLabels;
-              });
-            },
+            onPressed: () => setState(() => _showDataLabels = !_showDataLabels),
             backgroundColor: theme.colorScheme.primary,
             child: Icon(
               _showDataLabels ? Icons.label_off : Icons.label,
@@ -527,6 +524,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         resizeToAvoidBottomInset: true,
+
         body: _isLoading
             ? Center(
                 child: BrandLoadingAnimation(
@@ -535,10 +533,11 @@ class _TrendChartScreenState extends State<TrendChartScreen>
                   size: 80,
                 ),
               )
-            : _costSpots.isEmpty &&
+            : (_costSpots.isEmpty &&
                     _revenueSpots.isEmpty &&
-                    _balanceSpots.isEmpty // Verifica todas as listas
+                    _balanceSpots.isEmpty)
                 ? Center(
+                    // ... conteúdo de "nenhum dado disponível" ...
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -565,6 +564,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
                     ),
                   )
                 : Column(
+                    // ... resto do corpo ...
                     children: [
                       // Seletores de período
                       Padding(
