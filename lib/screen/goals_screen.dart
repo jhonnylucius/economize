@@ -31,6 +31,9 @@ class _GoalsScreenState extends State<GoalsScreen>
   bool _showCelebration = false;
   int? _celebratingGoalIndex;
   final Logger logger = Logger();
+  // chaves para tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -106,17 +109,21 @@ class _GoalsScreenState extends State<GoalsScreen>
               icon: const Icon(Icons.calculate_outlined),
               tooltip: 'Calculadora de Metas',
               onPressed: () {
-                Navigator.pushNamed(context, '/goal_calculator');
+                Navigator.pushNamed(context, '/calculator');
               },
             ),
           ),
           SlideAnimation.fromTop(
-            delay: const Duration(milliseconds: 100),
+            delay: const Duration(milliseconds: 200),
             child: IconButton(
-              icon: const Icon(Icons.home),
-              tooltip: 'Ir para Home',
+              key: _helpButtonKey, // Chave para tutorial
+              tooltip: 'Ajuda', // Texto do tooltip
+              icon: const Icon(
+                Icons.help_outline, // Ícone de ajuda
+                color: Colors.white,
+              ),
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/home');
+                // TODO: disparar tutorial interativo usando _helpKey
               },
             ),
           ),
@@ -296,8 +303,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                   // Botão adicional para calculadora de metas
                   const SizedBox(height: 16),
                   PressableCard(
-                    onPress: () =>
-                        Navigator.pushNamed(context, '/goal_calculator'),
+                    onPress: () => Navigator.pushNamed(context, '/calculator'),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.amber,
