@@ -33,6 +33,9 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
   late Budget currentBudget;
   bool _isEditingCard = false;
   bool _isLoading = false;
+  // chaves para uso no tutorial interativo
+  final GlobalKey _backButtonKey = GlobalKey();
+  final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -77,10 +80,15 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
 
     // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
-      // --- OVERFLOW FIX: Adicionado resizeToAvoidBottomInset: false ---
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        // Mantém a AppBar original com o TabBar
+        // seta de voltar visível e identificável via GlobalKey
+        leading: IconButton(
+          key: _backButtonKey,
+          icon: const Icon(Icons.arrow_back),
+          color: themeManager.getDetailHeaderTextColor(),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           widget.budget.title,
           style: TextStyle(
@@ -96,11 +104,14 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             onPressed: _refreshBudget,
             color: themeManager.getDetailHeaderTextColor(),
           ),
+          // ícone de ajuda (substitui o home) com GlobalKey
           IconButton(
-            icon: const Icon(Icons.home),
-            // Corrige a rota para '/home'
-            onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+            key: _helpButtonKey,
+            icon: const Icon(Icons.help_outline),
             color: themeManager.getDetailHeaderTextColor(),
+            onPressed: () {
+              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
+            },
           ),
         ],
         bottom: TabBar(
