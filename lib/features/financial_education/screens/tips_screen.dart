@@ -267,7 +267,7 @@ class _TipsScreenState extends State<TipsScreen>
                       delay: const Duration(milliseconds: 100),
                       child: _buildHelpSection(
                         context: context,
-                        title: "1. Navegação por Categorias",
+                        title: "1. Navegação por\n Categorias",
                         icon: Icons.category,
                         iconColor: theme.colorScheme.primary,
                         content:
@@ -306,7 +306,7 @@ class _TipsScreenState extends State<TipsScreen>
                       delay: const Duration(milliseconds: 300),
                       child: _buildHelpSection(
                         context: context,
-                        title: "3. Interação com os Cards",
+                        title: "3. Interação com\n os Cards",
                         icon: Icons.touch_app,
                         iconColor: Colors.green,
                         content:
@@ -325,7 +325,7 @@ class _TipsScreenState extends State<TipsScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildHelpSection(
                         context: context,
-                        title: "4. Calculadora de Metas",
+                        title: "4. Calculadora \nde Metas",
                         icon: Icons.calculate_outlined,
                         iconColor: Colors.orange,
                         content:
@@ -334,6 +334,7 @@ class _TipsScreenState extends State<TipsScreen>
                             "• Defina o valor total que deseja alcançar\n\n"
                             "• Estabeleça o prazo para atingir sua meta\n\n"
                             "• Calcule quanto precisa economizar mensalmente\n\n"
+                            "• Salve seu cálculo e terá sua meta na telas de metas para atualização de seu pregresso\n\n"
                             "• Simule diferentes cenários alterando os valores",
                       ),
                     ),
@@ -345,7 +346,7 @@ class _TipsScreenState extends State<TipsScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Benefícios das Dicas",
+                        title: "5. Benefícios das\n Dicas",
                         icon: Icons.star_outline,
                         iconColor: Colors.purple,
                         content:
@@ -364,7 +365,7 @@ class _TipsScreenState extends State<TipsScreen>
                       delay: const Duration(milliseconds: 600),
                       child: _buildHelpSection(
                         context: context,
-                        title: "6. Conteúdo Atualizado",
+                        title: "6. Conteúdo \nAtualizado",
                         icon: Icons.update,
                         iconColor: Colors.teal,
                         content:
