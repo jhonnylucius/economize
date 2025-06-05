@@ -164,7 +164,7 @@ class BudgetCompareScreen extends StatelessWidget {
                       delay: const Duration(milliseconds: 100),
                       child: _buildHelpSection(
                         context: context,
-                        title: "1. Resumo do Orçamento",
+                        title: "1. Resumo do \nOrçamento",
                         icon: Icons.summarize,
                         iconColor: Theme.of(context).colorScheme.primary,
                         content:
@@ -183,7 +183,7 @@ class BudgetCompareScreen extends StatelessWidget {
                       delay: const Duration(milliseconds: 200),
                       child: _buildHelpSection(
                         context: context,
-                        title: "2. Análise de Economia",
+                        title: "2. Análise de \nEconomia",
                         icon: Icons.savings,
                         iconColor: Colors.green,
                         content:
@@ -202,7 +202,7 @@ class BudgetCompareScreen extends StatelessWidget {
                       delay: const Duration(milliseconds: 300),
                       child: _buildHelpSection(
                         context: context,
-                        title: "3. Melhores Preços por Item",
+                        title: "3. Melhores Preços\n por Item",
                         icon: Icons.local_offer,
                         iconColor: Colors.amber,
                         content:
@@ -221,7 +221,7 @@ class BudgetCompareScreen extends StatelessWidget {
                       delay: const Duration(milliseconds: 400),
                       child: _buildHelpSection(
                         context: context,
-                        title: "4. Comparação por Estabelecimento",
+                        title: "4. Comparação por\n Estabelecimento",
                         icon: Icons.store,
                         iconColor: Colors.blue,
                         content:
@@ -240,7 +240,7 @@ class BudgetCompareScreen extends StatelessWidget {
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Tabela de Comparação de Preços",
+                        title: "5. Tabela de \nComparação de Preços",
                         icon: Icons.table_chart,
                         iconColor: Colors.purple,
                         content:
@@ -248,6 +248,7 @@ class BudgetCompareScreen extends StatelessWidget {
                             "• As linhas representam os itens\n"
                             "• As colunas representam os estabelecimentos\n"
                             "• O melhor preço para cada item é destacado\n"
+                            "• Use o butão de compartilhamento para partilhar seu orçamento com a \nfamília e amigos(única função que precisa de conexão com internet\n"
                             "• Use esta tabela para uma análise detalhada e visual",
                       ),
                     ),
