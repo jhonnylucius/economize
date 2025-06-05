@@ -394,7 +394,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                     SlideAnimation.fromLeft(
                       delay: const Duration(milliseconds: 700),
                       child: _buildHelpSection(
-                        title: "7. Mensagens e Notificações",
+                        title: "7. Mensagens \ne Notificações",
                         icon: Icons.notifications_none,
                         iconColor: Colors.teal,
                         content:
