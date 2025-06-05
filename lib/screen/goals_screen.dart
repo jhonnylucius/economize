@@ -313,7 +313,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 200),
                       child: _buildHelpSection(
                         context: context,
-                        title: "2. Atualização de Progresso",
+                        title: "2. Atualização de\n Progresso",
                         icon: Icons.update,
                         iconColor: Colors.green,
                         content: "Para registrar seu progresso em uma meta:\n\n"
@@ -371,7 +371,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Criando Novas Metas",
+                        title: "5. Criando Novas\n Metas",
                         icon: Icons.add_circle_outline,
                         iconColor: Colors.amber,
                         content: "Para criar uma nova meta financeira:\n\n"
@@ -389,7 +389,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 600),
                       child: _buildHelpSection(
                         context: context,
-                        title: "6. Calculadora de Metas",
+                        title: "6. Calculadora \nde Metas",
                         icon: Icons.calculate_outlined,
                         iconColor: Colors.teal,
                         content:
@@ -408,7 +408,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 700),
                       child: _buildHelpSection(
                         context: context,
-                        title: "7. Celebrando Conquistas",
+                        title: "7. Celebrando \nConquistas",
                         icon: Icons.celebration,
                         iconColor: Colors.orange,
                         content: "Quando você atinge uma meta:\n\n"
