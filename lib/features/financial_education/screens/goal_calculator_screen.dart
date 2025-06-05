@@ -314,13 +314,13 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                                 Text(
                                   "Calculadora de Metas",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
                                 ),
                                 Text(
-                                  "Como planejar suas metas financeiras",
+                                  "Como planejar suas\n metas financeiras",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
@@ -349,8 +349,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                             "Use o formulário para definir sua meta financeira:\n\n"
                             "• Nome da Meta: Identifique claramente seu objetivo (ex: 'Comprar um carro')\n\n"
                             "• Valor Total: Quanto dinheiro você precisa juntar\n\n"
-                            "• Você Já Possui: Caso já tenha economizado parte do valor\n\n"
-                            "• Taxa de Juros: Rendimento mensal da poupança/investimento onde guardará o dinheiro",
+                            "• Você Já Possui: Caso já tenha economizado parte do valor\n\n",
                       ),
                     ),
 
@@ -398,7 +397,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildHelpSection(
                         context: context,
-                        title: "4. Dicas para Alcançar Sua Meta",
+                        title: "4. Dicas para \nAlcançar Sua Meta",
                         icon: Icons.lightbulb_outline,
                         iconColor: Colors.amber,
                         content:
@@ -406,7 +405,8 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                             "• Estabeleça metas intermediárias para manter o foco\n\n"
                             "• Use contas específicas para separar o dinheiro da meta\n\n"
                             "• Configure transferências automáticas para garantir disciplina\n\n"
-                            "• Estas dicas ajudam a transformar o planejamento em realidade",
+                            "• Estas dicas ajudam a transformar o planejamento em realidade\n\n"
+                            "• Salve seu cálculo e terá sua meta na telas de metas para atualização de seu pregresso",
                       ),
                     ),
 
@@ -417,15 +417,16 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Recalculando Sua Meta",
+                        title: "5. Recalculando \nSua Meta",
                         icon: Icons.refresh,
                         iconColor: Colors.purple,
                         content:
                             "Você pode ajustar seus planos a qualquer momento:\n\n"
                             "• Clique no botão 'Recalcular' para voltar ao formulário\n\n"
                             "• Altere os parâmetros conforme necessário\n\n"
-                            "• Teste diferentes cenários (valores, prazos ou taxas de juros)\n\n"
-                            "• Compare os resultados para encontrar o plano ideal para você",
+                            "• Teste diferentes cenários (valores, prazos ou taxas de dscontos)\n\n"
+                            "• Compare os resultados para encontrar o plano ideal para você\n\n"
+                            "• Salve seu cálculo e terá sua meta na telas de metas para atualização de seu pregresso",
                       ),
                     ),
 
@@ -436,7 +437,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                       delay: const Duration(milliseconds: 600),
                       child: _buildHelpSection(
                         context: context,
-                        title: "6. Integração com o Aplicativo",
+                        title: "6. Integração com\n o Aplicativo",
                         icon: Icons.integration_instructions,
                         iconColor: _primaryPurple,
                         content:
