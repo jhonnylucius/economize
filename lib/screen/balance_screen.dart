@@ -736,7 +736,7 @@ class _BalanceScreenState extends State<BalanceScreen>
                       delay: const Duration(milliseconds: 100),
                       child: _buildHelpSection(
                         context: context,
-                        title: "1. Indicador de Saúde Financeira",
+                        title: "1. Indicador de \nSaúde Financeira",
                         icon: Icons.show_chart,
                         iconColor: theme.colorScheme.primary,
                         content:
@@ -812,7 +812,7 @@ class _BalanceScreenState extends State<BalanceScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Atualizando os Dados",
+                        title: "5. Atualizando \nos Dados",
                         icon: Icons.refresh,
                         iconColor: Colors.teal,
                         content: "Mantenha seus dados atualizados:\n\n"
