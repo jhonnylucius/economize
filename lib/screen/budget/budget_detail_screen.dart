@@ -223,7 +223,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                                 Text(
                                   "Detalhes do Orçamento",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: appThemes.getCardTitleColor(),
                                   ),
@@ -269,7 +269,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                       delay: const Duration(milliseconds: 200),
                       child: _buildHelpSection(
                         context: context,
-                        title: "2. Gerenciamento de Locais",
+                        title: "2. Gerenciamento \nde Locais",
                         icon: Icons.store,
                         iconColor: Colors.blue,
                         content: "Na aba Locais, você pode:\n\n"
@@ -287,7 +287,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                       delay: const Duration(milliseconds: 300),
                       child: _buildHelpSection(
                         context: context,
-                        title: "3. Gerenciamento de Itens",
+                        title: "3. Gerenciamento \nde Itens",
                         icon: Icons.shopping_basket,
                         iconColor: Colors.orange,
                         content: "Na aba Itens, você pode:\n\n"
@@ -324,7 +324,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Visão Geral e Comparativo",
+                        title: "5. Visão Geral \ne Comparativo",
                         icon: Icons.compare,
                         iconColor: Colors.purple,
                         content: "Na aba Visão Geral:\n\n"
@@ -341,7 +341,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                       delay: const Duration(milliseconds: 600),
                       child: _buildHelpSection(
                         context: context,
-                        title: "6. Resumo do Orçamento",
+                        title: "6. Resumo do\n Orçamento",
                         icon: Icons.summarize,
                         iconColor: themeManager.getDetailHeaderColor(),
                         content: "No topo da tela, o card de resumo mostra:\n\n"
