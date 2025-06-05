@@ -2106,7 +2106,7 @@ class _HomeScreenState extends State<HomeScreen>
                       child: _buildHelpSection(
                         title: "2. Categorias",
                         icon: Icons.category,
-                        iconColor: Colors.blue,
+                        iconColor: const Color.fromARGB(255, 15, 111, 201),
                         content:
                             "As categorias ajudam a filtrar as funcionalidades disponíveis:\n\n"
                             "• Principais: Mostra todas as funcionalidades\n"
@@ -2369,6 +2369,21 @@ class _HomeScreenState extends State<HomeScreen>
                             "As barras mostram o andamento dos seus gastos e economias.\n\n"
                             "• Meta de Economia: quanto você já alcançou da meta de economia (30% da receita total)\n\n"
                             "• Gastos do Orçamento: quanto você já gastou do orçamento planejado (70% da receita total)",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        title: "4. Funcionalidade",
+                        icon: Icons.bar_chart,
+                        iconColor: const Color.fromARGB(255, 231, 16, 177),
+                        content:
+                            "•A tela pode ser vista em gri ou lista basta clicar no icone do lado direito acima dos filtros.\n\n"
+                            "• Você pode optar por usar filtros para ver apenas as funcionalidades que você que no momento\n\n"
+                            "• No rodapé da pagina você tem 4 icones, explore e se precisar de ajuda pra enteder clique no simbólo de INTERROGAÇÃO no topo da tela",
                       ),
                     ),
 
