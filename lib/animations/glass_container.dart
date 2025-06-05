@@ -26,7 +26,7 @@ class GlassContainer extends StatelessWidget {
     super.key,
     required this.child,
     this.borderRadius = 12,
-    this.opacity = 0.30,
+    this.opacity = 0.40,
     this.blur = 10,
     this.borderColor,
     this.borderWidth = 1.5,
@@ -47,7 +47,8 @@ class GlassContainer extends StatelessWidget {
                 ? Border.all(
                     width: borderWidth,
                     color: borderColor ??
-                        Colors.white.withAlpha((0.3 * 255).round()),
+                        const Color.fromARGB(255, 245, 0, 135)
+                            .withAlpha((0.35 * 255).round()),
                   )
                 : null,
             color: theme.colorScheme.surface.withAlpha((0.30 * 255).round()),
