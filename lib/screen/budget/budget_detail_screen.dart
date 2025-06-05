@@ -1,3 +1,7 @@
+import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
+import 'package:economize/animations/scale_animation.dart';
+import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
@@ -109,9 +113,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             key: _helpButtonKey,
             icon: const Icon(Icons.help_outline),
             color: themeManager.getDetailHeaderTextColor(),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
-            },
+            onPressed: () => _showBudgetDetailHelp(context),
           ),
         ],
         bottom: TabBar(
@@ -173,6 +175,323 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
           ),
         ],
       ), // Mantém a posição original
+    );
+  }
+
+  // Adicione este método na classe _BudgetDetailScreenState
+  void _showBudgetDetailHelp(BuildContext context) {
+    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                themeManager.getDetailHeaderColor(),
+                            child: Icon(
+                              Icons.list_alt,
+                              color: themeManager.getDetailHeaderTextColor(),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Detalhes do Orçamento",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: appThemes.getCardTitleColor(),
+                                  ),
+                                ),
+                                Text(
+                                  "Como gerenciar seu orçamento",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: appThemes.getListTileSubtitleColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Abas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Navegação por Abas",
+                        icon: Icons.tab,
+                        iconColor: themeManager.getDetailHeaderColor(),
+                        content:
+                            "Esta tela possui três abas para organizar as informações do seu orçamento:\n\n"
+                            "• Locais: Gerencie os estabelecimentos para comparação de preços\n\n"
+                            "• Itens: Visualize e edite a lista de produtos do orçamento\n\n"
+                            "• Visão Geral: Acesse o comparativo completo do orçamento",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Aba de Locais
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Gerenciamento de Locais",
+                        icon: Icons.store,
+                        iconColor: Colors.blue,
+                        content: "Na aba Locais, você pode:\n\n"
+                            "• Visualizar todos os estabelecimentos adicionados\n\n"
+                            "• Adicionar novos estabelecimentos clicando no botão '+'\n\n"
+                            "• Remover estabelecimentos usando o ícone de lixeira\n\n"
+                            "Os estabelecimentos são usados para comparar preços dos itens.",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Aba de Itens
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Gerenciamento de Itens",
+                        icon: Icons.shopping_basket,
+                        iconColor: Colors.orange,
+                        content: "Na aba Itens, você pode:\n\n"
+                            "• Ver todos os produtos do seu orçamento\n\n"
+                            "• Pesquisar itens específicos com a barra de pesquisa\n\n"
+                            "• Adicionar novos itens clicando no botão '+'\n\n"
+                            "• Expandir cada card para adicionar preços em diferentes estabelecimentos\n\n"
+                            "• Remover itens indesejados",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Card de Item
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Cards de Item",
+                        icon: Icons.credit_card,
+                        iconColor: Colors.green,
+                        content: "Cada card de item contém:\n\n"
+                            "• Nome e categoria do produto\n\n"
+                            "• Quantidade e unidade de medida\n\n"
+                            "• Melhor preço encontrado (destacado em verde)\n\n"
+                            "• Expandindo o card, você pode adicionar o preço deste item em diferentes estabelecimentos",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Visão Geral
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Visão Geral e Comparativo",
+                        icon: Icons.compare,
+                        iconColor: Colors.purple,
+                        content: "Na aba Visão Geral:\n\n"
+                            "• Acesse o botão 'Ver Comparativo Completo' para analisar onde comprar cada item\n\n"
+                            "• O comparativo mostra qual estabelecimento oferece o melhor preço para cada produto\n\n"
+                            "• Compare o custo total do orçamento em cada estabelecimento",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Card de Resumo
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Resumo do Orçamento",
+                        icon: Icons.summarize,
+                        iconColor: themeManager.getDetailHeaderColor(),
+                        content: "No topo da tela, o card de resumo mostra:\n\n"
+                            "• Total de itens no orçamento\n\n"
+                            "• Número de estabelecimentos para comparação\n\n"
+                            "• Valor total estimado\n\n"
+                            "• Economia potencial ao comprar cada item pelo melhor preço",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: themeManager
+                              .getDetailHeaderColor()
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: themeManager
+                                .getDetailHeaderColor()
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: themeManager.getDetailHeaderColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: themeManager.getDetailHeaderColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Para uma economia máxima, adicione pelo menos 3 estabelecimentos diferentes e cadastre os preços de todos os itens em cada um deles.",
+                              style: TextStyle(
+                                  color: appThemes.getCardTextColor()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                themeManager.getDetailHeaderColor(),
+                            foregroundColor:
+                                themeManager.getDetailHeaderTextColor(),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    final appThemes = AppThemes();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: appThemes.getCardTitleColor(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: appThemes.getCardTextColor(),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

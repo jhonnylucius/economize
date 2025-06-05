@@ -1,3 +1,7 @@
+import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
+import 'package:economize/animations/scale_animation.dart';
+import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_location.dart';
 import 'package:economize/screen/responsive_screen.dart';
@@ -53,9 +57,7 @@ class BudgetCompareScreen extends StatelessWidget {
             key: _helpButtonKey,
             icon: const Icon(Icons.help_outline),
             color: themeManager.getCompareHeaderTextColor(),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
-            },
+            onPressed: () => _showBudgetCompareHelp(context),
           ),
         ],
       ),
@@ -84,6 +86,315 @@ class BudgetCompareScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // Adicione este método na classe BudgetCompareScreen
+  void _showBudgetCompareHelp(BuildContext context) {
+    final themeManager = context.read<ThemeManager>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            child: Icon(
+                              Icons.compare_arrows,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Comparação de Orçamentos",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        themeManager.getCompareCardTitleColor(),
+                                  ),
+                                ),
+                                Text(
+                                  "Como usar a ferramenta de comparação",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: themeManager
+                                        .getCompareSubtitleTextColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Resumo do Orçamento
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Resumo do Orçamento",
+                        icon: Icons.summarize,
+                        iconColor: Theme.of(context).colorScheme.primary,
+                        content:
+                            "O card de resumo mostra os dados gerais do seu orçamento:\n\n"
+                            "• Total geral dos itens\n"
+                            "• Número de estabelecimentos comparados\n"
+                            "• Economia total identificada\n"
+                            "• Data de criação do orçamento",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Análise de Economia
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Análise de Economia",
+                        icon: Icons.savings,
+                        iconColor: Colors.green,
+                        content:
+                            "Este gráfico mostra quanto você economiza em cada item:\n\n"
+                            "• As barras representam o valor economizado por item\n"
+                            "• Quanto mais alta a barra, maior a economia\n"
+                            "• Abaixo do gráfico, há uma lista detalhada com os valores exatos\n"
+                            "• Classificados do maior para o menor valor de economia",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Melhores Preços
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Melhores Preços por Item",
+                        icon: Icons.local_offer,
+                        iconColor: Colors.amber,
+                        content:
+                            "Esta seção mostra onde encontrar o melhor preço para cada item:\n\n"
+                            "• Nome do item\n"
+                            "• Melhor preço encontrado\n"
+                            "• Estabelecimento onde o preço foi encontrado\n\n"
+                            "Use esta seção para decidir onde comprar cada item específico.",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Comparação por Estabelecimento
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Comparação por Estabelecimento",
+                        icon: Icons.store,
+                        iconColor: Colors.blue,
+                        content:
+                            "Aqui você vê o custo total do orçamento em cada estabelecimento:\n\n"
+                            "• Nome do estabelecimento\n"
+                            "• Endereço\n"
+                            "• Valor total da compra\n\n"
+                            "Use esta seção para decidir se vale a pena comprar tudo em um só lugar.",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Tabela de Comparação de Preços
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Tabela de Comparação de Preços",
+                        icon: Icons.table_chart,
+                        iconColor: Colors.purple,
+                        content:
+                            "A tabela completa mostra todos os preços de cada item em todos os estabelecimentos:\n\n"
+                            "• As linhas representam os itens\n"
+                            "• As colunas representam os estabelecimentos\n"
+                            "• O melhor preço para cada item é destacado\n"
+                            "• Use esta tabela para uma análise detalhada e visual",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 600),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Para economizar ao máximo, considere comprar diferentes itens em diferentes estabelecimentos, conforme indicado na seção 'Melhores Preços por Item'.",
+                              style: TextStyle(
+                                  color:
+                                      themeManager.getCompareCardTextColor()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 700),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    final themeManager = context.read<ThemeManager>();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: themeManager.getCompareCardTitleColor(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: themeManager.getCompareCardTextColor(),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

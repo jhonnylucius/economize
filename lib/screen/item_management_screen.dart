@@ -160,11 +160,12 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
               icon: const Icon(Icons.refresh),
               onPressed: () async {
                 setState(() => _isLoading = true);
+                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _loadItems();
                   _filterItems();
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Row(
                           children: [
@@ -186,7 +187,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           'Erro ao atualizar: $e',
@@ -208,6 +209,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
               },
             ),
           ),
+          // Atualize o onPressed do botão de ajuda
           SlideAnimation.fromTop(
             delay: const Duration(milliseconds: 200),
             child: IconButton(
@@ -217,9 +219,8 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                 Icons.help_outline, // Ícone de ajuda
                 color: Colors.white,
               ),
-              onPressed: () {
-                // TODO: disparar tutorial interativo usando _helpKey
-              },
+              onPressed: () =>
+                  _showItemManagementHelp(context), // Chama o método de ajuda
             ),
           ),
         ],
@@ -438,6 +439,322 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  // Adicione este método na classe _ItemManagementScreenState
+  void _showItemManagementHelp(BuildContext context) {
+    final theme = Theme.of(context);
+    context.read<ThemeManager>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary,
+                            child: Icon(
+                              Icons.inventory_2,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Gerenciamento de Produtos",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como gerenciar sua base de produtos",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Barra de Pesquisa
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Pesquisa de Produtos",
+                        icon: Icons.search,
+                        iconColor: theme.colorScheme.primary,
+                        content:
+                            "Use a barra de pesquisa para encontrar produtos rapidamente:\n\n"
+                            "• Digite o nome do produto ou categoria\n\n"
+                            "• A pesquisa é instantânea e filtra resultados enquanto você digita\n\n"
+                            "• Clique no 'X' para limpar a pesquisa e exibir todos os produtos novamente\n\n"
+                            "• Se nenhum produto corresponder à sua pesquisa, você verá uma mensagem informativa",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Lista de Produtos
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Lista de Produtos",
+                        icon: Icons.list_alt,
+                        iconColor: Colors.blue,
+                        content:
+                            "A lista exibe todos os produtos cadastrados:\n\n"
+                            "• Ícone colorido: Representa a categoria do produto\n\n"
+                            "• Nome do Produto: Nome do item cadastrado\n\n"
+                            "• Categoria e Unidade: Informações adicionais do produto\n\n"
+                            "• Toque em um produto para editá-lo (funcionalidade em desenvolvimento)\n\n"
+                            "• Cada produto tem uma animação de entrada ao carregar a tela",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Adicionar Produtos
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Adicionar Novos Produtos",
+                        icon: Icons.add_circle_outline,
+                        iconColor: Colors.green,
+                        content:
+                            "Para adicionar um novo produto ao sistema:\n\n"
+                            "• Clique no botão flutuante '+' no canto inferior direito\n\n"
+                            "• Preencha o nome do produto (não podem existir duplicatas)\n\n"
+                            "• Selecione a categoria adequada no menu suspenso\n\n"
+                            "• Escolha a unidade padrão (un, kg, l, etc.)\n\n"
+                            "• Clique em 'Salvar' para adicionar o produto",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Exclusão de Produtos
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Excluir Produtos",
+                        icon: Icons.delete_outline,
+                        iconColor: theme.colorScheme.error,
+                        content: "Para remover um produto do sistema:\n\n"
+                            "• Clique no ícone de lixeira ao lado do produto\n\n"
+                            "• Confirme a exclusão na caixa de diálogo que aparece\n\n"
+                            "• Atenção: Esta ação não pode ser desfeita\n\n"
+                            "• A exclusão remove permanentemente o produto e suas unidades associadas",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Categorias
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Sistema de Categorias",
+                        icon: Icons.category,
+                        iconColor: Colors.orange,
+                        content:
+                            "As categorias ajudam a organizar seus produtos:\n\n"
+                            "• Alimentos, Bebidas, Higiene: Categorias padrão para compras\n\n"
+                            "• Cada categoria tem um ícone específico para identificação visual\n\n"
+                            "• Algumas categorias têm unidades específicas pré-definidas\n\n"
+                            "• Use categorias para facilitar a busca e organizar orçamentos",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Atualizar Lista
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Atualizar Lista",
+                        icon: Icons.refresh,
+                        iconColor: Colors.purple,
+                        content:
+                            "Para garantir que você está vendo os dados mais recentes:\n\n"
+                            "• Clique no botão de atualização na barra superior\n\n"
+                            "• Uma animação de carregamento será mostrada durante a atualização\n\n"
+                            "• Os produtos serão recarregados do banco de dados\n\n"
+                            "• Uma notificação confirmará quando a atualização for concluída",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.primary
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Manter uma base de produtos organizada e atualizada facilita muito a criação de orçamentos. \n\nProdutos bem categorizados ajudam a encontrar rapidamente os itens durante a \n\nelaboração de listas de compras.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );

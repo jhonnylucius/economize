@@ -92,9 +92,7 @@ class _TipsScreenState extends State<TipsScreen>
               icon: const Icon(Icons.help_outline),
               color: theme.colorScheme.onPrimary,
               tooltip: 'Ajuda',
-              onPressed: () {
-                // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
-              },
+              onPressed: () => _showTipsScreenHelp(context),
             ),
           ),
         ],
@@ -194,6 +192,322 @@ class _TipsScreenState extends State<TipsScreen>
             backgroundColor: theme.colorScheme.primary,
           ),
         ),
+      ),
+    );
+  }
+
+  // Adicione este método na classe _TipsScreenState
+  void _showTipsScreenHelp(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary,
+                            child: Icon(
+                              Icons.tips_and_updates,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Dicas Financeiras",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como usar a biblioteca de dicas",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Navegação por Categorias
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Navegação por Categorias",
+                        icon: Icons.category,
+                        iconColor: theme.colorScheme.primary,
+                        content:
+                            "Use as abas na parte superior para navegar entre diferentes categorias de dicas:\n\n"
+                            "• Básico: Conceitos financeiros fundamentais para iniciantes\n\n"
+                            "• Economia: Estratégias para economizar dinheiro no dia a dia\n\n"
+                            "• Investimento: Orientações sobre como fazer seu dinheiro render\n\n"
+                            "• Orçamento: Técnicas para controle e planejamento financeiro\n\n"
+                            "• Dívidas: Dicas para sair do endividamento e manter as contas em dia",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Cards de Dicas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Cards de Dicas",
+                        icon: Icons.info_outline,
+                        iconColor: Colors.blue,
+                        content:
+                            "Cada card contém uma dica financeira completa:\n\n"
+                            "• Título: O tema principal da dica\n\n"
+                            "• Texto: Explicação detalhada sobre o assunto\n\n"
+                            "• Ícone: Identificação visual da categoria\n\n"
+                            "• Os cards são coloridos de acordo com a categoria para facilitar a identificação",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Interação com os Cards
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Interação com os Cards",
+                        icon: Icons.touch_app,
+                        iconColor: Colors.green,
+                        content:
+                            "Você pode interagir com as dicas de várias formas:\n\n"
+                            "• Toque para expandir uma dica e ler o texto completo\n\n"
+                            "• Deslize para cima e para baixo para percorrer a lista de dicas\n\n"
+                            "• Use as abas para alternar entre categorias diferentes\n\n"
+                            "• A animação ao mudar de categoria ajuda a identificar a navegação",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Calculadora de Metas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Calculadora de Metas",
+                        icon: Icons.calculate_outlined,
+                        iconColor: Colors.orange,
+                        content:
+                            "O botão 'Calculadora de Metas' na parte inferior da tela:\n\n"
+                            "• Ferramenta para planejar suas economias\n\n"
+                            "• Defina o valor total que deseja alcançar\n\n"
+                            "• Estabeleça o prazo para atingir sua meta\n\n"
+                            "• Calcule quanto precisa economizar mensalmente\n\n"
+                            "• Simule diferentes cenários alterando os valores",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Benefícios das Dicas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Benefícios das Dicas",
+                        icon: Icons.star_outline,
+                        iconColor: Colors.purple,
+                        content:
+                            "Aproveite ao máximo a biblioteca de dicas financeiras:\n\n"
+                            "• Amplie seus conhecimentos sobre finanças pessoais\n\n"
+                            "• Aprenda estratégias testadas para controle financeiro\n\n"
+                            "• Descubra técnicas para economizar e investir\n\n"
+                            "• Aplique os conceitos na prática usando outros recursos do aplicativo",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Conteúdo Atualizado
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Conteúdo Atualizado",
+                        icon: Icons.update,
+                        iconColor: Colors.teal,
+                        content:
+                            "Nossa biblioteca de dicas é constantemente atualizada:\n\n"
+                            "• Novas dicas são adicionadas regularmente\n\n"
+                            "• O conteúdo é revisado por especialistas em finanças\n\n"
+                            "• Informações adaptadas à realidade econômica brasileira\n\n"
+                            "• Visite esta seção regularmente para obter novas orientações",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.primary
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Reserve alguns minutos por semana para ler novas dicas financeiras. Aplicar apenas um conceito novo por mês já pode trazer grandes benefícios para suas finanças pessoais a longo prazo.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

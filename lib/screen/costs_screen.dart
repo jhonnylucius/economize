@@ -1,3 +1,4 @@
+import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
@@ -288,14 +289,347 @@ class _CostsScreenState extends State<CostsScreen>
               Icons.help_outline, // Ícone de ajuda
               color: Colors.white,
             ),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _helpKey
-            },
+            onPressed: () => _showCostsScreenHelp(context),
           ),
         ),
         const SizedBox(width: 8),
       ],
       bottom: _isFiltering ? _buildFilterBar(themeManager) : null,
+    );
+  }
+
+  // Adicione este método na classe _CostsScreenState
+  void _showCostsScreenHelp(BuildContext context) {
+    context.read<ThemeManager>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                const Color.fromARGB(255, 216, 78, 196),
+                            child: Icon(
+                              Icons.payments_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Gerenciamento de Despesas",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como controlar seus gastos",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Filtros e Pesquisa
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Filtros e Pesquisa",
+                        icon: Icons.search,
+                        iconColor: const Color.fromARGB(255, 216, 78, 196),
+                        content:
+                            "Use os filtros para encontrar despesas específicas:\n\n"
+                            "• Clique no ícone de pesquisa no topo para abrir os filtros\n\n"
+                            "• Digite termos de busca para filtrar por descrição, tipo ou valor\n\n"
+                            "• Selecione datas específicas para filtrar por período\n\n"
+                            "• As despesas são atualizadas automaticamente conforme você filtra",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Resumo de Despesas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Resumo de Despesas",
+                        icon: Icons.account_balance_wallet_outlined,
+                        iconColor: Colors.blue,
+                        content:
+                            "O card de resumo mostra uma visão geral de suas despesas:\n\n"
+                            "• Valor total de todas as despesas listadas\n\n"
+                            "• Quantidade de despesas no período\n\n"
+                            "• Indicador de filtros aplicados\n\n"
+                            "• Opção para limpar filtros quando necessário",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Cards de Despesas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Cards de Despesas",
+                        icon: Icons.credit_card,
+                        iconColor: Colors.green,
+                        content:
+                            "Cada card contém informações detalhadas sobre uma despesa:\n\n"
+                            "• Categoria com ícone representativo\n\n"
+                            "• Data de vencimento ou pagamento\n\n"
+                            "• Valor da despesa em destaque\n\n"
+                            "• Indicador de status: pago, pendente ou vencimento próximo\n\n"
+                            "• Ícone de despesa recorrente (quando aplicável)",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Indicadores de Status
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Indicadores de Status",
+                        icon: Icons.info_outline,
+                        iconColor: Colors.orange,
+                        content:
+                            "Os status ajudam a identificar rapidamente a situação da despesa:\n\n"
+                            "• Símbolo Amarelo: Despesas com vencimento próximo (até 5 dias)\n\n"
+                            "• Símbolo Vermelho: Despesas não pagas\n\n"
+                            "• Símbolo Azul: Despesas recorrentes (mensais)\n\n"
+                            "• Sem símbolo: Despesas já pagas e regulares",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Gerenciamento de Despesas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Gerenciando Despesas",
+                        icon: Icons.edit_outlined,
+                        iconColor: Colors.purple,
+                        content:
+                            "Você pode gerenciar suas despesas de várias formas:\n\n"
+                            "• Toque em um card para editar os detalhes da despesa\n\n"
+                            "• Use o botão 'Editar' para modificar rapidamente\n\n"
+                            "• Use o botão 'Excluir' para remover a despesa\n\n"
+                            "• Arraste um card para a esquerda para excluí-lo rapidamente",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Adicionando Despesas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Adicionando Novas Despesas",
+                        icon: Icons.add_circle_outline,
+                        iconColor: const Color.fromARGB(255, 216, 78, 196),
+                        content: "Para adicionar uma nova despesa:\n\n"
+                            "• Toque no botão 'Add Despesas' na parte inferior da tela\n\n"
+                            "• Preencha os campos: data, valor, descrição e categoria\n\n"
+                            "• Marque se a despesa é recorrente e se já foi paga\n\n"
+                            "• Algumas categorias são automaticamente marcadas como recorrentes",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 7: Navegação
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 700),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "7. Navegação para Receitas",
+                        icon: Icons.arrow_forward,
+                        iconColor: Colors.teal,
+                        content: "Para equilibrar seu orçamento, você pode:\n\n"
+                            "• Clicar no botão 'Ir p/ Receitas' para acessar a tela de receitas\n\n"
+                            "• Comparar suas despesas com suas receitas\n\n"
+                            "• Visualizar seu saldo geral na tela de Saldo",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 800),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 216, 78, 196)
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 216, 78, 196)
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color:
+                                      const Color.fromARGB(255, 216, 78, 196),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        const Color.fromARGB(255, 216, 78, 196),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Marque suas despesas recorrentes para ter maior previsibilidade no seu orçamento mensal. Isso ajuda a planejar seus gastos fixos e evitar surpresas.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 900),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 216, 78, 196),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

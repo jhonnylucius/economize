@@ -1,5 +1,6 @@
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/loading_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
@@ -38,7 +39,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
   bool _showCharts = false;
   bool _pulseInfo = false;
   // chaves para tutorial
-  final GlobalKey _backKey = GlobalKey();
+
   final GlobalKey _helpKey = GlobalKey();
 
   // Controladores de animação
@@ -451,9 +452,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                 Icons.help_outline, // Ícone de ajuda
                 color: Colors.white,
               ),
-              onPressed: () {
-                // TODO: disparar tutorial interativo usando _helpKey
-              },
+              onPressed: () =>
+                  _showDashboardHelp(context), // Chama o método de ajuda
             ),
           ),
         ],
@@ -772,6 +772,327 @@ class DashBoardScreenState extends State<DashBoardScreen>
                   ),
               ],
             ),
+    );
+  }
+
+  // Adicione este método na classe DashBoardScreenState
+  void _showDashboardHelp(BuildContext context) {
+    final themeManager = context.read<ThemeManager>();
+    Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: themeManager
+                                .getDashboardHeaderBackgroundColor(),
+                            child: Icon(
+                              Icons.analytics_outlined,
+                              color: themeManager.getDashboardHeaderTextColor(),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Dashboard Financeiro",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Visualizando seus dados financeiros",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Resumo Financeiro
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Resumo Financeiro",
+                        icon: Icons.bar_chart,
+                        iconColor:
+                            themeManager.getDashboardHeaderBackgroundColor(),
+                        content:
+                            "O card de resumo apresenta seus dados financeiros gerais:\n\n"
+                            "• Receitas: Total de todas as entradas de dinheiro\n\n"
+                            "• Despesas: Total de todos os gastos registrados\n\n"
+                            "• Médias: Valores médios de receitas e despesas\n\n"
+                            "• Saldo: Diferença entre receitas e despesas, destacado em verde (positivo) ou vermelho (negativo)",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Gráfico de Receitas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Gráfico de Receitas",
+                        icon: Icons.pie_chart,
+                        iconColor: Colors.green,
+                        content:
+                            "Este gráfico mostra a distribuição de suas receitas por tipo:\n\n"
+                            "• Cada fatia representa um tipo diferente de receita\n\n"
+                            "• As porcentagens indicam quanto cada tipo representa do total\n\n"
+                            "• As cores diferenciam os tipos de receita\n\n"
+                            "• Toque no gráfico para ver detalhes completos",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Gráfico de Despesas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Gráfico de Despesas",
+                        icon: Icons.pie_chart,
+                        iconColor: Colors.red,
+                        content:
+                            "Este gráfico mostra a distribuição de suas despesas por tipo:\n\n"
+                            "• Cada fatia representa um tipo diferente de despesa\n\n"
+                            "• As porcentagens indicam quanto cada tipo representa do total\n\n"
+                            "• Você pode filtrar por mês usando o seletor acima do gráfico\n\n"
+                            "• Toque no gráfico para ver uma análise detalhada",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Filtro de Mês
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Seletor de Mês",
+                        icon: Icons.calendar_month,
+                        iconColor: Colors.blue,
+                        content:
+                            "O seletor de mês permite filtrar dados por período:\n\n"
+                            "• Selecione 'Todas' para ver despesas de todos os meses\n\n"
+                            "• Escolha um mês específico para filtrar as despesas\n\n"
+                            "• O gráfico de despesas é atualizado automaticamente\n\n"
+                            "• Útil para analisar padrões de gastos mensais",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Atualização e Celebração
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Atualização e Celebração",
+                        icon: Icons.refresh,
+                        iconColor: Colors.teal,
+                        content: "Mantenha seus dados atualizados:\n\n"
+                            "• Botão de atualização: Recarrega todos os dados financeiros\n\n"
+                            "• Botão de celebração: Quando seu saldo é positivo, clique para ver uma animação celebrativa\n\n"
+                            "• Se o saldo for muito bom (acima de 50% das despesas), uma celebração especial será mostrada\n\n"
+                            "• Indicadores visuais mostram se seu saldo é positivo ou negativo",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Análises Detalhadas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Análises Detalhadas",
+                        icon: Icons.analytics,
+                        iconColor: Colors.purple,
+                        content: "Para obter análises mais profundas:\n\n"
+                            "• Toque em qualquer gráfico para ver informações detalhadas\n\n"
+                            "• Na visualização detalhada, você verá valores exatos e percentuais\n\n"
+                            "• As análises ajudam a identificar onde seu dinheiro está sendo ganho e gasto\n\n"
+                            "• Use essas informações para tomar decisões financeiras mais conscientes",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: themeManager
+                              .getDashboardHeaderBackgroundColor()
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: themeManager
+                                .getDashboardHeaderBackgroundColor()
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: themeManager
+                                      .getDashboardHeaderBackgroundColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: themeManager
+                                        .getDashboardHeaderBackgroundColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Analise os tipos de despesas que representam as maiores fatias do gráfico. Concentre seus esforços de economia nessas áreas para obter o maior impacto no seu orçamento.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: themeManager
+                                .getDashboardHeaderBackgroundColor(),
+                            foregroundColor:
+                                themeManager.getDashboardHeaderTextColor(),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

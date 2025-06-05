@@ -1,4 +1,5 @@
 import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/loading_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
@@ -7,6 +8,7 @@ import 'package:economize/model/costs.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/revenues_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -455,9 +457,8 @@ class _TrendChartScreenState extends State<TrendChartScreen>
               key: _helpButtonKey,
               icon: const Icon(Icons.help_outline, color: Colors.white),
               tooltip: 'Ajuda',
-              onPressed: () {
-                // TODO: disparar tutorial
-              },
+              onPressed: () =>
+                  _showHomeScreenHelp(context), // Chama o método de ajuda
             ),
             // Seletor de ano
             SlideAnimation.fromRight(
@@ -747,6 +748,356 @@ class _TrendChartScreenState extends State<TrendChartScreen>
                         ),
                     ],
                   ),
+      ),
+    );
+  }
+
+  // Adicione este método na classe _TrendChartScreenState
+  void _showHomeScreenHelp(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeManager = Provider.of<ThemeManager>(context, listen: false);
+    final isDark = themeManager.currentThemeType != ThemeType.light;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                themeManager.getCurrentPrimaryColor(),
+                            child: Icon(
+                              Icons.home,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Tela Principal",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Centro de controle do seu gerenciamento financeiro",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Barra Superior
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Barra de Navegação Superior",
+                        icon: Icons.bar_chart,
+                        iconColor: themeManager.getCurrentPrimaryColor(),
+                        content:
+                            "A barra superior oferece acesso rápido às principais funcionalidades:\n\n"
+                            "• Logo do Economize\$: Identidade visual do aplicativo\n\n"
+                            "• Botão de Ajuda: Abre este guia de informações\n\n"
+                            "• Notificações: Mostra alertas importantes sobre suas finanças\n\n"
+                            "• Busca: Encontre rapidamente qualquer funcionalidade no app",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Card Financeiro
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Resumo Financeiro",
+                        icon: Icons.account_balance_wallet,
+                        iconColor: Colors.green,
+                        content:
+                            "O card colorido no topo apresenta seu resumo financeiro:\n\n"
+                            "• Saldo Atual: Total das receitas menos despesas\n\n"
+                            "• Indicador de Variação: Mostra se sua situação financeira está melhorando (verde) ou piorando (vermelho)\n\n"
+                            "• Barras de Progresso: Visualize seu progresso em metas de economia e controle de gastos\n\n"
+                            "• Toque no card para acessar o Dashboard completo",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Categorias
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Filtro de Categorias",
+                        icon: Icons.category,
+                        iconColor: Colors.blue,
+                        content:
+                            "Os filtros horizontais organizam as funcionalidades:\n\n"
+                            "• Principais: Exibe todas as funcionalidades disponíveis\n\n"
+                            "• Financeiro: Mostra apenas controles financeiros como Orçamentos, Despesas e Receitas\n\n"
+                            "• Gestão: Ferramentas para gerenciamento de dados e itens\n\n"
+                            "• Relatórios: Seção de análises e tendências financeiras",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Grid de Funcionalidades
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Funcionalidades Principais",
+                        icon: Icons.apps,
+                        iconColor: Colors.purple,
+                        content:
+                            "O grid central dá acesso a todas as ferramentas:\n\n"
+                            "• Orçamentos: Planeje suas finanças definindo limites por categoria\n\n"
+                            "• Despesas: Registre e acompanhe todos os seus gastos\n\n"
+                            "• Receitas: Cadastre suas fontes de renda\n\n"
+                            "• Dashboard: Visualize gráficos e análises detalhadas\n\n"
+                            "• Relatórios: Exportação e visualização de dados históricos\n\n"
+                            "• Gerenciar Produtos: Cadastre itens frequentes para facilitar registros\n\n"
+                            "• Tendências: Analise padrões de gastos ao longo do tempo\n\n"
+                            "• Metas: Defina e acompanhe objetivos financeiros",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Alternador de visualização
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Modos de Visualização",
+                        icon: Icons.view_list,
+                        iconColor: Colors.amber,
+                        content:
+                            "Personalize como visualizar as funcionalidades:\n\n"
+                            "• Modo Grade: Visualização compacta em blocos com ícones grandes\n\n"
+                            "• Modo Lista: Formato expandido com descrições detalhadas\n\n"
+                            "• Alterne entre os modos tocando no botão no canto superior direito da seção",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Barra inferior
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Barra de Navegação Inferior",
+                        icon: Icons.menu,
+                        iconColor: Colors.teal,
+                        content:
+                            "Acesso rápido a funcionalidades essenciais:\n\n"
+                            "• Temas: Personalize a aparência do aplicativo (cores e modo claro/escuro)\n\n"
+                            "• Metas: Acesse diretamente suas metas financeiras\n\n"
+                            "• Botão Central: Atalho para a função mais importante (personalizável)\n\n"
+                            "• Saldo: Visualize rapidamente seu saldo atual detalhado\n\n"
+                            "• Dicas: Receba conselhos personalizados para melhorar suas finanças",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 7: Painel Flutuante
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 700),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "7. Dicas Flutuantes",
+                        icon: Icons.lightbulb_outline,
+                        iconColor: Colors.orange,
+                        content:
+                            "Painéis que aparecem ocasionalmente para ajudar você:\n\n"
+                            "• Dicas personalizadas baseadas no seu uso do aplicativo\n\n"
+                            "• Lembretes importantes sobre suas finanças\n\n"
+                            "• Sugestões para melhorar seu controle financeiro\n\n"
+                            "• Você pode fechá-los a qualquer momento tocando no X",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 800),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: themeManager
+                              .getCurrentPrimaryColor()
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: themeManager
+                                .getCurrentPrimaryColor()
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.tips_and_updates,
+                                  color: themeManager.getCurrentPrimaryColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica profissional",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        themeManager.getCurrentPrimaryColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Comece cadastrando todas as suas fontes de receita e despesas recorrentes para ter uma visão real da sua situação financeira. O Economize\$ funcionará melhor com dados completos!",
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 900),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                themeManager.getCurrentPrimaryColor(),
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

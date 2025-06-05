@@ -1,3 +1,7 @@
+import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
+import 'package:economize/animations/scale_animation.dart';
+import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/data/default_items.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
 import 'package:economize/model/budget/budget.dart';
@@ -105,9 +109,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
             key: _helpButtonKey,
             icon: const Icon(Icons.help_outline),
             color: themeManager.getBudgetListHeaderTextColor(),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando as chaves
-            },
+            onPressed: () => _showBudgetListHelp(context),
           ),
         ],
       ),
@@ -169,6 +171,328 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
         _buildCategoryFilter(themeManager),
         Expanded(child: _buildBudgetList(themeManager)),
       ],
+    );
+  }
+
+  // Adicione este método na classe _BudgetListScreenState
+  void _showBudgetListHelp(BuildContext context) {
+    final themeManager = context.read<ThemeManager>();
+    final appThemes = AppThemes();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                themeManager.getBudgetListHeaderColor(),
+                            child: Icon(
+                              MyFlutterApp.building,
+                              color:
+                                  themeManager.getBudgetListHeaderTextColor(),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Lista de Orçamentos",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: appThemes.getCardTitleColor(),
+                                  ),
+                                ),
+                                Text(
+                                  "Como gerenciar seus orçamentos",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: appThemes.getListTileSubtitleColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Barra de Pesquisa
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Barra de Pesquisa",
+                        icon: Icons.search,
+                        iconColor: themeManager.getBudgetListHeaderColor(),
+                        content:
+                            "Use a barra de pesquisa para encontrar orçamentos específicos:\n\n"
+                            "• Digite o nome de um produto para filtrar os orçamentos que o contêm\n\n"
+                            "• A pesquisa é instantânea e mostra resultados à medida que você digita\n\n"
+                            "• Clique no ícone de 'X' para limpar sua pesquisa atual",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Filtro por Categorias
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Filtro por Categorias",
+                        icon: Icons.category,
+                        iconColor: Colors.blue,
+                        content:
+                            "Use os chips de categorias para filtrar orçamentos:\n\n"
+                            "• Selecione 'Todos' para ver todos os orçamentos\n\n"
+                            "• Clique em uma categoria específica para ver apenas os orçamentos que contêm itens dessa categoria\n\n"
+                            "• É possível combinar a pesquisa de texto com o filtro por categoria",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Lista de Orçamentos
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Cards de Orçamento",
+                        icon: MyFlutterApp.building,
+                        iconColor: Colors.orange,
+                        content:
+                            "Cada card mostra informações importantes sobre um orçamento:\n\n"
+                            "• Título do orçamento\n\n"
+                            "• Data de criação\n\n"
+                            "• Total original: soma dos preços médios ou padrão\n\n"
+                            "• Melhor preço: custo total comprando cada item pelo menor preço\n\n"
+                            "• Economia: diferença entre o total original e o melhor preço",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Interação com os Cards
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Gerenciando Orçamentos",
+                        icon: Icons.touch_app,
+                        iconColor: Colors.green,
+                        content:
+                            "Você pode interagir com os orçamentos de várias formas:\n\n"
+                            "• Toque em um card para abrir os detalhes do orçamento\n\n"
+                            "• Use o ícone de lixeira para excluir um orçamento\n\n"
+                            "• Ao excluir, será solicitada uma confirmação para evitar exclusões acidentais\n\n"
+                            "• A exclusão de um orçamento não pode ser desfeita",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Botão Novo Orçamento
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Criando Novos Orçamentos",
+                        icon: Icons.add_circle,
+                        iconColor: Colors.purple,
+                        content: "Para criar um novo orçamento:\n\n"
+                            "• Clique no botão flutuante 'Novo Orçamento' no canto inferior direito\n\n"
+                            "• Digite um título descritivo para seu orçamento\n\n"
+                            "• Clique em 'Criar' para confirmar\n\n"
+                            "• Você será direcionado para a tela de detalhes do orçamento, onde poderá adicionar itens e locais",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Botão de Atualização
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Atualizando a Lista",
+                        icon: Icons.refresh,
+                        iconColor: themeManager.getBudgetListHeaderColor(),
+                        content: "Caso não esteja vendo mudanças recentes:\n\n"
+                            "• Use o botão de atualização no canto superior direito\n\n"
+                            "• Isso recarregará todos os orçamentos do banco de dados\n\n"
+                            "• Útil após adicionar ou modificar orçamentos em outra parte do aplicativo",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: themeManager
+                              .getBudgetListHeaderColor()
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: themeManager
+                                .getBudgetListHeaderColor()
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color:
+                                      themeManager.getBudgetListHeaderColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        themeManager.getBudgetListHeaderColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Crie orçamentos separados para diferentes finalidades, como 'Compras da Semana', 'Material Escolar' ou 'Reforma'. Isso facilita o acompanhamento e comparação de preços para cada projeto.",
+                              style: TextStyle(
+                                  color: appThemes.getCardTextColor()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                themeManager.getBudgetListHeaderColor(),
+                            foregroundColor:
+                                themeManager.getBudgetListHeaderTextColor(),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    final appThemes = AppThemes();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: appThemes.getCardTitleColor(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: appThemes.getCardTextColor(),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -385,7 +385,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // Appbar personalizado com animações e CONTADOR DE NOTIFICAÇÕES (Substituído)
-  // Sinaliza que este método substitui o da classe pai (State)
   AppBar _buildAppBar(
       ThemeData theme, bool isDarkMode, ThemeManager themeManager) {
     return AppBar(
@@ -439,9 +438,21 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
       actions: [
+        // Botão de ajuda (NOVO)
+        SlideAnimation.fromRight(
+          delay: const Duration(milliseconds: 300),
+          child: IconButton(
+            icon: Icon(
+              Icons.help_outline,
+              color: theme.colorScheme.onPrimary,
+            ),
+            onPressed: () => _showHomeScreenHelp(context),
+            tooltip: 'Ajuda',
+          ),
+        ),
+
         SlideAnimation.fromRight(
           delay: const Duration(milliseconds: 400),
-          // ValueListenableBuilder para o contador de notificações
           child: ValueListenableBuilder<int>(
               valueListenable: _notificationService.unreadCount,
               builder: (context, unreadCount, _) {
@@ -453,25 +464,21 @@ class _HomeScreenState extends State<HomeScreen>
                         color: theme.colorScheme.onPrimary,
                       ),
                       onPressed: () {
-                        // Mostrar notificações usando o novo método
                         _showNotificationOverlay(context);
                       },
                     ),
-                    // Exibe o contador apenas se houver notificações não lidas
                     if (unreadCount > 0)
                       Positioned(
                         right: 8,
                         top: 8,
                         child: ScaleAnimation.bounceIn(
-                          // Animação no contador
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: theme.colorScheme
-                                    .primary, // Borda com a cor primária do tema
+                                color: theme.colorScheme.primary,
                                 width: 1.5,
                               ),
                             ),
@@ -480,7 +487,6 @@ class _HomeScreenState extends State<HomeScreen>
                               minHeight: 18,
                             ),
                             child: Text(
-                              // Limita para "9+" se for maior que 9
                               unreadCount > 9 ? '9+' : '$unreadCount',
                               style: const TextStyle(
                                 color: Colors.white,
@@ -1287,7 +1293,7 @@ class _HomeScreenState extends State<HomeScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Economize mais criando um orçamento mensal bem organizado!',
+                      'Se precisar de ajuda, toque no simbolo de interrogação(?) no canto superior direito de cada tela.',
                       style: TextStyle(
                         fontSize: 14,
                         // Usar a cor primária para texto no modo escuro
@@ -2008,6 +2014,247 @@ class _HomeScreenState extends State<HomeScreen>
           shape: RoundedRectangleBorder(
             // Borda arredondada
             borderRadius: BorderRadius.circular(16),
+          ),
+        );
+      },
+    );
+  }
+
+  // Adicione este método na classe _HomeScreenState
+  void _showHomeScreenHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: const Color(0xFF6200EE),
+                            child: Icon(
+                              Icons.help_outline,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Guia da Tela Principal",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Conhecendo todas as funcionalidades",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Barra Superior de Notificações
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        title: "1. Barra de Navegação Superior",
+                        icon: Icons.notifications_outlined,
+                        iconColor: Colors.deepPurple,
+                        content:
+                            "Na parte superior do aplicativo você encontra:\n\n"
+                            "• Ícone de Notificações: Mostra alertas importantes sobre suas finanças\n\n"
+                            "• Botão de Busca: Encontre rapidamente qualquer funcionalidade",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Categorias
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        title: "2. Categorias",
+                        icon: Icons.category,
+                        iconColor: Colors.blue,
+                        content:
+                            "As categorias ajudam a filtrar as funcionalidades disponíveis:\n\n"
+                            "• Principais: Mostra todas as funcionalidades\n"
+                            "• Financeiro: Filtra por opções de controle financeiro\n"
+                            "• Gestão: Mostra opções para gerenciar seus dados\n"
+                            "• Relatórios: Exibe opções de relatórios e análises",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Grid de Funcionalidades
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        title: "3. Funcionalidades",
+                        icon: Icons.apps,
+                        iconColor: Colors.orange,
+                        content:
+                            "O grid central mostra todas as funcionalidades disponíveis:\n\n"
+                            "• Orçamentos: Gerencie seus orçamentos mensais\n"
+                            "• Despesas: Registre e controle seus gastos\n"
+                            "• Receitas: Adicione suas fontes de renda\n"
+                            "• Dashboard: Visualize seu panorama financeiro\n"
+                            "• Relatórios: Acesse relatórios detalhados\n"
+                            "• Produtos: Gerencie seus itens cadastrados\n"
+                            "• Dicas: Receba conselhos financeiros\n"
+                            "• Tendências: Analise padrões de gastos e receitas",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Alternador de Visualização
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        title: "4. Modo de Visualização",
+                        icon: Icons.view_list,
+                        iconColor: Colors.teal,
+                        content:
+                            "Você pode alternar entre dois modos de visualização:\n\n"
+                            "• Grade (ícone de grade): Visualização compacta em blocos\n\n"
+                            "• Lista (ícone de lista): Visualização detalhada em formato de lista, com descrições",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Barra de Navegação Inferior
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        title: "5. Barra de Navegação Inferior",
+                        icon: Icons.menu,
+                        iconColor: Colors.indigo,
+                        content:
+                            "Acesso rápido a funcionalidades essenciais:\n\n"
+                            "• Temas: Personalize a aparência do aplicativo\n"
+                            "• Metas: Acesse suas metas financeiras\n"
+                            "• Saldo: Visualize seu saldo atual detalhado\n"
+                            "• Dicas: Receba conselhos financeiros úteis",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 600),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6200EE)
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF6200EE)
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: const Color(0xFF6200EE),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF6200EE),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Clique no ícone de ajuda em cada tela para obter guias detalhados de como usar cada funcionalidade!",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 700),
+                        child: PressableCard(
+                          onPress: () => Navigator.pop(context),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6200EE),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },

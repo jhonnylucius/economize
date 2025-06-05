@@ -1,5 +1,6 @@
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
+import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/loading_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
@@ -277,9 +278,7 @@ class _BalanceScreenState extends State<BalanceScreen>
             icon: const Icon(Icons.help_outline),
             color: theme.colorScheme.onPrimary,
             tooltip: 'Ajuda',
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
-            },
+            onPressed: () => _showBalanceScreenHelp(context),
           ),
         ],
       ),
@@ -663,6 +662,300 @@ class _BalanceScreenState extends State<BalanceScreen>
                   ),
               ],
             ),
+    );
+  }
+
+  // Adicione este método na classe _BalanceScreenState
+  void _showBalanceScreenHelp(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary,
+                            child: Icon(
+                              Icons.account_balance_wallet,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Saldo Mensal",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Entendendo sua situação financeira",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Círculo de Saúde Financeira
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Indicador de Saúde Financeira",
+                        icon: Icons.show_chart,
+                        iconColor: theme.colorScheme.primary,
+                        content:
+                            "O círculo central mostra visualmente sua saúde financeira:\n\n"
+                            "• Círculo Verde: Quanto maior a área verde, melhor sua situação\n\n"
+                            "• Círculo Vermelho: Representa o total de despesas em relação às receitas\n\n"
+                            "• Efeitos Visuais: Raios vermelhos aparecem quando as despesas estão muito altas\n\n"
+                            "• Valor Central: Mostra seu saldo atual (receitas menos despesas)",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Card de Informações Financeiras
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Detalhes Financeiros",
+                        icon: Icons.info_outline,
+                        iconColor: Colors.blue,
+                        content:
+                            "O card de informações mostra o resumo detalhado:\n\n"
+                            "• Receitas: Total de entradas financeiras do mês atual\n\n"
+                            "• Despesas: Total de saídas financeiras do mês atual\n\n"
+                            "• Saldo: Diferença entre receitas e despesas\n\n"
+                            "• Os valores são calculados apenas para o mês atual",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Mensagens e Alertas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Mensagens de Status",
+                        icon: Icons.message,
+                        iconColor: Colors.green,
+                        content:
+                            "Abaixo do resumo financeiro, você receberá mensagens personalizadas:\n\n"
+                            "• Mensagem Verde: Quando seu saldo é positivo\n\n"
+                            "• Mensagem Vermelha: Quando as despesas excedem as receitas\n\n"
+                            "• Alerta Âmbar: Quando as despesas estão muito próximas das receitas\n\n"
+                            "• Dicas Personalizadas: Conselhos financeiros baseados na sua situação atual",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Efeitos Visuais
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Efeitos Visuais",
+                        icon: Icons.animation,
+                        iconColor: Colors.purple,
+                        content:
+                            "Os efeitos visuais ajudam a entender sua situação financeira:\n\n"
+                            "• Confetes Verdes: Aparecem quando seu saldo é positivo e saudável\n\n"
+                            "• Ondas Verdes: Indicam finanças em equilíbrio\n\n"
+                            "• Raios Vermelhos: Alertam quando as despesas estão consumindo suas receitas\n\n"
+                            "• Pulsação: O círculo central pulsa quando sua situação financeira é crítica",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Botão de Atualização
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Atualizando os Dados",
+                        icon: Icons.refresh,
+                        iconColor: Colors.teal,
+                        content: "Mantenha seus dados atualizados:\n\n"
+                            "• Botão Atualizar: Recarrega todos os dados financeiros do mês atual\n\n"
+                            "• Use após registrar novas receitas ou despesas\n\n"
+                            "• Os dados são filtrados automaticamente para exibir apenas o mês corrente\n\n"
+                            "• A tela atualiza animações e alertas conforme sua situação financeira",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 600),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.primary
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Para manter suas finanças saudáveis, tente manter suas despesas abaixo de 70% das suas receitas. Isso garante uma margem de segurança e possibilita economias para o futuro.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 700),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

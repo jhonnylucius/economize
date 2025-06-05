@@ -213,13 +213,330 @@ class _ReportScreenState extends State<ReportScreen>
               Icons.help_outline, // Ícone de ajuda
               color: Colors.white,
             ),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _helpKey
-            },
+            onPressed: () =>
+                _showReportScreenHelp(context), // Chama o método de ajuda
           ),
         ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+
+  // Adicione este método na classe _ReportScreenState
+  void _showReportScreenHelp(BuildContext context) {
+    final themeManager = context.read<ThemeManager>();
+    final isDark = themeManager.currentThemeType != ThemeType.light;
+    final textColor = isDark ? Colors.white : Colors.black;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                const Color.fromARGB(255, 216, 78, 196),
+                            child: Icon(
+                              Icons.analytics_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Relatórios Financeiros",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como analisar suas finanças em detalhes",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Filtros
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Filtros de Relatório",
+                        icon: Icons.filter_list,
+                        iconColor: const Color.fromARGB(255, 216, 78, 196),
+                        content:
+                            "Personalize seus relatórios com filtros específicos:\n\n"
+                            "• Botões de Receitas/Despesas: Alterne entre visualizar receitas ou despesas\n\n"
+                            "• Tipo Específico: Filtre por categorias como 'Salário', 'Alimentação', etc.\n\n"
+                            "• Período: O relatório mostra dados do mês atual\n\n"
+                            "• Os filtros aplicados atualizam automaticamente os dados mostrados",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Visualização em lista ou grade
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Modos de Visualização",
+                        icon: Icons.view_list,
+                        iconColor: Colors.blue,
+                        content:
+                            "Escolha como deseja visualizar seus dados:\n\n"
+                            "• Clique no botão de alternar visualização (lista/grade)\n\n"
+                            "• Visualização em Lista: Mostra detalhes em formato de lista\n\n"
+                            "• Visualização em Grade: Exibe dados em formato de cards\n\n"
+                            "• Cada formato facilita diferentes tipos de análise",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Totais por categoria
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Totais por Categoria",
+                        icon: Icons.pie_chart_outline,
+                        iconColor: Colors.green,
+                        content:
+                            "Analise a distribuição de suas finanças por categoria:\n\n"
+                            "• O card 'Total por Categoria' mostra quanto você gastou/recebeu em cada tipo\n\n"
+                            "• Barras de progresso indicam a proporção de cada categoria em relação ao total\n\n"
+                            "• As categorias são ordenadas da maior para a menor\n\n"
+                            "• Use essa análise para identificar seus maiores gastos ou fontes de receita",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Lista de itens
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Lista de Transações",
+                        icon: Icons.list_alt,
+                        iconColor: Colors.orange,
+                        content: "Veja todas as transações filtradas:\n\n"
+                            "• Cada item mostra descrição, categoria e valor\n\n"
+                            "• Ícones indicam se é uma receita (seta para cima) ou despesa (seta para baixo)\n\n"
+                            "• Valores são destacados para fácil visualização\n\n"
+                            "• A lista é animada para melhor experiência de usuário",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Card de total
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Total do Relatório",
+                        icon: Icons.calculate,
+                        iconColor: Colors.purple,
+                        content:
+                            "Na parte inferior, veja o total consolidado:\n\n"
+                            "• Card destacado mostra o valor total das transações filtradas\n\n"
+                            "• 'Total Recebido' para receitas ou 'Total Gasto' para despesas\n\n"
+                            "• Valor destacado para fácil visualização\n\n"
+                            "• Representa a soma de todas as transações exibidas no relatório",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Exportação e atualização
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Atualização de Dados",
+                        icon: Icons.refresh,
+                        iconColor: Colors.teal,
+                        content: "Mantenha seus relatórios atualizados:\n\n"
+                            "• O botão de atualização recarrega os dados mais recentes\n\n"
+                            "• Utilize sempre que adicionar novas receitas ou despesas\n\n"
+                            "• Uma animação de carregamento indica que os dados estão sendo atualizados\n\n"
+                            "• Os relatórios mostram apenas dados do mês atual por padrão",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 216, 78, 196)
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 216, 78, 196)
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color:
+                                      const Color.fromARGB(255, 216, 78, 196),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        const Color.fromARGB(255, 216, 78, 196),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Analise seus relatórios regularmente para identificar padrões de gastos. Compare 'Total por Categoria' de um mês para outro para verificar onde você está economizando ou gastando mais.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 216, 78, 196),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

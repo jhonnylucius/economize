@@ -103,9 +103,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
             icon: const Icon(Icons.help_outline),
             color: Colors.white,
             tooltip: 'Ajuda',
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _backButtonKey e _helpButtonKey
-            },
+            onPressed: () => _showGoalCalculatorHelp(context),
           ),
         ],
       ),
@@ -268,6 +266,317 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  // Adicione este método na classe _GoalCalculatorScreenState, logo acima do método build()
+  void _showGoalCalculatorHelp(BuildContext context) {
+    Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: _primaryPurple,
+                            child: Icon(
+                              Icons.calculate,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Calculadora de Metas",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como planejar suas metas financeiras",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Formulário de Metas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "1. Definindo Sua Meta",
+                        icon: Icons.edit_outlined,
+                        iconColor: _primaryPurple,
+                        content:
+                            "Use o formulário para definir sua meta financeira:\n\n"
+                            "• Nome da Meta: Identifique claramente seu objetivo (ex: 'Comprar um carro')\n\n"
+                            "• Valor Total: Quanto dinheiro você precisa juntar\n\n"
+                            "• Você Já Possui: Caso já tenha economizado parte do valor\n\n"
+                            "• Taxa de Juros: Rendimento mensal da poupança/investimento onde guardará o dinheiro",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Opções de Cálculo
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "2. Tipos de Cálculo",
+                        icon: Icons.sync_alt,
+                        iconColor: Colors.blue,
+                        content: "Escolha entre dois tipos de cálculo:\n\n"
+                            "• Por Tempo: Você define quanto pode economizar por mês, e descobre em quanto tempo atingirá a meta\n\n"
+                            "• Por Valor Mensal: Você define em quanto tempo quer atingir a meta, e descobre quanto deverá economizar por mês\n\n"
+                            "• Selecione o botão correspondente ao tipo de cálculo desejado",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Resultado do Cálculo
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "3. Resultado",
+                        icon: Icons.check_circle_outline,
+                        iconColor: Colors.green,
+                        content:
+                            "Após clicar em 'Calcular', você verá um resumo detalhado:\n\n"
+                            "• Nome e valor total da meta\n\n"
+                            "• Valor mensal necessário ou tempo total para alcançar o objetivo\n\n"
+                            "• Total acumulado considerando os juros\n\n"
+                            "• Gráfico visual do progresso estimado mês a mês\n\n"
+                            "• Uma animação de celebração aparecerá brevemente quando o cálculo for concluído",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Dicas Adicionais
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "4. Dicas para Alcançar Sua Meta",
+                        icon: Icons.lightbulb_outline,
+                        iconColor: Colors.amber,
+                        content:
+                            "Após o resultado, você receberá dicas personalizadas:\n\n"
+                            "• Estabeleça metas intermediárias para manter o foco\n\n"
+                            "• Use contas específicas para separar o dinheiro da meta\n\n"
+                            "• Configure transferências automáticas para garantir disciplina\n\n"
+                            "• Estas dicas ajudam a transformar o planejamento em realidade",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Recalcular
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "5. Recalculando Sua Meta",
+                        icon: Icons.refresh,
+                        iconColor: Colors.purple,
+                        content:
+                            "Você pode ajustar seus planos a qualquer momento:\n\n"
+                            "• Clique no botão 'Recalcular' para voltar ao formulário\n\n"
+                            "• Altere os parâmetros conforme necessário\n\n"
+                            "• Teste diferentes cenários (valores, prazos ou taxas de juros)\n\n"
+                            "• Compare os resultados para encontrar o plano ideal para você",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Integrando com outras funcionalidades
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        context: context,
+                        title: "6. Integração com o Aplicativo",
+                        icon: Icons.integration_instructions,
+                        iconColor: _primaryPurple,
+                        content:
+                            "Use a calculadora junto com outras funções do aplicativo:\n\n"
+                            "• Após calcular, crie uma meta na seção 'Minhas Metas' para acompanhar seu progresso\n\n"
+                            "• Controle receitas e despesas para garantir que consiga economizar o valor mensal necessário\n\n"
+                            "• Consulte a seção de Dicas Financeiras para estratégias de economia e investimento",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 700),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _primaryPurple.withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                _primaryPurple.withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: _primaryPurple,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica útil",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: _primaryPurple,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Para metas de longo prazo, considere investimentos com rendimentos maiores que a poupança. Mesmo um pequeno aumento na taxa de juros pode reduzir significativamente o tempo ou o valor mensal necessário.",
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 800),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryPurple,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );

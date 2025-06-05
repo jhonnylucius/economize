@@ -1,3 +1,4 @@
+import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
@@ -5,6 +6,7 @@ import 'package:economize/icons/my_flutter_app_icons.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/revenues_service.dart';
+import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/category_grid.dart';
 import 'package:flutter/material.dart';
@@ -199,14 +201,352 @@ class _RevenuesScreenState extends State<RevenuesScreen>
               Icons.help_outline, // Ícone de ajuda
               color: Colors.white,
             ),
-            onPressed: () {
-              // TODO: disparar tutorial interativo usando _helpKey
-            },
+            onPressed: () =>
+                _showRevenuesScreenHelp(context), // Chama o método de ajuda
           ),
         ),
         const SizedBox(width: 8),
       ],
       bottom: _isFiltering ? _buildFilterBar(themeManager) : null,
+    );
+  }
+
+  // Adicione este método na classe _RevenuesScreenState
+  void _showRevenuesScreenHelp(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeManager = Provider.of<ThemeManager>(context, listen: false);
+    final isDark = themeManager.currentThemeType != ThemeType.light;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    SlideAnimation.fromTop(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                themeManager.getCurrentPrimaryColor(),
+                            child: Icon(
+                              Icons.attach_money,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Tela de Receitas",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Como gerenciar suas entradas financeiras",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Barra Superior
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 100),
+                      child: _buildHelpSection(
+                        title: "1. Barra de Ferramentas",
+                        icon: Icons.search,
+                        iconColor: Colors.blue,
+                        content:
+                            "A barra superior oferece acesso a ferramentas importantes:\n\n"
+                            "• Título 'Receitas': Identifica a tela atual\n\n"
+                            "• Filtrar: Permite buscar receitas por texto ou datas\n\n"
+                            "• Atualizar: Recarrega a lista de receitas\n\n"
+                            "• Ajuda: Abre este guia de informações",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Card Resumo
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildHelpSection(
+                        title: "2. Resumo Financeiro",
+                        icon: Icons.account_balance_wallet_outlined,
+                        iconColor: Colors.green,
+                        content:
+                            "O card de resumo mostra uma visão geral de suas receitas:\n\n"
+                            "• Valor Total: Soma de todas as suas receitas listadas\n\n"
+                            "• Contador: Quantidade de receitas registradas\n\n"
+                            "• Filtros Aplicados: Indica quando há filtros ativos\n\n"
+                            "• Botão Limpar: Remove todos os filtros aplicados",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Lista de Receitas
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 300),
+                      child: _buildHelpSection(
+                        title: "3. Lista de Receitas",
+                        icon: Icons.list_alt,
+                        iconColor: Colors.amber,
+                        content:
+                            "Cada card na lista apresenta detalhes de uma receita:\n\n"
+                            "• Tipo e Ícone: Identifica a categoria da receita (Salário, Investimentos, etc)\n\n"
+                            "• Data: Mostra quando a receita foi recebida\n\n"
+                            "• Valor: Exibe o montante da receita com destaque\n\n"
+                            "• Opções rápidas: Botões para editar ou excluir a receita",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Ações de Deslize
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 400),
+                      child: _buildHelpSection(
+                        title: "4. Gestos e Interações",
+                        icon: Icons.swipe,
+                        iconColor: Colors.purple,
+                        content:
+                            "Existem várias formas de interagir com suas receitas:\n\n"
+                            "• Toque no Card: Abre o formulário para edição da receita\n\n"
+                            "• Deslize para Esquerda: Exclui rapidamente uma receita\n\n"
+                            "• Botões de Ação: Atalhos para editar ou excluir cada item\n\n"
+                            "• Arraste para Baixo: Atualiza a lista de receitas",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 5: Botões Inferiores
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 500),
+                      child: _buildHelpSection(
+                        title: "5. Botões de Ação",
+                        icon: Icons.add_circle_outline,
+                        iconColor: const Color(0xFF4CAF50),
+                        content:
+                            "Os botões na parte inferior permitem ações rápidas:\n\n"
+                            "• Adicionar Receita: Abre o formulário para cadastrar uma nova receita\n\n"
+                            "• Ir para Despesas: Navega diretamente para a tela de despesas\n\n"
+                            "• Os botões flutuam sobre a lista para fácil acesso",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 6: Formulário de Receitas
+                    SlideAnimation.fromRight(
+                      delay: const Duration(milliseconds: 600),
+                      child: _buildHelpSection(
+                        title: "6. Cadastro de Receitas",
+                        icon: Icons.edit_note,
+                        iconColor: Colors.orange,
+                        content:
+                            "O formulário permite cadastrar ou editar receitas:\n\n"
+                            "• Data: Selecione a data em que recebeu a receita\n\n"
+                            "• Valor: Digite o valor recebido (use ponto como separador decimal)\n\n"
+                            "• Tipo: Escolha a categoria que melhor descreve a receita\n\n"
+                            "• Salvar: Confirma o cadastro ou atualização da receita",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Seção 7: Mensagens e Notificações
+                    SlideAnimation.fromLeft(
+                      delay: const Duration(milliseconds: 700),
+                      child: _buildHelpSection(
+                        title: "7. Mensagens e Notificações",
+                        icon: Icons.notifications_none,
+                        iconColor: Colors.teal,
+                        content:
+                            "O app comunica o resultado das suas ações:\n\n"
+                            "• Mensagens de Sucesso: Confirmam quando uma ação foi realizada\n\n"
+                            "• Alertas de Erro: Informam quando algo não funcionou como esperado\n\n"
+                            "• Confirmações: Pedem sua confirmação antes de ações irreversíveis\n\n"
+                            "• Indicadores Visuais: Mostram quando uma operação está em andamento",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dicas
+                    FadeAnimation(
+                      delay: const Duration(milliseconds: 800),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: themeManager
+                              .getCurrentPrimaryColor()
+                              .withAlpha((0.1 * 255).round()),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: themeManager
+                                .getCurrentPrimaryColor()
+                                .withAlpha((0.3 * 255).round()),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.tips_and_updates,
+                                  color: themeManager.getCurrentPrimaryColor(),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Dica profissional",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        themeManager.getCurrentPrimaryColor(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Registre todas as suas fontes de renda, mesmo as ocasionais ou de pequeno valor. Isso dará uma visão mais precisa das suas finanças e ajudará no planejamento do seu orçamento.",
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ScaleAnimation.bounceIn(
+                        delay: const Duration(milliseconds: 900),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                themeManager.getCurrentPrimaryColor(),
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Entendi!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// Método auxiliar para construir seções de ajuda
+  Widget _buildHelpSection({
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
