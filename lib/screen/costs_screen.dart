@@ -342,7 +342,7 @@ class _CostsScreenState extends State<CostsScreen>
                                 Text(
                                   "Gerenciamento de Despesas",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
@@ -428,7 +428,7 @@ class _CostsScreenState extends State<CostsScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildHelpSection(
                         context: context,
-                        title: "4. Indicadores de Status",
+                        title: "4. Indicadores \nde Status",
                         icon: Icons.info_outline,
                         iconColor: Colors.orange,
                         content:
@@ -447,7 +447,7 @@ class _CostsScreenState extends State<CostsScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Gerenciando Despesas",
+                        title: "5. Gerenciando \nDespesas",
                         icon: Icons.edit_outlined,
                         iconColor: Colors.purple,
                         content:
@@ -466,13 +466,13 @@ class _CostsScreenState extends State<CostsScreen>
                       delay: const Duration(milliseconds: 600),
                       child: _buildHelpSection(
                         context: context,
-                        title: "6. Adicionando Novas Despesas",
+                        title: "6. Adicionando \nNovas Despesas",
                         icon: Icons.add_circle_outline,
                         iconColor: const Color.fromARGB(255, 216, 78, 196),
                         content: "Para adicionar uma nova despesa:\n\n"
                             "• Toque no botão 'Add Despesas' na parte inferior da tela\n\n"
                             "• Preencha os campos: data, valor, descrição e categoria\n\n"
-                            "• Marque se a despesa é recorrente e se já foi paga\n\n"
+                            "• Cadastre despesas que ainda vão vencer e receba notificações\n avisando 5 dias antes de seu vencimento\n\n"
                             "• Algumas categorias são automaticamente marcadas como recorrentes",
                       ),
                     ),
@@ -484,7 +484,7 @@ class _CostsScreenState extends State<CostsScreen>
                       delay: const Duration(milliseconds: 700),
                       child: _buildHelpSection(
                         context: context,
-                        title: "7. Navegação para Receitas",
+                        title: "7. Navegação para\n Receitas",
                         icon: Icons.arrow_forward,
                         iconColor: Colors.teal,
                         content: "Para equilibrar seu orçamento, você pode:\n\n"
