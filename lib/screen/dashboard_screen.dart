@@ -925,7 +925,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Atualização e Celebração",
+                        title: "5. Atualização \ne Celebração",
                         icon: Icons.refresh,
                         iconColor: Colors.teal,
                         content: "Mantenha seus dados atualizados:\n\n"
