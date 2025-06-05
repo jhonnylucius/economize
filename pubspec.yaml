@@ -81,6 +81,8 @@ flutter:
   - assets/icon_512x512.png
   - assets/icon_removedbg.png
   - assets/logo_512x512.png
+  - assets/wallet_icon.png
+  
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
