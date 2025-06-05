@@ -220,7 +220,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                                 Text(
                                   "Lista de Orçamentos",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: appThemes.getCardTitleColor(),
                                   ),
@@ -239,7 +239,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
                     const Divider(),
                     const SizedBox(height: 16),
 
@@ -304,7 +304,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                       delay: const Duration(milliseconds: 400),
                       child: _buildHelpSection(
                         context: context,
-                        title: "4. Gerenciando Orçamentos",
+                        title: "4. Gerenciando \nOrçamentos",
                         icon: Icons.touch_app,
                         iconColor: Colors.green,
                         content:
@@ -323,7 +323,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
                       delay: const Duration(milliseconds: 500),
                       child: _buildHelpSection(
                         context: context,
-                        title: "5. Criando Novos Orçamentos",
+                        title: "5. Criando Novos\n Orçamentos",
                         icon: Icons.add_circle,
                         iconColor: Colors.purple,
                         content: "Para criar um novo orçamento:\n\n"
