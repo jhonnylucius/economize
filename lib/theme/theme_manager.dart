@@ -216,6 +216,25 @@ class ThemeManager with ChangeNotifier {
     }
   }
 
+  // ADICIONAR esses métodos no final da classe ThemeManager:
+
+  // Método para cor de fundo geral do app
+  Color getCurrentBackgroundColor() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.grey.shade100; // Fundo claro para tema light
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(
+            255, 20, 20, 20); // Fundo escuro para tema roxo
+    }
+  }
+
+  // Método para cor do header do dashboard (já existe getDashboardHeaderBackgroundColor, mas com nome diferente)
+  Color getDashboardHeaderColor() {
+    // Reutilizando o método que já existe
+    return getDashboardHeaderBackgroundColor();
+  }
+
   Color getDashboardHeaderTextColor() {
     switch (currentThemeType) {
       case ThemeType.light:
@@ -224,6 +243,10 @@ class ThemeManager with ChangeNotifier {
       case ThemeType.roxoEscuro:
         return Colors.white;
     }
+  }
+
+  Color withValues({double? alpha}) {
+    return getCurrentPrimaryColor().withValues(alpha: alpha ?? 1.0);
   }
 
   Color getDashboardHeaderBackgroundColor() {
