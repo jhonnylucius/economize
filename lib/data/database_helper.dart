@@ -1,4 +1,5 @@
 import 'package:economize/data/default_items.dart';
+import 'package:economize/data/gamification/achievement_dao.dart';
 import 'package:economize/data/goal_dao.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart';
@@ -34,7 +35,7 @@ class DatabaseHelper {
         logger.d('Banco já existe, abrindo...');
         return await openDatabase(
           path,
-          version: 13, // Atualizamos de 12 para 13
+          version: 14, // Atualizamos de 12 para 13
           onUpgrade: (db, oldVersion, newVersion) async {
             logger.d('Atualizando banco de $oldVersion para $newVersion');
             await _onUpgrade(db, oldVersion, newVersion);
@@ -196,6 +197,11 @@ class DatabaseHelper {
           FOREIGN KEY (budget_id) REFERENCES budgets (id)
         )
       ''');
+
+      // ADICIONAR: Tabela de conquistas
+      await db.execute(AchievementDao.createTable);
+
+      Logger().e('✅ Tabela de conquistas criada!');
 
       await db.execute('''
         CREATE TABLE IF NOT EXISTS location_totals(
