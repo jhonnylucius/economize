@@ -7,7 +7,9 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/data/goal_dao.dart'; // Importante usar o correto
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/screen/responsive_screen.dart';
+import 'package:economize/service/gamification/achievement_checker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -205,15 +207,23 @@ class _GoalsScreenState extends State<GoalsScreen>
             Positioned.fill(
               child: IgnorePointer(
                 child: ConfettiAnimation(
-                  particleCount: 30,
+                  particleCount: 100, // ✅ DOBREI AS PARTÍCULAS
                   direction: ConfettiDirection.down,
-                  duration: const Duration(seconds: 3),
+                  duration: const Duration(seconds: 4), // ✅ MAIS DURAÇÃO
                   animationController: _celebrationController,
                   colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.secondary,
-                    Colors.amber,
+                    Colors.amber, // ✅ CORES MAIS VIBRANTES
+                    Colors.orange,
+                    Colors.red,
+                    Colors.pink,
+                    Colors.purple,
+                    Colors.blue,
                     Colors.green,
+                    Colors.yellow,
+                    Colors.cyan, // ✅ CORES EXTRAS
+                    Colors.lime,
+                    Colors.indigo,
+                    Colors.teal,
                   ],
                 ),
               ),
@@ -565,17 +575,17 @@ class _GoalsScreenState extends State<GoalsScreen>
             borderRadius: 20,
             child: Container(
               width: 300,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.flag_outlined,
-                    size: 80,
+                    size: 60,
                     color: theme.colorScheme.primary
                         .withAlpha((0.7 * 255).toInt()),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text(
                     'Nenhuma meta definida ainda',
                     style: TextStyle(
@@ -584,16 +594,16 @@ class _GoalsScreenState extends State<GoalsScreen>
                       color: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     'Defina objetivos financeiros e acompanhe seu progresso rumo à conquista.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black87,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   PressableCard(
                     onPress: _addNewGoal,
                     decoration: BoxDecoration(
@@ -611,7 +621,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                     padding: EdgeInsets.zero,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 20),
+                          vertical: 10, horizontal: 18),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -632,7 +642,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                     ),
                   ),
                   // Botão adicional para calculadora de metas
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   PressableCard(
                     onPress: () => Navigator.pushNamed(context, '/calculator'),
                     decoration: BoxDecoration(
@@ -649,7 +659,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                     padding: EdgeInsets.zero,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 20),
+                          vertical: 12, horizontal: 18),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -926,6 +936,13 @@ class _GoalsScreenState extends State<GoalsScreen>
     required IconData icon,
     required Color color,
   }) {
+    // ADICIONAR: Formatador brasileiro
+    final currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
+
     return Row(
       children: [
         Icon(
@@ -943,7 +960,7 @@ class _GoalsScreenState extends State<GoalsScreen>
         ),
         const SizedBox(width: 4),
         Text(
-          'R\$${value.toStringAsFixed(2)}',
+          currencyFormat.format(value),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
@@ -971,9 +988,11 @@ class _GoalsScreenState extends State<GoalsScreen>
   void _showGoalDetails(Goal goal) {
     final theme = Theme.of(context);
     final percentComplete = goal.percentComplete.clamp(0.0, 1.0);
-    final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-    final daysElapsed =
-        DateTime.now().difference(goal.createdAt ?? DateTime.now()).inDays;
+    final currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -1052,7 +1071,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                                 ),
                               ),
                               Text(
-                                '${formatter.format(goal.currentValue)} / ${formatter.format(goal.targetValue)}',
+                                '${currencyFormat.format(goal.currentValue)} / ${currencyFormat.format(goal.targetValue)}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -1081,7 +1100,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildDetailCard(
                         title: 'Faltam',
-                        value: formatter.format(goal.remainingValue),
+                        value: currencyFormat.format(goal.remainingValue),
                         icon: Icons.timeline,
                         color: Colors.orange,
                         theme: theme,
@@ -1360,7 +1379,13 @@ class _GoalsScreenState extends State<GoalsScreen>
                   color: Colors.amber,
                   onTap: () {
                     Navigator.pop(context);
-                    _celebrateGoal(index);
+                    // ✅ ENCONTRAR O ÍNDICE CORRETO DA META
+                    final goalIndex = _goals.indexWhere((g) => g.id == goal.id);
+                    if (goalIndex >= 0) {
+                      _celebrateGoal(goalIndex);
+                    } else {
+                      Logger().e('❌ Meta não encontrada para comemoração');
+                    }
                   },
                 ),
               ),
@@ -1413,20 +1438,157 @@ class _GoalsScreenState extends State<GoalsScreen>
   }
 
   void _celebrateGoal(int index) {
+    // ✅ VERIFICAR SE O ÍNDICE É VÁLIDO
+    if (index < 0 || index >= _goals.length) {
+      Logger().e('❌ Índice inválido para comemoração: $index');
+      return;
+    }
+
+    // ✅ RESETAR E GARANTIR QUE ESTÁ LIMPO
+    _celebrationController.stop();
+    _celebrationController.reset();
+
     setState(() {
       _celebratingGoalIndex = index;
       _showCelebration = true;
     });
 
-    _celebrationController.forward(from: 0.0);
+    Logger()
+        .e('🎉 Iniciando SUPER comemoração para meta ${_goals[index].name}');
 
-    Future.delayed(const Duration(seconds: 3), () {
+    // ✅ SUPER CONFETTI MÚLTIPLO!
+    _startSuperConfetti();
+
+    // ✅ SUPER HAPTIC FEEDBACK
+    _superHapticShow();
+
+    // ✅ MÚLTIPLAS MENSAGENS DE PARABÉNS
+    _showMultipleCelebrationMessages(_goals[index].name);
+
+    // ✅ ESCONDER APÓS 10 SEGUNDOS (dobrei o tempo)
+    Future.delayed(const Duration(seconds: 10), () {
       if (mounted) {
         setState(() {
           _showCelebration = false;
+          _celebratingGoalIndex = null;
         });
+        _celebrationController.stop();
+        Logger().e('🎊 SUPER comemoração finalizada');
       }
     });
+  }
+
+// 🎆 MÉTODO SUPER CONFETTI
+  void _startSuperConfetti() async {
+    // Primeira onda de confetti
+    _celebrationController.forward(from: 0.0);
+
+    // Segunda onda após 2 segundos
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted && _showCelebration) {
+      _celebrationController.reset();
+      _celebrationController.forward(from: 0.0);
+    }
+
+    // Terceira onda após 4 segundos
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted && _showCelebration) {
+      _celebrationController.reset();
+      _celebrationController.forward(from: 0.0);
+    }
+
+    Logger().e('🎆 TRIPLO confetti executado!');
+  }
+
+// 📳 SUPER HAPTIC FEEDBACK
+  void _superHapticShow() async {
+    // Primeira vibração forte
+    HapticFeedback.heavyImpact();
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    HapticFeedback.mediumImpact();
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    HapticFeedback.lightImpact();
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    HapticFeedback.heavyImpact();
+
+    Logger().e('📳 SUPER vibração executada!');
+  }
+
+// 🎊 MÚLTIPLAS MENSAGENS DE COMEMORAÇÃO
+  void _showMultipleCelebrationMessages(String goalName) {
+    final superMessages = [
+      '🎉 INCRÍVEL! Meta "$goalName" CONQUISTADA!',
+      '🏆 PARABÉNS! Você é DEMAIS!',
+      '🎊 SUCESSO TOTAL! Meta "$goalName" 100% COMPLETA!',
+      '🚀 VOCÊ CONSEGUIU! OBJETIVO ALCANÇADO!',
+      '💪 FORÇA TOTAL! Meta "$goalName" DOMINADA!',
+      '⭐ ESTRELA! Você brilhou nesta conquista!',
+      '🎯 CERTEIRO! Meta "$goalName" no alvo!',
+      '🔥 FOGO! Que conquista incrível!',
+    ];
+
+    // Primeira mensagem imediata
+    _showSingleCelebrationMessage(superMessages[0]);
+
+    // Segunda mensagem após 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _showSingleCelebrationMessage(superMessages[1]);
+      }
+    });
+
+    // Terceira mensagem após 6 segundos
+    Future.delayed(const Duration(seconds: 6), () {
+      if (mounted) {
+        _showSingleCelebrationMessage(superMessages[2]);
+      }
+    });
+  }
+
+  void _showSingleCelebrationMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Text('🎆', style: TextStyle(fontSize: 24)), // ✅ ÍCONE MAIOR
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16, // ✅ TEXTO MAIOR
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.amber.shade600,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(12),
+        duration:
+            const Duration(seconds: 3), // ✅ DURAÇÃO MENOR PRA NÃO SOBREPOR
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // ✅ MAIS ARREDONDADO
+        ),
+        action: SnackBarAction(
+          label: '🎉 MAIS!',
+          textColor: Colors.white,
+          onPressed: () {
+            // Confete EXTRA manual!
+            HapticFeedback.heavyImpact();
+            if (_showCelebration) {
+              _celebrationController.reset();
+              _celebrationController.forward();
+            }
+          },
+        ),
+      ),
+    );
   }
 
   // MÉTODOS CORRIGIDOS PARA FUNCIONAREM CORRETAMENTE
@@ -1456,6 +1618,10 @@ class _GoalsScreenState extends State<GoalsScreen>
             : result;
 
         await _goalsDAO.save(goalToSave);
+
+        // ✅ VERIFICAR CONQUISTAS AUTOMÁTICAS!
+        await AchievementChecker.checkAllAchievements();
+
         await _loadGoals();
 
         if (mounted) {
@@ -1488,6 +1654,10 @@ class _GoalsScreenState extends State<GoalsScreen>
         );
 
         await _goalsDAO.update(updatedGoal);
+
+        // ✅ VERIFICAR CONQUISTAS AUTOMÁTICAS!
+        await AchievementChecker.checkAllAchievements();
+
         await _loadGoals();
 
         if (mounted) {
@@ -1530,6 +1700,9 @@ class _GoalsScreenState extends State<GoalsScreen>
 
         // Atualizar no banco de dados
         await _goalsDAO.update(updatedGoal);
+
+        // ✅ VERIFICAR CONQUISTAS AUTOMÁTICAS!
+        await AchievementChecker.checkAllAchievements();
 
         // Atualizar na lista local
         setState(() {
@@ -1642,6 +1815,10 @@ class _GoalsScreenState extends State<GoalsScreen>
       // Verificar se há um ID
       try {
         await _goalsDAO.delete(goal.id!);
+
+        // ✅ VERIFICAR CONQUISTAS AUTOMÁTICAS APÓS EXCLUSÃO!
+        await AchievementChecker.checkAllAchievements();
+
         await _loadGoals();
 
         if (mounted) {
@@ -1941,10 +2118,11 @@ class _GoalDialogState extends State<_GoalDialog> {
     return AlertDialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      contentPadding: const EdgeInsets.all(20), // REDUZIR PADDING
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6), // REDUZIR PADDING DO ÍCONE
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withAlpha((0.1 * 255).toInt()),
               shape: BoxShape.circle,
@@ -1952,6 +2130,7 @@ class _GoalDialogState extends State<_GoalDialog> {
             child: Icon(
               isEditing ? Icons.edit : Icons.flag,
               color: theme.colorScheme.primary,
+              size: 20, // REDUZIR TAMANHO DO ÍCONE
             ),
           ),
           const SizedBox(width: 12),
@@ -1960,92 +2139,122 @@ class _GoalDialogState extends State<_GoalDialog> {
             style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
+              fontSize: 18, // REDUZIR TAMANHO DO TÍTULO
             ),
           ),
         ],
       ),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Nome da Meta',
-                hintText: 'Ex: Viagem para a praia',
-                prefixIcon: const Icon(Icons.bookmark_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                style: const TextStyle(color: Colors.black87), // COR DO TEXTO
+                decoration: InputDecoration(
+                  labelText: 'Nome da Meta',
+                  labelStyle: TextStyle(
+                      color: theme.colorScheme.primary), // COR DA LABEL
+                  hintText: 'Ex: Viagem para a praia',
+                  hintStyle:
+                      const TextStyle(color: Colors.black54), // COR DO HINT
+                  prefixIcon: Icon(Icons.bookmark_outline,
+                      color: theme.colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: theme.colorScheme.primary, width: 2),
+                  ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Digite o nome da meta';
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Digite o nome da meta';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _valueController,
-              decoration: InputDecoration(
-                labelText: 'Valor da Meta',
-                hintText: 'Ex: 5.000,00',
-                prefixIcon: const Icon(Icons.attach_money),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _valueController,
+                style: const TextStyle(color: Colors.black87), // COR DO TEXTO
+                decoration: InputDecoration(
+                  labelText: 'Valor da Meta',
+                  labelStyle: TextStyle(
+                      color: theme.colorScheme.primary), // COR DA LABEL
+                  hintText: 'Ex: 5.000,00',
+                  hintStyle:
+                      const TextStyle(color: Colors.black54), // COR DO HINT
+                  prefixIcon: Icon(Icons.attach_money,
+                      color: theme.colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: theme.colorScheme.primary, width: 2),
+                  ),
                 ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [CurrencyInputFormatter()],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Digite o valor da meta';
+                  }
+                  try {
+                    final number = CurrencyParser.parse(value);
+                    if (number <= 0) return 'Valor deve ser maior que zero';
+                  } catch (e) {
+                    return 'Valor inválido';
+                  }
+                  return null;
+                },
               ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Digite o valor da meta';
-                }
-                final number = CurrencyParser.parse(value); // USAR PARSER
-                if (number <= 0) return 'Valor deve ser maior que zero';
-                return null;
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
+        // BOTÃO CANCELAR MAIS FINO
         TextButton(
           onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 8), // PADDING MENOR
+          ),
           child: Text(
             'Cancelar',
             style: TextStyle(
-              color: theme.colorScheme.onSurface,
+              color: Colors.black87,
+              fontSize: 14, // TEXTO MENOR
             ),
           ),
         ),
-        PressableCard(
-          onPress: _submitForm,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: theme.colorScheme.primary,
+        // BOTÃO CRIAR/SALVAR MAIS FINO
+        ElevatedButton.icon(
+          onPressed: _submitForm,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 8), // PADDING MENOR
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.save,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isEditing ? 'Salvar' : 'Criar',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+          icon: Icon(Icons.save, size: 16), // ÍCONE MENOR
+          label: Text(
+            isEditing ? 'Salvar' : 'Criar',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14, // TEXTO MENOR
             ),
           ),
         ),
@@ -2055,18 +2264,33 @@ class _GoalDialogState extends State<_GoalDialog> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      final name = _nameController.text;
-      final value = double.parse(_valueController.text.replaceAll(',', '.'));
+      try {
+        final name = _nameController.text.trim();
 
-      final goal = Goal(
-        id: widget.goal?.id,
-        name: name,
-        targetValue: value,
-        currentValue: widget.goal?.currentValue ?? 0,
-        createdAt: widget.goal?.createdAt ?? DateTime.now(),
-      );
+        // LINHA 2091 - DEVE ESTAR ASSIM (ERRADO):
+        // final value = double.parse(_valueController.text.replaceAll(',', '.')); ❌
 
-      Navigator.pop(context, goal);
+        // CORRIGIR PARA:
+        final valueText = _valueController.text.trim();
+        final value = CurrencyParser.parse(valueText);
+
+        final goal = Goal(
+          id: widget.goal?.id ?? const Uuid().v4(),
+          name: name,
+          targetValue: value,
+          currentValue: widget.goal?.currentValue ?? 0.0,
+          createdAt: widget.goal?.createdAt ?? DateTime.now(),
+        );
+
+        Navigator.pop(context, goal);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao processar valor: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
@@ -2122,6 +2346,13 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final newPercent = (_sliderValue / widget.targetValue).clamp(0.0, 1.0);
+
+    // ADICIONAR: Formatador brasileiro
+    final currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
 
     return AlertDialog(
       backgroundColor: Colors.white,
@@ -2183,7 +2414,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'R\$ 0,00',
+                  currencyFormat.format(0),
                   style: TextStyle(
                     color: theme.colorScheme.onSurface
                         .withAlpha((0.7 * 255).toInt()),
@@ -2191,7 +2422,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
                   ),
                 ),
                 Text(
-                  'R\$ ${CurrencyParser.format(widget.targetValue)}', // USAR FORMATAÇÃO
+                  currencyFormat.format(widget.targetValue),
                   style: TextStyle(
                     color: theme.colorScheme.onSurface
                         .withAlpha((0.7 * 255).toInt()),
@@ -2239,8 +2470,9 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
               keyboardType: TextInputType.number,
               inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'Digite o valor atual';
+                }
                 final number = CurrencyParser.parse(value); // USAR PARSER
                 if (number < 0) return 'Valor não pode ser negativo';
                 return null;
@@ -2293,8 +2525,96 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      final value = CurrencyParser.parse(_valueController.text); // USAR PARSER
-      Navigator.pop(context, value);
+      try {
+        // REMOVER ESTA LINHA (ela não existe neste dialog):
+        // final name = _nameController.text.trim(); ❌
+
+        // CORRIGIR: Este dialog só lida com valor, não nome
+        final valueText = _valueController.text.trim();
+        final value = CurrencyParser.parse(valueText);
+
+        // RETORNAR APENAS O VALOR, NÃO UM GOAL:
+        Navigator.pop(context, value); // ✅ Retorna double, não Goal
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao processar valor: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+}
+
+class CurrencyParser {
+  static double parse(String value) {
+    if (value.isEmpty) return 0.0;
+
+    // Remove R$, espaços e outros caracteres não numéricos (exceto . e ,)
+    String cleanValue = value.replaceAll(RegExp(r'[R$\s]'), '');
+
+    Logger().e('🔍 Valor original: "$value"');
+    Logger().e('🧹 Após limpeza inicial: "$cleanValue"');
+
+    // LÓGICA BRASILEIRA: 1.234.567,89
+    if (cleanValue.contains(',')) {
+      // Formato brasileiro: separadores de milhares (.) + decimal (,)
+      List<String> parts = cleanValue.split(',');
+
+      if (parts.length == 2) {
+        // Parte inteira: remove TODOS os pontos (são separadores de milhares)
+        String integerPart = parts[0].replaceAll('.', '');
+        // Parte decimal: pega só os 2 primeiros dígitos
+        String decimalPart =
+            parts[1].length > 2 ? parts[1].substring(0, 2) : parts[1];
+
+        cleanValue = '$integerPart.$decimalPart';
+        Logger().e('🇧🇷 Formato brasileiro: "$cleanValue"');
+      } else {
+        // Mais de uma vírgula? Remove todas e fica só com números
+        cleanValue = cleanValue.replaceAll(RegExp(r'[,.]'), '');
+        Logger().e('⚠️ Múltiplas vírgulas, usando só números: "$cleanValue"');
+      }
+    }
+    // LÓGICA AMERICANA/INTERNACIONAL: 1,234,567.89
+    else if (cleanValue.contains('.')) {
+      List<String> parts = cleanValue.split('.');
+
+      if (parts.length >= 2) {
+        String lastPart = parts.last;
+
+        // Se a última parte tem 1-2 dígitos, é decimal
+        if (lastPart.length <= 2) {
+          // Remove pontos intermediários (separadores), mantém o último como decimal
+          String integerPart = parts.sublist(0, parts.length - 1).join('');
+          cleanValue = '$integerPart.$lastPart';
+          Logger().e('🇺🇸 Formato americano: "$cleanValue"');
+        } else {
+          // Todos os pontos são separadores de milhares
+          cleanValue = parts.join('');
+          Logger().e('📊 Só separadores de milhares: "$cleanValue"');
+        }
+      }
+    }
+
+    try {
+      final result = double.parse(cleanValue);
+      Logger().e('✅ Resultado final: $result');
+      return result;
+    } catch (e) {
+      Logger().e('❌ Erro no parsing: "$value" → "$cleanValue" → $e');
+      return 0.0;
+    }
+  }
+
+  static String format(double value) {
+    // NOVO: Usar formatador brasileiro completo
+    final currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
+    return currencyFormat.format(value);
   }
 }
