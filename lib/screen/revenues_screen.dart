@@ -2,15 +2,21 @@ import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
+import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
+import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/screen/responsive_screen.dart';
+import 'package:economize/service/gamification/achievement_checker.dart';
+import 'package:economize/service/gamification/achievement_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/category_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +44,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   // chaves para tutorial
   final GlobalKey _helpKey = GlobalKey();
 
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final brazilianCurrency =
+      NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   static const List<Map<String, dynamic>> _categoriasReceita = [
     {'icon': Icons.credit_card, 'name': 'Salário'},
@@ -942,7 +949,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                currencyFormat.format(totalValue),
+                brazilianCurrency.format(totalValue), // ✅ DEPOIS
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -1211,7 +1218,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          currencyFormat.format(revenue.preco),
+                          brazilianCurrency.format(revenue.preco), // ✅ DEPOIS
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -1324,6 +1331,65 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     );
   }
 
+  void _showAchievementSnackbar(List<Achievement> achievements) {
+    if (achievements.length == 1) {
+      final achievement = achievements.first;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Nova Conquista: ${achievement.title}!',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.amber.shade600,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Ver',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.pushNamed(context, '/achievements');
+            },
+          ),
+        ),
+      );
+    } else if (achievements.length > 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🎉', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${achievements.length} Novas Conquistas Desbloqueadas!',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.amber.shade600,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Ver Todas',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.pushNamed(context, '/achievements');
+            },
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _showFormModal({Revenues? model}) async {
     context.read<ThemeManager>();
 
@@ -1339,7 +1405,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
           : DateFormat('dd/MM/yyyy').format(DateTime.now()),
     );
     final precoController = TextEditingController(
-      text: model?.preco.toString() ?? '',
+      text: model?.preco.toString() ?? '', // ✅ AQUI É ONDE DEVE FICAR
     );
     String selectedTipo = model?.tipoReceita ?? _categoriasReceita[0]['name'];
 
@@ -1555,6 +1621,11 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                       TextFormField(
                         controller: precoController,
                         keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          // ✅ ADICIONAR formatação automática
+                          FilteringTextInputFormatter.digitsOnly,
+                          CurrencyInputFormatter(), // Se tiver o formatter das metas
+                        ],
                         style: TextStyle(color: textColor),
                         decoration: InputDecoration(
                           prefixText: 'R\$ ',
@@ -1562,7 +1633,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           hintText: '0.00',
                           hintStyle: TextStyle(
                               color: textColor.withAlpha((0.5 * 255).toInt())),
-                          helperText: 'Use ponto ao invés de vírgula',
+                          helperText: '',
                           helperStyle: TextStyle(
                             color: textColor.withAlpha((0.6 * 255).toInt()),
                             fontSize: 12,
@@ -1605,10 +1676,36 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           if (value == null || value.isEmpty) {
                             return 'Por favor, insira o valor';
                           }
-                          if (double.tryParse(value) == null) {
+
+                          // ✅ NOVA VALIDAÇÃO que aceita formato brasileiro
+                          try {
+                            String valorLimpo = value
+                                .replaceAll('R\$', '')
+                                .replaceAll(' ', '')
+                                .trim();
+
+                            // Se tem ponto e vírgula (formato completo: 1.234,56)
+                            if (valorLimpo.contains('.') &&
+                                valorLimpo.contains(',')) {
+                              valorLimpo = valorLimpo
+                                  .replaceAll('.', '')
+                                  .replaceAll(',', '.');
+                            }
+                            // Se só tem vírgula (formato: 1234,56)
+                            else if (valorLimpo.contains(',')) {
+                              valorLimpo = valorLimpo.replaceAll(',', '.');
+                            }
+
+                            final valorNumerico = double.parse(valorLimpo);
+
+                            if (valorNumerico <= 0) {
+                              return 'O valor deve ser maior que zero';
+                            }
+
+                            return null; // ✅ Valor válido!
+                          } catch (e) {
                             return 'Por favor, insira um valor válido';
                           }
-                          return null;
                         },
                       ),
                       const SizedBox(height: 20),
@@ -1674,17 +1771,54 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                               // No método _showFormModal, onde salva a receita:
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
+                                  // ❌ PROBLEMA: Esta linha está causando o erro
+                                  // preco: double.parse(precoController.text),
+
+                                  // ✅ CORREÇÃO: Conversão segura do valor formatado
+                                  double valorNumerico = 0.0;
+                                  try {
+                                    String valorTexto = precoController.text
+                                        .replaceAll('R\$', '')
+                                        .replaceAll(' ', '')
+                                        .trim();
+
+                                    // Detectar formato brasileiro: 1.234,56
+                                    if (valorTexto.contains('.') &&
+                                        valorTexto.contains(',')) {
+                                      // Formato completo: 1.234,56
+                                      valorTexto = valorTexto
+                                          .replaceAll('.', '')
+                                          .replaceAll(',', '.');
+                                    } else if (valorTexto.contains(',')) {
+                                      // Apenas vírgula: 1234,56
+                                      valorTexto =
+                                          valorTexto.replaceAll(',', '.');
+                                    }
+
+                                    valorNumerico = double.parse(valorTexto);
+                                  } catch (e) {
+                                    Logger().e('❌ Erro ao converter valor: $e');
+                                    return; // Não salva se der erro
+                                  }
+
                                   final revenue = Revenues(
                                     id: model?.id ?? const Uuid().v4(),
                                     data: DateFormat('dd/MM/yyyy')
                                         .parse(dataController.text),
-                                    preco: double.parse(precoController.text),
+                                    preco: valorNumerico, // ✅ VALOR CORRETO
                                     descricaoDaReceita: selectedTipo,
                                     tipoReceita: selectedTipo,
                                   );
 
                                   try {
                                     await _revenuesService.saveRevenue(revenue);
+
+                                    final newAchievements =
+                                        await AchievementService
+                                            .checkAndUnlockAchievements();
+                                    if (newAchievements.isNotEmpty) {
+                                      _showAchievementSnackbar(newAchievements);
+                                    }
 
                                     // Atualização local
                                     await _loadRevenues();
