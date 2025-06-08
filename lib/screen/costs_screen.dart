@@ -2,14 +2,20 @@ import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
+import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/model/costs.dart';
+import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/gamification/achievement_checker.dart';
+import 'package:economize/service/gamification/achievement_service.dart';
+import 'package:economize/service/notification_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/category_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,8 +42,6 @@ class _CostsScreenState extends State<CostsScreen>
   late AnimationController _animationController;
   // chaves para tutorial
   final GlobalKey _helpKey = GlobalKey();
-
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   static const List<Map<String, dynamic>> _categoriasDespesa = [
     {'icon': Icons.house, 'name': 'Aluguel'},
@@ -696,17 +700,51 @@ class _CostsScreenState extends State<CostsScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
-                          // TEMA CLARO PARA startDate:
+                          // CORRIGIR: Usar getCurrentPrimaryColor para TODOS os elementos:
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.light().copyWith(
                                 primaryColor:
-                                    const Color.fromARGB(255, 216, 78, 196),
-                                colorScheme: const ColorScheme.light(
-                                  primary: Color.fromARGB(255, 216, 78, 196),
-                                  onPrimary: Colors.white,
-                                  surface: Colors.white,
-                                  onSurface: Colors.black87,
+                                    themeManager.getCurrentPrimaryColor(),
+                                colorScheme: ColorScheme.light(
+                                  primary: themeManager
+                                      .getCurrentPrimaryColor(), // Cor principal
+                                  onPrimary: Colors
+                                      .white, // Texto sobre a cor principal
+                                  surface: Colors.white, // Fundo do calendário
+                                  onSurface: Colors.black87, // Texto dos dias
+                                  // NOVO: Cor do cabeçalho e seleção de ano
+                                  onSurfaceVariant:
+                                      themeManager.getCurrentPrimaryColor(),
+                                  // NOVO: Cor dos ícones no cabeçalho
+                                  onSecondaryContainer:
+                                      themeManager.getCurrentPrimaryColor(),
+                                ),
+                                // NOVO: Definir cores específicas do DatePicker
+                                datePickerTheme: DatePickerThemeData(
+                                  headerBackgroundColor:
+                                      themeManager.getCurrentPrimaryColor(),
+                                  headerForegroundColor:
+                                      Colors.white, // Texto do cabeçalho
+                                  backgroundColor: Colors.white,
+                                  // NOVO: Cor dos anos na seleção
+                                  yearForegroundColor:
+                                      WidgetStateColor.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return Colors.white; // Ano selecionado
+                                    }
+                                    return themeManager
+                                        .getCurrentPrimaryColor(); // Anos não selecionados
+                                  }),
+                                  yearBackgroundColor:
+                                      WidgetStateColor.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return themeManager
+                                          .getCurrentPrimaryColor(); // Fundo do ano selecionado
+                                    }
+                                    return Colors
+                                        .transparent; // Fundo dos anos não selecionados
+                                  }),
                                 ),
                                 dialogBackgroundColor: Colors.white,
                               ),
@@ -783,17 +821,51 @@ class _CostsScreenState extends State<CostsScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
-                          // TEMA CLARO PARA endDate:
+                          // CORRIGIR: Usar getCurrentPrimaryColor para TODOS os elementos:
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.light().copyWith(
                                 primaryColor:
-                                    const Color.fromARGB(255, 216, 78, 196),
-                                colorScheme: const ColorScheme.light(
-                                  primary: Color.fromARGB(255, 216, 78, 196),
-                                  onPrimary: Colors.white,
-                                  surface: Colors.white,
-                                  onSurface: Colors.black87,
+                                    themeManager.getCurrentPrimaryColor(),
+                                colorScheme: ColorScheme.light(
+                                  primary: themeManager
+                                      .getCurrentPrimaryColor(), // Cor principal
+                                  onPrimary: Colors
+                                      .white, // Texto sobre a cor principal
+                                  surface: Colors.white, // Fundo do calendário
+                                  onSurface: Colors.black87, // Texto dos dias
+                                  // NOVO: Cor do cabeçalho e seleção de ano
+                                  onSurfaceVariant:
+                                      themeManager.getCurrentPrimaryColor(),
+                                  // NOVO: Cor dos ícones no cabeçalho
+                                  onSecondaryContainer:
+                                      themeManager.getCurrentPrimaryColor(),
+                                ),
+                                // NOVO: Definir cores específicas do DatePicker
+                                datePickerTheme: DatePickerThemeData(
+                                  headerBackgroundColor:
+                                      themeManager.getCurrentPrimaryColor(),
+                                  headerForegroundColor:
+                                      Colors.white, // Texto do cabeçalho
+                                  backgroundColor: Colors.white,
+                                  // NOVO: Cor dos anos na seleção
+                                  yearForegroundColor:
+                                      WidgetStateColor.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return Colors.white; // Ano selecionado
+                                    }
+                                    return themeManager
+                                        .getCurrentPrimaryColor(); // Anos não selecionados
+                                  }),
+                                  yearBackgroundColor:
+                                      WidgetStateColor.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return themeManager
+                                          .getCurrentPrimaryColor(); // Fundo do ano selecionado
+                                    }
+                                    return Colors
+                                        .transparent; // Fundo dos anos não selecionados
+                                  }),
                                 ),
                                 dialogBackgroundColor: Colors.white,
                               ),
@@ -1028,9 +1100,10 @@ class _CostsScreenState extends State<CostsScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
-                currencyFormat.format(totalValue),
+                NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$')
+                    .format(totalValue),
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -1188,6 +1261,7 @@ class _CostsScreenState extends State<CostsScreen>
   Widget _buildCostCard(Costs cost, ThemeManager themeManager, int index) {
     // Sempre usar cores do tema claro
     final textColor = Colors.black;
+    final totalValue = cost.preco;
 
     final categoryData = _categoriasDespesa.firstWhere(
       (cat) => cat['name'] == cost.tipoDespesa,
@@ -1234,11 +1308,13 @@ class _CostsScreenState extends State<CostsScreen>
             onTap: () => _showFormModal(model: cost),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20), // Padding geral do card
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start, // Alinhamento no topo
                     children: [
                       // Ícone da categoria
                       Container(
@@ -1254,15 +1330,19 @@ class _CostsScreenState extends State<CostsScreen>
                           size: 24,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
 
-                      // Data e categoria
+                      // Coluna com informações da despesa
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // PRIMEIRA LINHA: Descrição + Ícones + Preço (ALINHADOS)
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .center, // Alinhamento central
                               children: [
+                                // Descrição da despesa
                                 Expanded(
                                   child: Text(
                                     cost.tipoDespesa,
@@ -1274,10 +1354,10 @@ class _CostsScreenState extends State<CostsScreen>
                                   ),
                                 ),
 
-                                // Indicadores de status
+                                // Indicadores de status (recorrente e pagamento)
                                 if (cost.recorrente)
                                   Container(
-                                    margin: const EdgeInsets.only(left: 4),
+                                    margin: const EdgeInsets.only(right: 4),
                                     padding: const EdgeInsets.all(3),
                                     decoration: BoxDecoration(
                                       color: Colors.blue
@@ -1296,7 +1376,7 @@ class _CostsScreenState extends State<CostsScreen>
 
                                 if (!cost.pago)
                                   Container(
-                                    margin: const EdgeInsets.only(left: 4),
+                                    margin: const EdgeInsets.only(right: 12),
                                     padding: const EdgeInsets.all(3),
                                     decoration: BoxDecoration(
                                       color: isNearDue
@@ -1321,33 +1401,70 @@ class _CostsScreenState extends State<CostsScreen>
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_today,
-                                  size: 12,
-                                  color:
-                                      textColor.withAlpha((0.6 * 255).toInt()),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  DateFormat('dd/MM/yyyy').format(cost.data),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: textColor
-                                        .withAlpha((0.6 * 255).toInt()),
+
+                                // Container do valor (ALINHADO COM A DESCRIÇÃO)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        const Color.fromARGB(255, 216, 78, 196)
+                                            .withAlpha((0.15 * 255).toInt()),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    NumberFormat.currency(
+                                            locale: 'pt_BR', symbol: 'R\$')
+                                        .format(totalValue),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Color.fromARGB(255, 216, 78, 196),
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
 
-                                // Status de pagamento como texto
+                            const SizedBox(
+                                height: 12), // Espaçamento entre as duas linhas
+
+                            // SEGUNDA LINHA: Data + Status "Vence em breve" (ALINHADOS)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .center, // Alinhamento central
+                              children: [
+                                // Data
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 12,
+                                      color: textColor
+                                          .withAlpha((0.6 * 255).toInt()),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      DateFormat('dd/MM/yyyy')
+                                          .format(cost.data),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: textColor
+                                            .withAlpha((0.6 * 255).toInt()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(
+                                    width:
+                                        16), // Espaçamento entre data e status
+
+                                // Status de pagamento como texto (ALINHADO COM A DATA)
                                 if (!cost.pago)
                                   Container(
-                                    margin: const EdgeInsets.only(left: 8),
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: isNearDue
                                           ? Colors.orange
@@ -1372,31 +1489,12 @@ class _CostsScreenState extends State<CostsScreen>
                           ],
                         ),
                       ),
-
-                      // Valor
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 216, 78, 196)
-                              .withAlpha((0.15 * 255).toInt()),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          currencyFormat.format(cost.preco),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color.fromARGB(255, 216, 78, 196),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
 
                   // Barra dividindo o card sutilmente
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Container(
                       height: 1,
                       decoration: BoxDecoration(
@@ -1422,7 +1520,7 @@ class _CostsScreenState extends State<CostsScreen>
                         size: 14,
                         color: textColor.withAlpha((0.6 * 255).toInt()),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         'Toque para editar',
                         style: TextStyle(
@@ -1444,7 +1542,7 @@ class _CostsScreenState extends State<CostsScreen>
                                 size: 16,
                                 color: Color.fromARGB(255, 216, 78, 196),
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 6),
                               const Text(
                                 'Editar',
                                 style: TextStyle(
@@ -1457,7 +1555,7 @@ class _CostsScreenState extends State<CostsScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       InkWell(
                         onTap: () => _removeCost(cost),
                         borderRadius: BorderRadius.circular(12),
@@ -1471,7 +1569,7 @@ class _CostsScreenState extends State<CostsScreen>
                                 size: 16,
                                 color: Colors.red.shade700,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 6),
                               Text(
                                 'Excluir',
                                 style: TextStyle(
@@ -1497,6 +1595,9 @@ class _CostsScreenState extends State<CostsScreen>
 
   Future<void> _showFormModal({Costs? model}) async {
     context.read<ThemeManager>();
+    final precoController = TextEditingController(
+      text: model?.preco.toString() ?? '', // ✅ AQUI É ONDE DEVE FICAR
+    );
 
     // Sempre usar o tema claro no modal
     final modalColor = Colors.white;
@@ -1510,9 +1611,7 @@ class _CostsScreenState extends State<CostsScreen>
           ? DateFormat('dd/MM/yyyy').format(model.data)
           : DateFormat('dd/MM/yyyy').format(DateTime.now()),
     );
-    final precoController = TextEditingController(
-      text: model?.preco.toString() ?? '',
-    );
+
     final descricaoController = TextEditingController(
       text: model?.descricaoDaDespesa ?? '',
     );
@@ -1528,6 +1627,65 @@ class _CostsScreenState extends State<CostsScreen>
 
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
     bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
+
+    void showAchievementSnackbar(List<Achievement> achievements) {
+      if (achievements.length == 1) {
+        final achievement = achievements.first;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Nova Conquista: ${achievement.title}!',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.amber.shade600,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Ver',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/achievements');
+              },
+            ),
+          ),
+        );
+      } else if (achievements.length > 1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('🎉', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${achievements.length} Novas Conquistas Desbloqueadas!',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.amber.shade600,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Ver Todas',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/achievements');
+              },
+            ),
+          ),
+        );
+      }
+    }
 
     final dateFormatter = MaskTextInputFormatter(
       mask: '##/##/####',
@@ -1607,14 +1765,61 @@ class _CostsScreenState extends State<CostsScreen>
                             firstDate: DateTime(2020),
                             lastDate: DateTime(2030),
                             locale: const Locale('pt', 'BR'),
+                            // CORRIGIR: Acessar themeManager via Provider
+                            builder: (context, child) {
+                              final themeManager = Provider.of<ThemeManager>(
+                                  context,
+                                  listen: false);
+                              return Theme(
+                                data: ThemeData.light().copyWith(
+                                  primaryColor:
+                                      themeManager.getCurrentPrimaryColor(),
+                                  colorScheme: ColorScheme.light(
+                                    primary:
+                                        themeManager.getCurrentPrimaryColor(),
+                                    onPrimary: Colors.white,
+                                    surface: Colors.white,
+                                    onSurface: Colors.black87,
+                                    onSurfaceVariant:
+                                        themeManager.getCurrentPrimaryColor(),
+                                    onSecondaryContainer:
+                                        themeManager.getCurrentPrimaryColor(),
+                                  ),
+                                  datePickerTheme: DatePickerThemeData(
+                                    headerBackgroundColor:
+                                        themeManager.getCurrentPrimaryColor(),
+                                    headerForegroundColor: Colors.white,
+                                    backgroundColor: Colors.white,
+                                    yearForegroundColor:
+                                        WidgetStateColor.resolveWith((states) {
+                                      if (states
+                                          .contains(WidgetState.selected)) {
+                                        return Colors.white;
+                                      }
+                                      return themeManager
+                                          .getCurrentPrimaryColor();
+                                    }),
+                                    yearBackgroundColor:
+                                        WidgetStateColor.resolveWith((states) {
+                                      if (states
+                                          .contains(WidgetState.selected)) {
+                                        return themeManager
+                                            .getCurrentPrimaryColor();
+                                      }
+                                      return Colors.transparent;
+                                    }),
+                                  ),
+                                  dialogBackgroundColor: Colors.white,
+                                ),
+                                child: child!,
+                              );
+                            },
                           );
                           if (date != null) {
                             setState(() {
                               dataController.text =
                                   DateFormat('dd/MM/yyyy').format(date);
-                              // Atualiza o status de pagamento com base na data selecionada
                               if (model == null) {
-                                // Apenas para novas despesas
                                 pago = date.isBefore(DateTime.now());
                               }
                             });
@@ -1665,13 +1870,18 @@ class _CostsScreenState extends State<CostsScreen>
                         controller: precoController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                          FilteringTextInputFormatter.digitsOnly,
+                          CurrencyInputFormatter(), // Usando o mesmo das metas
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor, informe um valor';
                           }
-                          if (double.tryParse(value) == null) {
+                          // ✅ AJUSTAR validação para formato brasileiro
+                          final cleanValue =
+                              value.replaceAll(RegExp(r'[^\d]'), '');
+                          if (cleanValue.isEmpty ||
+                              double.tryParse(cleanValue) == null) {
                             return 'Por favor, informe um valor válido';
                           }
                           return null;
@@ -1681,7 +1891,7 @@ class _CostsScreenState extends State<CostsScreen>
                             Icons.attach_money,
                             color: textColor.withAlpha((0.6 * 255).toInt()),
                           ),
-                          hintText: '0.00',
+                          hintText: 'R\$ 0,00', // ✅ FORMATO BRASILEIRO
                           hintStyle: TextStyle(
                             color: textColor.withAlpha((0.4 * 255).toInt()),
                           ),
@@ -1909,10 +2119,45 @@ class _CostsScreenState extends State<CostsScreen>
                                   final dataFormatada = DateFormat('dd/MM/yyyy')
                                       .parse(dataController.text);
 
+                                  // ✅ CONVERSÃO MAIS ROBUSTA
+                                  double valorNumerico = 0.0;
+                                  try {
+                                    String valorTexto = precoController.text
+                                        .replaceAll('R\$', '')
+                                        .replaceAll(' ', '')
+                                        .trim();
+
+                                    // Se está vazio, valor é 0
+                                    if (valorTexto.isEmpty) {
+                                      valorNumerico = 0.0;
+                                    } else {
+                                      // Detectar formato brasileiro: 1.234,56
+                                      if (valorTexto.contains('.') &&
+                                          valorTexto.contains(',')) {
+                                        // Formato completo: 1.234,56
+                                        // Remove pontos (separadores de milhares) e substitui vírgula por ponto
+                                        valorTexto = valorTexto
+                                            .replaceAll('.', '')
+                                            .replaceAll(',', '.');
+                                      } else if (valorTexto.contains(',')) {
+                                        // Apenas vírgula: 1234,56
+                                        valorTexto =
+                                            valorTexto.replaceAll(',', '.');
+                                      }
+                                      // Se apenas ponto, assume que já está correto
+
+                                      valorNumerico = double.parse(valorTexto);
+                                    }
+                                  } catch (e) {
+                                    Logger().e('❌ Erro ao converter valor: $e');
+                                    valorNumerico = 0.0;
+                                  }
+
                                   final cost = Costs(
                                     id: model?.id ?? const Uuid().v4(),
                                     data: dataFormatada,
-                                    preco: double.parse(precoController.text),
+                                    preco:
+                                        valorNumerico, // ✅ VALOR CORRETO GARANTIDO
                                     descricaoDaDespesa:
                                         descricaoController.text.isEmpty
                                             ? selectedTipo
@@ -1922,12 +2167,36 @@ class _CostsScreenState extends State<CostsScreen>
                                     pago: pago,
                                     category: selectedTipo,
                                   );
-
                                   try {
                                     await _costsService.saveCost(cost);
 
+                                    final newAchievements =
+                                        await AchievementService
+                                            .checkAndUnlockAchievements();
+                                    if (newAchievements.isNotEmpty) {
+                                      showAchievementSnackbar(newAchievements);
+                                    }
+
                                     // Atualização local
                                     await _loadCosts();
+                                    // ADICIONAR ESTAS LINHAS LOGO APÓS O saveCost():
+                                    // Agendar notificação IMEDIATAMENTE para despesas futuras não pagas
+                                    if (!cost.pago &&
+                                        cost.data.isAfter(DateTime.now())) {
+                                      final notificationService =
+                                          NotificationService();
+                                      await notificationService
+                                          .schedulePaymentNotification(
+                                        paymentId: cost.id,
+                                        paymentName: cost.tipoDespesa,
+                                        amount: cost.preco,
+                                        dueDate: cost.data,
+                                        isRecurrent: cost.recorrente,
+                                      );
+
+                                      debugPrint(
+                                          '🔔 Notificação agendada para: ${cost.tipoDespesa}');
+                                    }
 
                                     // NOVO: Notificar a Home para atualizar
                                     final prefs =
