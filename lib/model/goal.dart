@@ -1,4 +1,5 @@
 import 'package:economize/data/database_helper.dart';
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,6 +9,25 @@ class Goal {
   double targetValue;
   double currentValue;
   DateTime? createdAt; // Alterado para poder ser nulo
+
+  double get percentComplete =>
+      targetValue > 0 ? (currentValue / targetValue) : 0.0;
+
+  IconData get rarityIcon {
+    final percent = percentComplete;
+    if (percent >= 1.0) return Icons.emoji_events;
+    if (percent >= 0.8) return Icons.stars;
+    if (percent >= 0.5) return Icons.military_tech;
+    return Icons.emoji_events;
+  }
+
+  Color get rarityColor {
+    final percent = percentComplete;
+    if (percent >= 1.0) return Colors.amber;
+    if (percent >= 0.8) return Colors.orange;
+    if (percent >= 0.5) return Colors.blue;
+    return Colors.grey;
+  }
 
   Goal({
     this.id,
@@ -21,10 +41,6 @@ class Goal {
     createdAt =
         createdAt ?? DateTime.now(); // Define a data atual se não fornecida
   }
-
-  // Getter para calcular o percentual completo (clamped entre 0.0 e 1.0)
-  double get percentComplete =>
-      targetValue > 0 ? (currentValue / targetValue).clamp(0.0, 1.0) : 0.0;
 
   // Getter para o valor restante (não permite valores negativos)
   double get remainingValue =>
