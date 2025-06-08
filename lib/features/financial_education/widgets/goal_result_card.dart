@@ -140,17 +140,6 @@ class _GoalResultCardState extends State<GoalResultCard>
           ),
         ),
 
-        // Fundo de padrão sutil
-        Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(
-              painter: _ResultBackgroundPainter(
-                color: theme.colorScheme.primary.withAlpha((0.3 * 255).toInt()),
-              ),
-            ),
-          ),
-        ),
-
         // Efeito de confetti no topo
         if (_showConfetti)
           Positioned(
@@ -550,101 +539,4 @@ class _GoalResultCardState extends State<GoalResultCard>
       ],
     );
   }
-}
-
-// Padrão de fundo sutil
-class _ResultBackgroundPainter extends CustomPainter {
-  final Color color;
-  final math.Random random = math.Random(42); // Seed fixo para padrão estático
-
-  _ResultBackgroundPainter({
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    // Criar padrão de formas geométricas não piscantes
-    final cellSize = size.width / 10; // Ajustado para mais densidade
-
-    for (int i = -1; i < 15; i++) {
-      for (int j = -1; j < 30; j++) {
-        final x = i * cellSize + random.nextDouble() * (cellSize * 0.5);
-        final y = j * cellSize + random.nextDouble() * (cellSize * 0.5);
-
-        final shapeType = (i + j) % 4;
-        final shapeSize = cellSize * 0.15;
-
-        switch (shapeType) {
-          case 0:
-            // Símbolos financeiros - cifrão
-            _drawDollarSign(canvas, paint, x, y, shapeSize);
-            break;
-          case 1:
-            // Círculos para moedas
-            canvas.drawCircle(Offset(x, y), shapeSize, paint);
-            break;
-          case 2:
-            // Símbolo de meta - bandeira
-            _drawFlag(canvas, paint, x, y, shapeSize * 1.2);
-            break;
-          case 3:
-            // Símbolo de crescimento - seta para cima
-            _drawArrow(canvas, paint, x, y, shapeSize * 1.2);
-            break;
-        }
-      }
-    }
-  }
-
-  void _drawDollarSign(
-      Canvas canvas, Paint paint, double x, double y, double size) {
-    final path = Path();
-    // Linha vertical
-    path.moveTo(x, y - size);
-    path.lineTo(x, y + size);
-
-    // Curvas S do símbolo
-    path.moveTo(x - size * 0.6, y - size * 0.3);
-    path.quadraticBezierTo(x + size * 0.6, y - size * 0.8, x + size * 0.3, y);
-    path.quadraticBezierTo(
-        x - size * 0.6, y + size * 0.8, x - size * 0.6, y + size * 0.3);
-
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawFlag(Canvas canvas, Paint paint, double x, double y, double size) {
-    final path = Path();
-    // Mastro
-    path.moveTo(x, y - size);
-    path.lineTo(x, y + size);
-
-    // Bandeira
-    path.moveTo(x, y - size);
-    path.lineTo(x + size, y - size * 0.5);
-    path.lineTo(x, y);
-
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawArrow(Canvas canvas, Paint paint, double x, double y, double size) {
-    final path = Path();
-    // Linha vertical
-    path.moveTo(x, y - size);
-    path.lineTo(x, y + size);
-
-    // Ponta da seta
-    path.moveTo(x - size * 0.6, y - size * 0.4);
-    path.lineTo(x, y - size);
-    path.lineTo(x + size * 0.6, y - size * 0.4);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_ResultBackgroundPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
