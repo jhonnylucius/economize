@@ -127,17 +127,29 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+
     // Garantir orientação portrait ao iniciar/inicializar
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
 
-    // Inicializar o serviço de notificações (Adicionado)
+    // Configurar a UI do sistema para melhor compatibilidade
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+
+    // Inicializar o serviço de notificações
     _notificationService.initialize();
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 8000),
     );
 
     _logoAnimation = CurvedAnimation(
@@ -344,12 +356,17 @@ class _HomeScreenState extends State<HomeScreen>
           ),
 
           // Conteúdo principal
+          // Conteúdo principal com SafeArea apropriado
           Positioned.fill(
             child: SafeArea(
+              top: true, // Manter o SafeArea no topo
+              bottom: false, // Não aplicar SafeArea na parte inferior
+              left: true,
+              right: true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Painel de boas-vindas e resumo financeiro (agora com botão de ajuda)
+                  // Painel de boas-vindas e resumo financeiro
                   _buildWelcomePanel(themeManager, screenSize),
 
                   // Abas de categorias
@@ -361,6 +378,11 @@ class _HomeScreenState extends State<HomeScreen>
                         ? _buildExpandedView(screenSize, themeManager)
                         : _buildGridView(screenSize, themeManager),
                   ),
+
+                  // Adicionar espaço para a bottom navigation
+                  SizedBox(
+                      height:
+                          padding.bottom + 80), // Ajuste conforme necessário
                 ],
               ),
             ),
@@ -522,20 +544,21 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // Barra de navegação inferior
+  // Barra de navegação inferior
   Widget _buildBottomNavBar(ThemeData theme, EdgeInsets padding) {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha((0.5 * 255).round()),
+            color: Colors.black.withAlpha((0.1 * 255).round()),
             blurRadius: 5,
             offset: const Offset(0, -1),
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: padding.bottom),
+      child: SafeArea(
+        top: false,
         child: BottomNavigationBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -554,9 +577,7 @@ class _HomeScreenState extends State<HomeScreen>
             BottomNavigationBarItem(
                 icon: ScaleAnimation.bounceIn(
                   delay: const Duration(milliseconds: 900),
-                  child: Icon(Icons.flag,
-                      color: theme
-                          .colorScheme.primary), // Alterado para ícone de flag
+                  child: Icon(Icons.flag, color: theme.colorScheme.primary),
                 ),
                 label: 'Metas'),
             BottomNavigationBarItem(
@@ -614,25 +635,37 @@ class _HomeScreenState extends State<HomeScreen>
               end: Alignment.bottomRight,
               colors: isDark
                   ? [
-                      const Color.fromARGB(255, 33, 3, 107),
-                      const Color.fromARGB(255, 50, 10, 142),
+                      const Color(0xFF1A1A1A),
+                      const Color(0xFF2D2D2D),
+                      const Color(0xFF1A1A1A),
                     ]
                   : [
+                      themeManager
+                          .getCurrentPrimaryColor()
+                          .withAlpha((0.05 * 255).round()),
                       Colors.white,
-                      Colors.grey.shade100,
+                      themeManager
+                          .getCurrentPrimaryColor()
+                          .withAlpha((0.02 * 255).round()),
                     ],
             ),
           ),
         ),
 
-        // Padrão de formas geométricas estáticas (não animadas)
-        CustomPaint(
-          painter: _SafeBackgroundPatternPainter(
-            primaryColor: themeManager.getCurrentPrimaryColor(),
-            isDark: isDark,
-          ),
-          child: Container(),
-        )
+        // Padrão de formas geométricas com animação MAIS LENTA
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return CustomPaint(
+              painter: _SafeBackgroundPatternPainter(
+                primaryColor: themeManager.getCurrentPrimaryColor(),
+                isDark: isDark,
+                animationValue: _controller.value, // Passa o valor da animação
+              ),
+              size: Size.infinite,
+            );
+          },
+        ),
       ],
     );
   }
@@ -2767,57 +2800,86 @@ class AppSearchDelegate extends SearchDelegate<String> {
 class _SafeBackgroundPatternPainter extends CustomPainter {
   final Color primaryColor;
   final bool isDark;
+  final double animationValue; // NOVO: valor da animação
   final math.Random random = math.Random(42); // Seed fixo para padrão estático
 
   _SafeBackgroundPatternPainter({
     required this.primaryColor,
     required this.isDark,
+    required this.animationValue, // NOVO: recebe valor da animação
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final shapePaint = Paint()
       ..color = isDark
-          ? Colors.white
-              .withAlpha((0.05 * 255).round()) // Mais sutil no dark mode
-          : primaryColor
-              .withAlpha((0.05 * 255).round()) // Mais sutil no light mode
+          ? Colors.white.withAlpha((0.03 * 255).round()) // MAIS SUTIL ainda!
+          : primaryColor.withAlpha((0.02 * 255).round()) // MAIS SUTIL ainda!
       ..style = PaintingStyle.fill;
 
-    // Criar padrão de formas geométricas não piscantes
-    // Triângulos, círculos e quadrados suaves
+    // Criar padrão de formas geométricas com movimento MUITO mais lento
+    final cellSize = size.width / 8;
 
-    // Grade de formas de fundo fixa (não animada)
-    final cellSize = size.width / 7;
+    for (int i = -1; i < 12; i++) {
+      for (int j = -1; j < 25; j++) {
+        // Movimento MUITO mais sutil e lento
+        final slowMovement = math.sin(animationValue * 2 * math.pi) *
+            2.0; // Só 2 pixels de movimento!
+        final x = i * cellSize +
+            random.nextDouble() * (cellSize * 0.2) +
+            slowMovement;
+        final y = j * cellSize +
+            random.nextDouble() * (cellSize * 0.2) +
+            slowMovement * 0.5;
 
-    for (int i = -1; i < 10; i++) {
-      for (int j = -1; j < 20; j++) {
-        final x = i * cellSize + random.nextDouble() * (cellSize * 0.3);
-        final y = j * cellSize + random.nextDouble() * (cellSize * 0.3);
+        final shapeType = (i + j) % 4; // Mais variedade de formas
 
-        final shapeType = (i + j) % 3;
+        // Opacidade que varia SUTILMENTE com a animação
+        final baseOpacity = isDark ? 0.02 : 0.015;
+        final animatedOpacity =
+            baseOpacity + (math.sin(animationValue * 2 * math.pi) * 0.005);
+
+        shapePaint.color = isDark
+            ? Colors.white.withAlpha((animatedOpacity * 255).round())
+            : primaryColor.withAlpha((animatedOpacity * 255).round());
 
         switch (shapeType) {
           case 0:
-            // Círculo
-            final radius = cellSize * (0.1 + random.nextDouble() * 0.1);
-            canvas.drawCircle(Offset(x, y), radius, shapePaint);
+            // Círculos menores e mais suaves
+            canvas.drawCircle(
+              Offset(x, y),
+              random.nextDouble() * 3 + 1, // Tamanho reduzido
+              shapePaint,
+            );
             break;
           case 1:
-            // Retângulo
-            final rect = Rect.fromCenter(
-              center: Offset(x, y),
-              width: cellSize * (0.1 + random.nextDouble() * 0.15),
-              height: cellSize * (0.1 + random.nextDouble() * 0.15),
+            // Quadrados menores
+            canvas.drawRect(
+              Rect.fromCenter(
+                center: Offset(x, y),
+                width: random.nextDouble() * 4 + 2,
+                height: random.nextDouble() * 4 + 2,
+              ),
+              shapePaint,
             );
-            canvas.drawRect(rect, shapePaint);
             break;
           case 2:
-            // Linha diagonal
+            // Triângulos menores
             final path = Path();
-            path.moveTo(x - cellSize * 0.1, y - cellSize * 0.1);
-            path.lineTo(x + cellSize * 0.1, y + cellSize * 0.1);
-            canvas.drawPath(path, shapePaint..strokeWidth = 2);
+            final size = random.nextDouble() * 3 + 1;
+            path.moveTo(x, y - size);
+            path.lineTo(x - size, y + size);
+            path.lineTo(x + size, y + size);
+            path.close();
+            canvas.drawPath(path, shapePaint);
+            break;
+          case 3:
+            // Linhas curtas e sutis
+            canvas.drawLine(
+              Offset(x - 2, y),
+              Offset(x + 2, y),
+              shapePaint..strokeWidth = 0.5,
+            );
             break;
         }
       }
@@ -2826,7 +2888,10 @@ class _SafeBackgroundPatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SafeBackgroundPatternPainter oldDelegate) =>
-      oldDelegate.isDark != isDark || oldDelegate.primaryColor != primaryColor;
+      oldDelegate.isDark != isDark ||
+      oldDelegate.primaryColor != primaryColor ||
+      oldDelegate.animationValue !=
+          animationValue; // NOVO: repinta quando animação muda
 }
 
 extension GlassContainerExtension on GlassContainer {
