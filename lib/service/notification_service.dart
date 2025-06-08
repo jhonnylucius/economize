@@ -6,6 +6,7 @@ import 'package:economize/service/push_notification_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/service/budget_service.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -97,7 +98,7 @@ class NotificationService {
     try {
       await schedulePaymentNotification(
         paymentId: payment.id,
-        paymentName: payment.descricaoDaDespesa,
+        paymentName: payment.tipoDespesa,
         amount: payment.preco,
         dueDate: payment.data,
         isRecurrent: payment.recorrente,
@@ -133,6 +134,72 @@ class NotificationService {
       debugPrint('📱 Notificação push enviada: ${notification.title}');
     } catch (e) {
       debugPrint('Erro ao enviar notificação push: $e');
+    }
+  }
+// No método _showAchievementNotification, TROCAR de:
+  /*await NotificationService.showAchievementNotification(
+  title: '🏆 Nova Conquista Desbloqueada!',
+  body: '${achievement.title} - ${achievement.description}',
+  achievementId: achievement.id,
+);
+
+// PARA:
+await NotificationService().addNotification(
+  NotificationItem(
+    id: 'achievement_${achievement.id}_${DateTime.now().millisecondsSinceEpoch}',
+    title: '🏆 Nova Conquista Desbloqueada!',
+    description: '${achievement.title} - ${achievement.description}',
+    type: NotificationType.achievement,
+    timestamp: DateTime.now(),
+    isRead: false,
+    data: {
+      'achievementId': achievement.id,
+      'achievementType': achievement.type.toString(),
+    },
+  ),
+);*/
+
+// NOVO: Método para mostrar notificação de conquista
+  static Future<void> showAchievementNotification({
+    required String title,
+    required String body,
+    required String achievementId,
+  }) async {
+    try {
+      final pushService = PushNotificationService();
+
+      // Gerar ID único para a notificação push
+      final pushId = achievementId.hashCode;
+
+      await pushService.showNotification(
+        id: pushId,
+        title: title,
+        body: body,
+        payload: 'achievement_$achievementId',
+        channelId: 'economize_achievements',
+        channelName: 'Conquistas e Realizações',
+      );
+
+      Logger().e('🏆 Notificação de conquista enviada: $title');
+
+      // OPCIONAL: Também criar notificação no app
+      final notificationItem = NotificationItem(
+        id: 'achievement_notification_${DateTime.now().millisecondsSinceEpoch}',
+        title: title,
+        description: body,
+        type: NotificationType.achievement,
+        timestamp: DateTime.now(),
+        isRead: false,
+        data: {
+          'achievementId': achievementId,
+          'type': 'achievement_unlocked',
+        },
+      );
+
+      // Adicionar ao sistema de notificações do app
+      await NotificationService().addNotification(notificationItem);
+    } catch (e) {
+      Logger().e('❌ Erro ao enviar notificação de conquista: $e');
     }
   }
 
@@ -966,13 +1033,13 @@ class NotificationService {
             id: 'payment_due_${payment.id}_${DateTime.now().millisecondsSinceEpoch}',
             title: 'Pagamento próximo$recurrentText',
             description:
-                '${payment.descricaoDaDespesa} de R\$${payment.preco.toStringAsFixed(2)} vence $daysText.',
+                '${payment.tipoDespesa} de R\$${payment.preco.toStringAsFixed(2)} vence $daysText.',
             type: NotificationType.reminder,
             timestamp: DateTime.now(),
             isRead: false,
             data: {
               'paymentId': payment.id,
-              'paymentName': payment.descricaoDaDespesa,
+              'paymentName': payment.tipoDespesa,
               'amount': payment.preco,
               'dueDate': payment.data.toIso8601String(),
               'isRecurrent': payment.recorrente,
