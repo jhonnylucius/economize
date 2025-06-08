@@ -5,6 +5,7 @@ import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/data/goal_dao.dart'; // Importante usar o correto
+import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -32,7 +33,6 @@ class _GoalsScreenState extends State<GoalsScreen>
   int? _celebratingGoalIndex;
   final Logger logger = Logger();
   // chaves para tutorial interativo
-  final GlobalKey _backButtonKey = GlobalKey();
   final GlobalKey _helpButtonKey = GlobalKey();
 
   @override
@@ -1921,7 +1921,8 @@ class _GoalDialogState extends State<_GoalDialog> {
     super.initState();
     if (widget.goal != null) {
       _nameController.text = widget.goal!.name;
-      _valueController.text = widget.goal!.targetValue.toString();
+      // FORMATAR O VALOR EXISTENTE
+      _valueController.text = CurrencyParser.format(widget.goal!.targetValue);
     }
   }
 
@@ -1977,15 +1978,10 @@ class _GoalDialogState extends State<_GoalDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: theme.colorScheme.primary, width: 2),
-                ),
               ),
               validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Nome é obrigatório';
+                if (value == null || value.isEmpty) {
+                  return 'Digite o nome da meta';
                 }
                 return null;
               },
@@ -1994,27 +1990,21 @@ class _GoalDialogState extends State<_GoalDialog> {
             TextFormField(
               controller: _valueController,
               decoration: InputDecoration(
-                labelText: 'Valor da Meta (R\$)',
-                hintText: 'Ex: 1000',
+                labelText: 'Valor da Meta',
+                hintText: 'Ex: 5.000,00',
                 prefixIcon: const Icon(Icons.attach_money),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: theme.colorScheme.primary, width: 2),
-                ),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
               validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Valor é obrigatório';
+                if (value == null || value.isEmpty) {
+                  return 'Digite o valor da meta';
                 }
-                final number = double.tryParse(value.replaceAll(',', '.'));
-                if (number == null || number <= 0) {
-                  return 'Digite um valor válido maior que zero';
-                }
+                final number = CurrencyParser.parse(value); // USAR PARSER
+                if (number <= 0) return 'Valor deve ser maior que zero';
                 return null;
               },
             ),
@@ -2042,16 +2032,16 @@ class _GoalDialogState extends State<_GoalDialog> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  isEditing ? Icons.check : Icons.add,
+                const Icon(
+                  Icons.save,
+                  color: Colors.white,
                   size: 18,
-                  color: theme.colorScheme.onPrimary,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isEditing ? 'Salvar' : 'Criar Meta',
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimary,
+                  isEditing ? 'Salvar' : 'Criar',
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -2103,10 +2093,10 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
   @override
   void initState() {
     super.initState();
-    _valueController.text = widget.currentValue.toString();
+    // FORMATAR O VALOR INICIAL
+    _valueController.text = CurrencyParser.format(widget.currentValue);
     _sliderValue = widget.currentValue;
 
-    // Add listener to update slider when text changes
     _valueController.addListener(_updateSliderFromText);
   }
 
@@ -2118,15 +2108,14 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
   }
 
   void _updateSliderFromText() {
-    final value =
-        double.tryParse(_valueController.text.replaceAll(',', '.')) ?? 0.0;
+    final value = CurrencyParser.parse(_valueController.text); // USAR PARSER
     setState(() {
       _sliderValue = value.clamp(0.0, widget.targetValue);
     });
   }
 
   void _updateTextFromSlider(double value) {
-    _valueController.text = value.toStringAsFixed(2);
+    _valueController.text = CurrencyParser.format(value); // USAR FORMATAÇÃO
   }
 
   @override
@@ -2194,43 +2183,45 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'R\$0',
+                  'R\$ 0,00',
                   style: TextStyle(
-                    color: Colors.black54,
+                    color: theme.colorScheme.onSurface
+                        .withAlpha((0.7 * 255).toInt()),
+                    fontSize: 12,
                   ),
                 ),
                 Text(
-                  'R\$${widget.targetValue.toStringAsFixed(2)}',
+                  'R\$ ${CurrencyParser.format(widget.targetValue)}', // USAR FORMATAÇÃO
                   style: TextStyle(
-                    color: Colors.black54,
+                    color: theme.colorScheme.onSurface
+                        .withAlpha((0.7 * 255).toInt()),
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: theme.colorScheme.primary,
+                activeTrackColor: newPercent >= 1.0
+                    ? Colors.green
+                    : theme.colorScheme.primary,
                 inactiveTrackColor:
-                    theme.colorScheme.primary.withAlpha((0.2 * 255).toInt()),
-                thumbColor: theme.colorScheme.primary,
+                    theme.colorScheme.primary.withAlpha((0.3 * 255).toInt()),
+                thumbColor: newPercent >= 1.0
+                    ? Colors.green
+                    : theme.colorScheme.primary,
                 overlayColor:
-                    theme.colorScheme.primary.withAlpha((0.1 * 255).toInt()),
-                valueIndicatorColor: theme.colorScheme.primary,
-                valueIndicatorTextStyle: TextStyle(
-                  color: theme.colorScheme.onPrimary,
-                ),
+                    theme.colorScheme.primary.withAlpha((0.2 * 255).toInt()),
               ),
               child: Slider(
-                min: 0,
-                max: widget.targetValue,
                 value: _sliderValue,
-                divisions: 100,
-                label: 'R\$${_sliderValue.toStringAsFixed(2)}',
+                max: widget.targetValue,
+                min: 0.0,
                 onChanged: (value) {
                   setState(() {
                     _sliderValue = value;
-                    _updateTextFromSlider(value);
                   });
+                  _updateTextFromSlider(value);
                 },
               ),
             ),
@@ -2238,31 +2229,20 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
             TextFormField(
               controller: _valueController,
               decoration: InputDecoration(
-                labelText: 'Valor Atual (R\$)',
-                hintText: 'Ex: 500',
+                labelText: 'Valor Atual',
+                hintText: 'Ex: 1.500,00',
                 prefixIcon: const Icon(Icons.attach_money),
-                suffixText: '/ R\$${widget.targetValue.toStringAsFixed(2)}',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: theme.colorScheme.primary, width: 2),
-                ),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
               validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Valor é obrigatório';
-                }
-                final number = double.tryParse(value.replaceAll(',', '.'));
-                if (number == null || number < 0) {
-                  return 'Digite um valor válido maior ou igual a zero';
-                }
-                if (number > widget.targetValue) {
-                  return 'O valor não pode exceder o valor da meta';
-                }
+                if (value == null || value.isEmpty)
+                  return 'Digite o valor atual';
+                final number = CurrencyParser.parse(value); // USAR PARSER
+                if (number < 0) return 'Valor não pode ser negativo';
                 return null;
               },
             ),
@@ -2313,7 +2293,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      final value = double.parse(_valueController.text.replaceAll(',', '.'));
+      final value = CurrencyParser.parse(_valueController.text); // USAR PARSER
       Navigator.pop(context, value);
     }
   }
