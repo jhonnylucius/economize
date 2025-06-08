@@ -35,7 +35,6 @@ class _CostsScreenState extends State<CostsScreen>
   DateTime? _endDate;
   late AnimationController _animationController;
   // chaves para tutorial
-  final GlobalKey _backKey = GlobalKey();
   final GlobalKey _helpKey = GlobalKey();
 
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
@@ -46,6 +45,8 @@ class _CostsScreenState extends State<CostsScreen>
     {'icon': Icons.wallet_rounded, 'name': 'Energia'},
     {'icon': Icons.wifi, 'name': 'Internet'},
     {'icon': Icons.water_drop, 'name': 'Água'},
+    {'icon': Icons.local_fire_department, 'name': 'Gás de Cozinha'},
+    {'icon': Icons.local_phone, 'name': 'Telefone Fixo'},
     {'icon': Icons.phone_android, 'name': 'Telefone'},
     {'icon': Icons.local_pharmacy, 'name': 'Farmácia'},
     {'icon': Icons.home, 'name': 'Reparos na Moradia'},
@@ -109,6 +110,7 @@ class _CostsScreenState extends State<CostsScreen>
     'Energia',
     'Internet',
     'Água',
+    'Gás de Cozinha',
     'Telefone',
     'Alarme',
     'Compras Mensal',
@@ -633,6 +635,8 @@ class _CostsScreenState extends State<CostsScreen>
     );
   }
 
+  // ...existing code...
+
   PreferredSize _buildFilterBar(ThemeManager themeManager) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(112),
@@ -641,7 +645,7 @@ class _CostsScreenState extends State<CostsScreen>
         color: themeManager.getCurrentPrimaryColor(),
         child: Column(
           children: [
-            // Campo de pesquisa
+            // Campo de pesquisa (sem alteração)
             SlideAnimation.fromRight(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -682,6 +686,7 @@ class _CostsScreenState extends State<CostsScreen>
               delay: const Duration(milliseconds: 100),
               child: Row(
                 children: [
+                  // PRIMEIRO InkWell - Data inicial (_startDate)
                   Expanded(
                     child: InkWell(
                       onTap: () async {
@@ -691,6 +696,23 @@ class _CostsScreenState extends State<CostsScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
+                          // TEMA CLARO PARA startDate:
+                          builder: (context, child) {
+                            return Theme(
+                              data: ThemeData.light().copyWith(
+                                primaryColor:
+                                    const Color.fromARGB(255, 216, 78, 196),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color.fromARGB(255, 216, 78, 196),
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black87,
+                                ),
+                                dialogBackgroundColor: Colors.white,
+                              ),
+                              child: child!,
+                            );
+                          },
                         );
                         if (date != null) {
                           setState(() {
@@ -750,6 +772,8 @@ class _CostsScreenState extends State<CostsScreen>
                     ),
                   ),
                   const SizedBox(width: 8),
+
+                  // SEGUNDO InkWell - Data final (_endDate)
                   Expanded(
                     child: InkWell(
                       onTap: () async {
@@ -759,6 +783,23 @@ class _CostsScreenState extends State<CostsScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
+                          // TEMA CLARO PARA endDate:
+                          builder: (context, child) {
+                            return Theme(
+                              data: ThemeData.light().copyWith(
+                                primaryColor:
+                                    const Color.fromARGB(255, 216, 78, 196),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color.fromARGB(255, 216, 78, 196),
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black87,
+                                ),
+                                dialogBackgroundColor: Colors.white,
+                              ),
+                              child: child!,
+                            );
+                          },
                         );
                         if (date != null) {
                           setState(() {
