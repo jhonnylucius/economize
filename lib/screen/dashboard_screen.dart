@@ -448,9 +448,10 @@ class DashBoardScreenState extends State<DashBoardScreen>
             child: IconButton(
               key: _helpKey, // Chave para tutorial
               tooltip: 'Ajuda', // Texto do tooltip
-              icon: const Icon(
+              icon: Icon(
                 Icons.help_outline, // Ícone de ajuda
-                color: Colors.white,
+                color: themeManager
+                    .getDashboardHeaderIconColor(), // ✅ USAR COR DINÂMICA
               ),
               onPressed: () =>
                   _showDashboardHelp(context), // Chama o método de ajuda
