@@ -4,6 +4,7 @@ import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/features/financial_education/models/savings_goal.dart';
+import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/features/financial_education/utils/goal_calculator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -94,15 +95,12 @@ class _GoalFormState extends State<GoalForm>
 
   @override
   Widget build(BuildContext context) {
-    // Ignoramos o tema e usamos cores fixas
-    // final theme = Theme.of(context);
-
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Campo de Objetivo
+          // Campo de Objetivo (sem alteração)
           SlideAnimation.fromLeft(
             delay: const Duration(milliseconds: 100),
             child: _buildFormField(
@@ -119,21 +117,22 @@ class _GoalFormState extends State<GoalForm>
 
           const SizedBox(height: 16),
 
-          // Campo de Valor Total
+          // Campo de Valor Total - ATUALIZADO COM FORMATAÇÃO
           SlideAnimation.fromRight(
             delay: const Duration(milliseconds: 200),
             child: _buildFormField(
               controller: _targetValueController,
               label: 'Valor Total',
-              hint: 'Ex: 2000',
+              hint: 'Ex: 2.000,00',
               icon: Icons.attach_money,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Digite o valor do objetivo';
                 }
-                final number = double.tryParse(value) ?? 0;
+                final number =
+                    CurrencyParser.parse(value); // USAR PARSER PERSONALIZADO
                 if (number <= 0) return 'Valor deve ser maior que zero';
                 return null;
               },
@@ -474,13 +473,13 @@ class _GoalFormState extends State<GoalForm>
     return _buildFormField(
       controller: _monthlyValueController,
       label: 'Valor Mensal',
-      hint: 'Ex: 200',
+      hint: 'Ex: 200,00',
       icon: Icons.savings_outlined,
       keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
       validator: (value) {
         if (value == null || value.isEmpty) return 'Digite o valor mensal';
-        final number = double.tryParse(value) ?? 0;
+        final number = CurrencyParser.parse(value); // USAR PARSER PERSONALIZADO
         if (number <= 0) return 'Valor deve ser maior que zero';
         return null;
       },
@@ -504,17 +503,18 @@ class _GoalFormState extends State<GoalForm>
     );
   }
 
+  // ATUALIZAR O MÉTODO _submitForm
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Cria um efeito de pressionamento no botão
       ScaffoldMessenger.of(context).clearSnackBars();
 
       final goal = SavingsGoal(
         title: _titleController.text,
-        targetValue: double.parse(_targetValueController.text),
+        targetValue:
+            CurrencyParser.parse(_targetValueController.text), // USAR PARSER
         type: _calculationType,
         monthlyValue: _calculationType == CalculationType.byMonthlyValue
-            ? double.parse(_monthlyValueController.text)
+            ? CurrencyParser.parse(_monthlyValueController.text) // USAR PARSER
             : null,
         targetMonths: _calculationType == CalculationType.byDesiredTime
             ? int.parse(_monthsController.text)
