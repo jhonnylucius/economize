@@ -30,19 +30,6 @@ class ResponsiveScreen extends StatelessWidget {
       appBar: appBar,
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomPadding + viewInsets),
-          child: child,
-        ),
-      ),
-      bottomNavigationBar:
-          bottomNavigationBar != null
-              ? Padding(
-                padding: EdgeInsets.only(bottom: bottomPadding),
-                child: bottomNavigationBar,
-              )
-              : null,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
     );
