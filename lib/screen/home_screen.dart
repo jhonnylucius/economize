@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Importar o serviço de notificações e o modelo de notificação (Adicionado)
 
@@ -341,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen>
     final isDarkMode = themeManager.currentThemeType != ThemeType.light;
 
     return ResponsiveScreen(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: themeManager.getDashboardHeaderBackgroundColor(),
       // Use o novo _buildAppBar
       appBar: _buildAppBar(theme, isDarkMode, themeManager),
       bottomNavigationBar: _buildBottomNavBar(theme, padding),
@@ -359,8 +360,8 @@ class _HomeScreenState extends State<HomeScreen>
           // Conteúdo principal com SafeArea apropriado
           Positioned.fill(
             child: SafeArea(
-              top: true, // Manter o SafeArea no topo
-              bottom: false, // Não aplicar SafeArea na parte inferior
+              top: true,
+              bottom: false,
               left: true,
               right: true,
               child: Column(
@@ -379,10 +380,8 @@ class _HomeScreenState extends State<HomeScreen>
                         : _buildGridView(screenSize, themeManager),
                   ),
 
-                  // Adicionar espaço para a bottom navigation
-                  SizedBox(
-                      height:
-                          padding.bottom + 80), // Ajuste conforme necessário
+                  // REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O ESPAÇO EXTRA:
+                  // SizedBox(height: padding.bottom + 80), // ❌ DELETAR ESTA LINHA!
                 ],
               ),
             ),
@@ -569,55 +568,111 @@ class _HomeScreenState extends State<HomeScreen>
           showUnselectedLabels: true,
           items: [
             BottomNavigationBarItem(
-                icon: ScaleAnimation.bounceIn(
-                  delay: const Duration(milliseconds: 800),
-                  child: Icon(Icons.palette, color: theme.colorScheme.primary),
-                ),
-                label: 'Temas'),
+              icon: ScaleAnimation.bounceIn(
+                child: Icon(Icons.palette, color: theme.colorScheme.primary),
+              ),
+              label: 'Temas',
+            ),
             BottomNavigationBarItem(
-                icon: ScaleAnimation.bounceIn(
-                  delay: const Duration(milliseconds: 900),
-                  child: Icon(Icons.flag, color: theme.colorScheme.primary),
-                ),
-                label: 'Metas'),
+              icon: ScaleAnimation.bounceIn(
+                child: Icon(Icons.flag, color: theme.colorScheme.primary),
+              ),
+              label: 'Metas',
+            ),
+            // BOTÃO CENTRAL ÉPICO! 🎯
             BottomNavigationBarItem(
-                icon: const SizedBox(width: 20, height: 20), label: ''),
-            BottomNavigationBarItem(
-                icon: ScaleAnimation.bounceIn(
-                  delay: const Duration(milliseconds: 1000),
-                  child: Icon(Icons.account_balance_wallet,
-                      color: theme.colorScheme.primary),
+              icon: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withValues(alpha: 0.8),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                label: 'Saldo'),
-            BottomNavigationBarItem(
-                icon: ScaleAnimation.bounceIn(
-                  delay: const Duration(milliseconds: 1100),
-                  child: Icon(Icons.emoji_objects,
-                      color: theme.colorScheme.primary),
+                child: ScaleAnimation.bounceIn(
+                  child: Icon(
+                    Icons.menu,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
-                label: 'Dicas'),
+              ),
+              label: 'Menu',
+            ),
+            BottomNavigationBarItem(
+              icon: ScaleAnimation.bounceIn(
+                child: Icon(Icons.account_balance,
+                    color: theme.colorScheme.primary),
+              ),
+              label: 'Saldo',
+            ),
+            BottomNavigationBarItem(
+              icon: ScaleAnimation.bounceIn(
+                child:
+                    Icon(Icons.emoji_events, color: theme.colorScheme.primary),
+              ),
+              label: 'Conquistas',
+            ),
           ],
           onTap: (index) {
-            // Ajuste para o botão central invisível
-            if (index == 2) return;
-
             switch (index) {
               case 0:
-                showThemeSelector(context);
+                _showThemeSelector(context);
                 break;
               case 1:
                 Navigator.pushNamed(context, '/goals');
+                break;
+              case 2:
+                // 🎭 MENU ÉPICO!
+                _showCentralMenu(context);
                 break;
               case 3:
                 Navigator.pushNamed(context, '/balance');
                 break;
               case 4:
-                Navigator.pushNamed(context, '/tips');
+                // 🏆 GALERIA DE CONQUISTAS!
+                Navigator.pushNamed(context, '/achievements');
                 break;
             }
           },
         ),
       ),
+    );
+  }
+
+  void _showCentralMenu(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeManager = context.read<ThemeManager>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _CentralMenuBottomSheet(
+        theme: theme,
+        themeManager: themeManager,
+      ),
+    );
+  }
+
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ThemeSelector(),
     );
   }
 
@@ -627,7 +682,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Stack(
       children: [
-        // Gradiente base
+        // Gradiente base - CORRIGIDO PARA USAR AS CORES CORRETAS
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -635,11 +690,19 @@ class _HomeScreenState extends State<HomeScreen>
               end: Alignment.bottomRight,
               colors: isDark
                   ? [
-                      const Color(0xFF1A1A1A),
-                      const Color(0xFF2D2D2D),
-                      const Color(0xFF1A1A1A),
+                      // ROXO: Gradiente roxo com branco (igual ao preto com branco)
+                      themeManager
+                          .getDashboardHeaderBackgroundColor(), // Roxo puro
+                      themeManager
+                          .getDashboardHeaderBackgroundColor()
+                          .withAlpha((0.7 * 255).round()), // Roxo mais claro
+                      Colors.white
+                          .withAlpha((0.05 * 255).round()), // Branco bem suave
+                      Colors.white.withAlpha(
+                          (0.02 * 255).round()), // Branco quase invisível
                     ]
                   : [
+                      // CLARO: Manter como está (funcionando)
                       themeManager
                           .getCurrentPrimaryColor()
                           .withAlpha((0.05 * 255).round()),
@@ -660,7 +723,7 @@ class _HomeScreenState extends State<HomeScreen>
               painter: _SafeBackgroundPatternPainter(
                 primaryColor: themeManager.getCurrentPrimaryColor(),
                 isDark: isDark,
-                animationValue: _controller.value, // Passa o valor da animação
+                animationValue: _controller.value,
               ),
               size: Size.infinite,
             );
@@ -2908,4 +2971,620 @@ extension GlassContainerExtension on GlassContainer {
       child: child,
     );
   }
+}
+
+class _CentralMenuBottomSheet extends StatefulWidget {
+  final ThemeData theme;
+  final ThemeManager themeManager;
+
+  const _CentralMenuBottomSheet({
+    required this.theme,
+    required this.themeManager,
+  });
+
+  @override
+  State<_CentralMenuBottomSheet> createState() =>
+      _CentralMenuBottomSheetState();
+}
+
+class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
+    with TickerProviderStateMixin {
+  late AnimationController _slideController;
+  late AnimationController _bounceController;
+  late AnimationController _murphyController; // 👻 MURPHY NO MENU!
+
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _bounceAnimation;
+  late Animation<double> _murphyBounce;
+
+  bool _murphyModeActive = false;
+  int _murphyTapCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _bounceController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _murphyController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _bounceAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _bounceController,
+      curve: Curves.elasticOut,
+    ));
+
+    _murphyBounce = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _murphyController,
+      curve: Curves.elasticInOut,
+    ));
+
+    // Iniciar animações
+    _slideController.forward();
+    _bounceController.forward();
+  }
+
+  void _activateMurphyMode() {
+    _murphyTapCount++;
+
+    if (_murphyTapCount >= 5) {
+      setState(() => _murphyModeActive = true);
+      _murphyController.repeat(reverse: true);
+
+      HapticFeedback.heavyImpact();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('👻 MURPHY INVADIU O MENU! 💀'),
+          backgroundColor: Colors.purple,
+          action: SnackBarAction(
+            label: '🥜 3 Paçocas',
+            textColor: Colors.white,
+            onPressed: () {
+              setState(() {
+                _murphyModeActive = false;
+                _murphyTapCount = 0;
+              });
+              _murphyController.stop();
+              _murphyController.reset();
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.themeManager.currentThemeType != ThemeType.light;
+
+    return SlideTransition(
+      position: _slideAnimation,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          // ✅ SEMPRE BRANCO (igual tema claro)
+          color: Colors
+              .white, // Removeu o isDark ? Color(0xFF1A1A1A) : Colors.white
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildMenuHeader(),
+            Expanded(child: _buildMenuContent()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuHeader() {
+    final isDark = widget.themeManager.currentThemeType != ThemeType.light;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            widget.theme.colorScheme.primary,
+            widget.theme.colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Ícone animado
+          ScaleAnimation.bounceIn(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.apps,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // Título
+          Expanded(
+            child: SlideAnimation.fromLeft(
+              delay: const Duration(milliseconds: 200),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Menu Principal',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Acesse todas as funcionalidades',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 👻 MURPHY SECRETO (Easter Egg)
+          GestureDetector(
+            onTap: _activateMurphyMode,
+            child: AnimatedBuilder(
+              animation: _murphyBounce,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _murphyModeActive ? _murphyBounce.value : 1.0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _murphyModeActive
+                          ? Colors.purple.withValues(alpha: 0.3)
+                          : Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _murphyModeActive ? '👻💃' : '🔥',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Botão fechar
+          SlideAnimation.fromRight(
+            delay: const Duration(milliseconds: 300),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuContent() {
+    return Expanded(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // 🎖️ SEÇÃO CONQUISTAS
+            _buildMenuSection(
+              title: '🏆 Conquistas & Gamificação',
+              items: [
+                _MenuItemData(
+                  icon: Icons.emoji_events,
+                  title: 'Galeria de Conquistas',
+                  subtitle: 'Veja suas conquistas desbloqueadas',
+                  route: '/achievements',
+                  color: Colors.amber,
+                ),
+                _MenuItemData(
+                  icon: Icons.flag,
+                  title: 'Metas Financeiras',
+                  subtitle: 'Defina e acompanhe suas metas',
+                  route: '/goals',
+                  color: Colors.green,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // 📱 SEÇÃO APP
+            _buildMenuSection(
+              title: '📱 Sobre & Suporte',
+              items: [
+                _MenuItemData(
+                  icon: Icons.info_outline,
+                  title: 'Sobre o App',
+                  subtitle: 'Informações e versão',
+                  onTap: () => _showAboutDialog(),
+                  color: Colors.blue,
+                ),
+                _MenuItemData(
+                  icon: Icons.star_rate,
+                  title: 'Avalie o App',
+                  subtitle: 'Deixe sua avaliação na loja',
+                  onTap: () => _rateApp(),
+                  color: Colors.orange,
+                ),
+                _MenuItemData(
+                  icon: Icons.coffee,
+                  title: '🥜 Me pague uma Paçoca',
+                  subtitle: 'Apoie o desenvolvedor a continuar seus projetos',
+                  onTap: () => _showPacoca(),
+                  color: Colors.brown,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuSection({
+    required String title,
+    required List<_MenuItemData> items,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Título da seção
+        SlideAnimation.fromLeft(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: widget.theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+
+        // Items da seção
+        ...items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+
+          return SlideAnimation.fromRight(
+            delay: Duration(milliseconds: 200 + (index * 100)),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: _buildMenuItem(item),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(_MenuItemData item) {
+    return AnimatedBuilder(
+      animation: _bounceAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _bounceAnimation.value,
+          child: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+              if (item.route != null) {
+                Navigator.pushNamed(context, item.route!);
+              } else if (item.onTap != null) {
+                item.onTap!();
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: item.color.withValues(alpha: 0.05), // ✅ SEMPRE 0.05
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: item.color.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Ícone
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: item.color.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      item.icon,
+                      color: item.color,
+                      size: 24,
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Textos
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87, // ✅ SEMPRE PRETO
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600, // ✅ SEMPRE CINZA
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Seta
+                  Icon(
+                    Icons.chevron_right,
+                    color: item.color,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 🎭 MÉTODOS DE AÇÃO
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📱 Sobre o Economize'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Versão: 1.0.0'),
+            SizedBox(height: 8),
+            Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
+            SizedBox(height: 8),
+            Text(
+                'Por isso um preço simbólico e se possível me pague uma paçoca!'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _rateApp() async {
+    const String playStoreUrl =
+        'https://play.google.com/store/apps/details?id=com.lucianoribeiro.economize';
+
+    try {
+      // Tentar abrir a Play Store diretamente (se instalada)
+      const String playStoreAppUrl =
+          'market://details?id=com.lucianoribeiro.economize';
+
+      if (await canLaunchUrl(Uri.parse(playStoreAppUrl))) {
+        await launchUrl(
+          Uri.parse(playStoreAppUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // Fallback para o navegador
+        if (await canLaunchUrl(Uri.parse(playStoreUrl))) {
+          await launchUrl(
+            Uri.parse(playStoreUrl),
+            mode: LaunchMode.externalApplication,
+          );
+        } else {
+          throw 'Não foi possível abrir a Play Store';
+        }
+      }
+
+      // Mostrar feedback de sucesso
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.open_in_new, color: Colors.white),
+                SizedBox(width: 8),
+                Text('⭐ Abrindo Play Store...'),
+              ],
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // Fallback: copiar link para clipboard
+      await _copyLinkToClipboard(playStoreUrl);
+    }
+  }
+
+// ✅ MÉTODO AUXILIAR PARA COPIAR LINK
+  Future<void> _copyLinkToClipboard(String url) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: url));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.content_copy, color: Colors.white),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                      '📋 Link copiado! Cole no navegador para avaliar o app'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Erro ao copiar link'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showPacoca() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🥜 Me Pague uma Paçoquinha'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Adoro paçocas!'),
+            SizedBox(height: 16),
+            Text('Apoie o desenvolvimento do app!'),
+            SizedBox(height: 8),
+            Text('Cada paçoca nos motiva a continuar! 🚀'),
+            SizedBox(height: 16),
+            Text('PIX: lucianofloripa@outlook.com'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('🥜 Obrigado! Pelo seu Apoio'),
+                  backgroundColor: Colors.brown,
+                ),
+              );
+            },
+            child: const Text('🥜 Pagar Paçoca'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _slideController.dispose();
+    _bounceController.dispose();
+    _murphyController.dispose();
+    super.dispose();
+  }
+}
+
+// 📋 CLASSE DE DADOS PARA ITEMS DO MENU
+class _MenuItemData {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? route;
+  final VoidCallback? onTap;
+  final Color color;
+
+  _MenuItemData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.route,
+    this.onTap,
+    required this.color,
+  });
 }
