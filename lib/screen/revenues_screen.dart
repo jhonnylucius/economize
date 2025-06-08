@@ -36,7 +36,6 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   DateTime? _endDate;
   late AnimationController _animationController;
   // chaves para tutorial
-  final GlobalKey _backKey = GlobalKey();
   final GlobalKey _helpKey = GlobalKey();
 
   final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
@@ -550,6 +549,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     );
   }
 
+  // ...existing code...
+
   PreferredSize _buildFilterBar(ThemeManager themeManager) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(112),
@@ -558,7 +559,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
         color: themeManager.getCurrentPrimaryColor(),
         child: Column(
           children: [
-            // Campo de pesquisa
+            // Campo de pesquisa (sem alteração)
             SlideAnimation.fromRight(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -599,6 +600,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
               delay: const Duration(milliseconds: 100),
               child: Row(
                 children: [
+                  // PRIMEIRO InkWell - Data inicial (_startDate)
                   Expanded(
                     child: InkWell(
                       onTap: () async {
@@ -608,6 +610,22 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
+                          // TEMA CLARO PARA startDate:
+                          builder: (context, child) {
+                            return Theme(
+                              data: ThemeData.light().copyWith(
+                                primaryColor: const Color(0xFF4CAF50),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color(0xFF4CAF50),
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black87,
+                                ),
+                                dialogBackgroundColor: Colors.white,
+                              ),
+                              child: child!,
+                            );
+                          },
                         );
                         if (date != null) {
                           setState(() {
@@ -667,6 +685,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                     ),
                   ),
                   const SizedBox(width: 8),
+
+                  // SEGUNDO InkWell - Data final (_endDate)
                   Expanded(
                     child: InkWell(
                       onTap: () async {
@@ -676,6 +696,22 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                           locale: const Locale('pt', 'BR'),
+                          // TEMA CLARO PARA endDate:
+                          builder: (context, child) {
+                            return Theme(
+                              data: ThemeData.light().copyWith(
+                                primaryColor: const Color(0xFF4CAF50),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color(0xFF4CAF50),
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black87,
+                                ),
+                                dialogBackgroundColor: Colors.white,
+                              ),
+                              child: child!,
+                            );
+                          },
                         );
                         if (date != null) {
                           setState(() {
@@ -1417,18 +1453,42 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                             icon: const Icon(MyFlutterApp.calendar_check,
                                 color: Color(0xFF4CAF50)),
                             onPressed: () async {
-                              FocusScope.of(context).unfocus();
+                              // NOVO: Forçar tema claro para o DatePicker
                               final date = await showDatePicker(
                                 context: context,
-                                initialDate: DateTime.now(),
+                                initialDate: model?.data ?? DateTime.now(),
                                 firstDate: DateTime(2020),
                                 lastDate: DateTime(2030),
                                 locale: const Locale('pt', 'BR'),
+                                // ADICIONAR ESTAS LINHAS PARA FORÇAR TEMA CLARO:
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: ThemeData.light().copyWith(
+                                      primaryColor: const Color(0xFF4CAF50),
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF4CAF50),
+                                        onPrimary: Colors.white,
+                                        surface: Colors.white,
+                                        onSurface: Colors.black87,
+                                      ),
+                                      dialogBackgroundColor: Colors.white,
+                                      textTheme: const TextTheme(
+                                        bodyLarge:
+                                            TextStyle(color: Colors.black87),
+                                        bodyMedium:
+                                            TextStyle(color: Colors.black87),
+                                        titleLarge:
+                                            TextStyle(color: Colors.black87),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
                               if (date != null) {
                                 setState(() {
                                   dataController.text =
-                                      "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                                      DateFormat('dd/MM/yyyy').format(date);
                                 });
                               }
                             },
