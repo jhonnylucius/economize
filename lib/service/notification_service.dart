@@ -2,6 +2,7 @@ import 'package:economize/model/budget/budget_location.dart';
 import 'package:economize/model/notification_type.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/goals_service.dart';
+import 'package:economize/service/push_notification_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/service/budget_service.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class NotificationService {
   final RevenuesService _revenuesService = RevenuesService();
   final BudgetService _budgetService = BudgetService();
   final GoalsService _goalsService = GoalsService();
+  final PushNotificationService _pushService = PushNotificationService();
 
   // Singleton pattern
   static final NotificationService _instance = NotificationService._internal();
@@ -33,6 +35,10 @@ class NotificationService {
   // Inicialização
   Future<void> initialize() async {
     await _loadSavedNotifications();
+
+    // Inicializar notificações push
+    await _pushService.initialize();
+
     _scheduleNotificationCheck();
   }
 
@@ -78,6 +84,188 @@ class NotificationService {
     notifications.value = [notification, ...notifications.value];
     _updateUnreadCount();
     await _saveNotifications();
+
+    // CORREÇÃO: Adicionar verificação de null safety
+    if (notification.type == NotificationType.reminder &&
+        notification.data != null && // <- ADICIONE ESTA LINHA
+        notification.data!['paymentId'] != null) {
+      await _sendPushNotification(notification);
+    }
+  }
+
+  Future<void> _schedulePaymentPushNotifications(dynamic payment) async {
+    try {
+      await schedulePaymentNotification(
+        paymentId: payment.id,
+        paymentName: payment.descricaoDaDespesa,
+        amount: payment.preco,
+        dueDate: payment.data,
+        isRecurrent: payment.recorrente,
+      );
+    } catch (e) {
+      debugPrint('Erro ao agendar notificação push para pagamento: $e');
+    }
+  }
+
+  // ATUALIZADO: Método para enviar notificação push (mais seletivo)
+  Future<void> _sendPushNotification(NotificationItem notification) async {
+    try {
+      // Só envia push para tipos específicos (principalmente pagamentos)
+      final shouldSendPush = _shouldSendPushForNotification(notification);
+
+      if (!shouldSendPush) {
+        debugPrint('Notificação "${notification.title}" mantida apenas no app');
+        return;
+      }
+
+      // Gerar ID único para a notificação push
+      final pushId = notification.id.hashCode;
+
+      await _pushService.showNotification(
+        id: pushId,
+        title: notification.title,
+        body: notification.description,
+        payload: notification.id,
+        channelId: _getChannelIdForType(notification.type),
+        channelName: _getChannelNameForType(notification.type),
+      );
+
+      debugPrint('📱 Notificação push enviada: ${notification.title}');
+    } catch (e) {
+      debugPrint('Erro ao enviar notificação push: $e');
+    }
+  }
+
+  // NOVO: Determina quais notificações devem virar push
+  bool _shouldSendPushForNotification(NotificationItem notification) {
+    switch (notification.type) {
+      case NotificationType.reminder:
+        // Apenas lembretes de pagamento vão para push
+        return notification.data['paymentId'] != null;
+
+      case NotificationType.alert:
+      case NotificationType.warning:
+        // Alertas críticos podem ir para push
+        return notification.title.toLowerCase().contains('orçamento') ||
+            notification.title.toLowerCase().contains('limite');
+
+      case NotificationType.achievement:
+        // Conquistas importantes podem ir para push
+        return notification.title.toLowerCase().contains('meta') &&
+            notification.title.toLowerCase().contains('alcançada');
+
+      case NotificationType.success:
+      case NotificationType.tip:
+      case NotificationType.info:
+      case NotificationType.report:
+        // Estes tipos ficam APENAS no app
+        return false;
+    }
+  }
+
+  // NOVO: Método para agendar notificação de pagamento
+  Future<void> schedulePaymentNotification({
+    required String paymentId,
+    required String paymentName,
+    required double amount,
+    required DateTime dueDate,
+    bool isRecurrent = false,
+  }) async {
+    try {
+      // Agendar 3 dias antes
+      final threeDaysBefore = dueDate.subtract(const Duration(days: 3));
+      if (threeDaysBefore.isAfter(DateTime.now())) {
+        await _pushService.scheduleNotification(
+          id: '${paymentId}_3days'.hashCode,
+          title: 'Pagamento próximo 📅',
+          body:
+              '$paymentName de R\$${amount.toStringAsFixed(2)} vence em 3 dias',
+          scheduledDate: threeDaysBefore,
+          payload: 'payment_$paymentId',
+          channelId: 'economize_payments',
+          channelName: 'Pagamentos',
+        );
+      }
+
+      // Agendar 1 dia antes
+      final oneDayBefore = dueDate.subtract(const Duration(days: 1));
+      if (oneDayBefore.isAfter(DateTime.now())) {
+        await _pushService.scheduleNotification(
+          id: '${paymentId}_1day'.hashCode,
+          title: 'Pagamento amanhã! ⚠️',
+          body: '$paymentName de R\$${amount.toStringAsFixed(2)} vence amanhã',
+          scheduledDate: oneDayBefore,
+          payload: 'payment_$paymentId',
+          channelId: 'economize_payments',
+          channelName: 'Pagamentos',
+        );
+      }
+
+      // Agendar no dia do vencimento
+      final dayOf = DateTime(
+          dueDate.year, dueDate.month, dueDate.day, 9, 0); // 9h da manhã
+      if (dayOf.isAfter(DateTime.now())) {
+        await _pushService.scheduleNotification(
+          id: '${paymentId}_today'.hashCode,
+          title: 'Pagamento hoje! 🚨',
+          body: '$paymentName de R\$${amount.toStringAsFixed(2)} vence hoje',
+          scheduledDate: dayOf,
+          payload: 'payment_$paymentId',
+          channelId: 'economize_urgent',
+          channelName: 'Urgente',
+        );
+      }
+
+      debugPrint('📅 Notificações de pagamento agendadas para: $paymentName');
+    } catch (e) {
+      debugPrint('Erro ao agendar notificações de pagamento: $e');
+    }
+  }
+
+  // NOVO: Método para cancelar notificações de um pagamento
+  Future<void> cancelPaymentNotifications(String paymentId) async {
+    await _pushService.cancelNotification('${paymentId}_3days'.hashCode);
+    await _pushService.cancelNotification('${paymentId}_1day'.hashCode);
+    await _pushService.cancelNotification('${paymentId}_today'.hashCode);
+  }
+
+  // NOVO: Métodos auxiliares para canais
+  String _getChannelIdForType(NotificationType type) {
+    switch (type) {
+      case NotificationType.warning:
+      case NotificationType.alert:
+        return 'economize_alerts';
+      case NotificationType.reminder:
+        return 'economize_payments';
+      case NotificationType.achievement:
+      case NotificationType.success:
+        return 'economize_achievements';
+      case NotificationType.tip:
+        return 'economize_tips';
+      case NotificationType.report:
+        return 'economize_reports';
+      default:
+        return 'economize_default';
+    }
+  }
+
+  String _getChannelNameForType(NotificationType type) {
+    switch (type) {
+      case NotificationType.warning:
+      case NotificationType.alert:
+        return 'Alertas Importantes';
+      case NotificationType.reminder:
+        return 'Lembretes de Pagamento';
+      case NotificationType.achievement:
+      case NotificationType.success:
+        return 'Conquistas';
+      case NotificationType.tip:
+        return 'Dicas Financeiras';
+      case NotificationType.report:
+        return 'Relatórios';
+      default:
+        return 'Notificações Gerais';
+    }
   }
 
   // Marcar notificação como lida
@@ -755,12 +943,8 @@ class NotificationService {
       final now = DateTime.now();
       final costs = await _costsService.getAllCosts();
 
-      // Filtra custos recorrentes ou com vencimento futuro
       final upcomingPayments = costs.where((cost) {
-        // Se tem uma data que está próxima (entre 0 e 5 dias para vencer)
         final daysUntilDue = cost.data.difference(now).inDays;
-
-        // Verifica se é recorrente ou está próximo do vencimento
         return (cost.recorrente && !cost.pago) ||
             (daysUntilDue >= 0 && daysUntilDue <= 5 && !cost.pago);
       }).toList();
@@ -796,6 +980,9 @@ class NotificationService {
           );
 
           await addNotification(notification);
+
+          // NOVO: Agendar notificações push adicionais para este pagamento
+          await _schedulePaymentPushNotifications(payment);
         }
       }
     } catch (e) {
