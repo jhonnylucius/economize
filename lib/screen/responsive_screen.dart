@@ -32,6 +32,8 @@ class ResponsiveScreen extends StatelessWidget {
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
+      body: child, // 🎯 ADICIONAR ESTA LINHA!
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }
