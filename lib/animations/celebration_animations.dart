@@ -40,6 +40,9 @@ class ConfettiAnimation extends StatefulWidget {
   /// Direção inicial das partículas
   final ConfettiDirection direction;
 
+  /// Controller externo (OPCIONAL)
+  final AnimationController? animationController; // ✅ OPCIONAL AGORA
+
   /// Cria uma animação de confete
   const ConfettiAnimation({
     super.key,
@@ -52,7 +55,7 @@ class ConfettiAnimation extends StatefulWidget {
     this.height = 300,
     this.width = double.infinity,
     this.direction = ConfettiDirection.down,
-    required AnimationController animationController,
+    this.animationController, // ✅ OPCIONAL
   });
 
   @override
@@ -64,21 +67,32 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
   late AnimationController _controller;
   late List<_ConfettiParticle> _particles;
   final math.Random _random = math.Random();
+  bool _isExternalController = false; // ✅ NOVA FLAG
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
-
-    // Configure o comportamento baseado na flag de repetição
-    if (widget.repeat) {
-      _controller.repeat();
+    // ✅ USAR CONTROLLER EXTERNO OU CRIAR NOVO
+    if (widget.animationController != null) {
+      _controller = widget.animationController!;
+      _isExternalController = true;
     } else {
-      _controller.forward();
+      _controller = AnimationController(
+        vsync: this,
+        duration: widget.duration,
+      );
+      _isExternalController = false;
+    }
+
+    // ✅ SÓ CONTROLAR SE FOR CONTROLLER INTERNO
+    if (!_isExternalController) {
+      // Configure o comportamento baseado na flag de repetição
+      if (widget.repeat) {
+        _controller.repeat();
+      } else {
+        _controller.forward();
+      }
     }
 
     _initializeParticles();
@@ -86,7 +100,10 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
 
   @override
   void dispose() {
-    _controller.dispose();
+    // ✅ SÓ DISPOSE SE FOR CONTROLLER INTERNO
+    if (!_isExternalController) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
