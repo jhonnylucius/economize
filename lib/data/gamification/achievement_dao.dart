@@ -7,21 +7,21 @@ class AchievementDao {
 
   // Criar tabela de conquistas
   static const String createTable = '''
-    CREATE TABLE $tableName(
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      secret_description TEXT NOT NULL,
-      type TEXT NOT NULL,
-      rarity TEXT NOT NULL,
-      image_path TEXT NOT NULL,
-      unlocked_at TEXT,
-      is_unlocked INTEGER DEFAULT 0,
-      progress REAL DEFAULT 0.0,
-      metadata TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-  ''';
+  CREATE TABLE $tableName(
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    secret_description TEXT NOT NULL,
+    type TEXT NOT NULL,
+    rarity TEXT NOT NULL,
+    image_path TEXT,                    
+    unlocked_at TEXT,
+    is_unlocked INTEGER DEFAULT 0,
+    progress REAL DEFAULT 0.0,
+    metadata TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+''';
 
   // CORRIGIR: Usar instância em vez de estático
   static Future<void> insert(Achievement achievement) async {
