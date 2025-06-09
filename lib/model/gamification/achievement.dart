@@ -119,6 +119,70 @@ class Achievement {
     };
   }
 
+// ✅ MAPEAMENTO REAL E CORRETO - CONFERIDO COM O SERVICE
+  String get badgeImagePath {
+    final Map<String, String> specificMappings = {
+      // 🎯 MAPEAMENTO EXATO CONFORME SUA LISTA:
+      'first_expense': 'assets/conquistas/conquista1.png', // 1
+      'first_revenue': 'assets/conquistas/conquista2.png', // 2
+      'first_goal': 'assets/conquistas/conquista3.png', // 3
+      'goal_complete_1': 'assets/conquistas/conquista4.png', // 4
+      'savings_500': 'assets/conquistas/conquista5.png', // 5
+      'expenses_100': 'assets/conquistas/conquista6.png', // 6
+      'savings_1000': 'assets/conquistas/conquista7.png', // 7
+      'goal_complete_5': 'assets/conquistas/conquista8.png', // 8
+      'expenses_500': 'assets/conquistas/conquista9.png', // 9
+      'savings_20000': 'assets/conquistas/conquista10.png', // 10
+      'goal_complete_10': 'assets/conquistas/conquista11.png', // 11
+      'goals_5': 'assets/conquistas/conquista12.png', // 12 (era 15)
+      'expenses_1000': 'assets/conquistas/conquista13.png', // 13 (era 14)
+      'savings_5000': 'assets/conquistas/conquista14.png', // 14 (era 13)
+      'goals_10': 'assets/conquistas/conquista15.png', // 15 (era 16)
+      'consecutive_3_months':
+          'assets/conquistas/conquista16.png', // 16 (era 17)
+      'consecutive_6_months':
+          'assets/conquistas/conquista17.png', // 17 (era 18)
+      'consecutive_12_months':
+          'assets/conquistas/conquista18.png', // 18 (era 19)
+      'murphy_special': 'assets/conquistas/conquista19.png', // 19 (era 23)
+      'consecutive_24_months': 'assets/conquistas/conquista20.png', // 20
+      'consecutive_60_months':
+          'assets/conquistas/conquista21.png', // 21 (era 22)
+      'consecutive_36_months':
+          'assets/conquistas/conquista22.png', // 22 (era 21)
+      'conquista_misteriosa':
+          'assets/conquistas/conquista23.png', // 23 (customizada)
+      'month_positive_1': 'assets/conquistas/conquista24.png', // 24 (era 12)
+    };
+
+    // Verificar se tem mapeamento específico
+    if (specificMappings.containsKey(id)) {
+      return specificMappings[id]!;
+    }
+
+    // ✅ FALLBACK: Se não encontrar, usar baseado na raridade
+    switch (rarity) {
+      case AchievementRarity.bronze:
+        final bronzeIndex = (id.hashCode.abs() % 6) + 1; // 1-6
+        return 'assets/conquistas/conquista$bronzeIndex.png';
+
+      case AchievementRarity.silver:
+        final silverIndex = (id.hashCode.abs() % 6) + 7; // 7-12
+        return 'assets/conquistas/conquista$silverIndex.png';
+
+      case AchievementRarity.gold:
+        final goldIndex = (id.hashCode.abs() % 6) + 13; // 13-18
+        return 'assets/conquistas/conquista$goldIndex.png';
+
+      case AchievementRarity.legendary:
+        final legendaryIndex = (id.hashCode.abs() % 6) + 19; // 19-24
+        return 'assets/conquistas/conquista$legendaryIndex.png';
+
+      default:
+        return 'assets/conquistas/conquista1.png';
+    }
+  }
+
   // ✅ GETTER SEGURO PARA METADATA
   T? getMetadata<T>(String key) {
     try {
