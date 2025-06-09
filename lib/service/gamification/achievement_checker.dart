@@ -168,14 +168,14 @@ class AchievementChecker {
           revenues.fold<double>(0, (sum, revenue) => sum + revenue.preco);
       final savings = totalRevenues - totalCosts;
 
-      // R$ 100 economizados
-      if (savings >= 100) {
+      // R$ 500 economizados
+      if (savings >= 500) {
         await _unlockAchievementIfNotExists(
-          id: 'savings_100',
+          id: 'savings_500',
           type: AchievementType.firstSaving,
           title: '💰 Primeiras Economias',
           description:
-              'Você economizou seus primeiros R\$ 100! Cada centavo conta!',
+              'Você economizou seus primeiros R\$ 500! Cada centavo conta!',
           rarity: AchievementRarity.bronze,
         );
       }
@@ -202,13 +202,13 @@ class AchievementChecker {
         );
       }
 
-      // R$ 10.000 economizados (LENDÁRIA!)
-      if (savings >= 10000) {
+      // R$ 20.000 economizados (LENDÁRIA!)
+      if (savings >= 20000) {
         await _unlockAchievementIfNotExists(
-          id: 'savings_10000',
+          id: 'savings_20000',
           type: AchievementType.masterSaver,
-          title: '👑 Dez Mil Reais!',
-          description: 'R\$ 10.000 economizados! Você é LENDÁRIO!',
+          title: '👑 Vinte Mil Reais!',
+          description: 'R\$ 20.000 economizados! Você é LENDÁRIO!',
           rarity: AchievementRarity.legendary,
         );
       }
@@ -224,35 +224,35 @@ class AchievementChecker {
       final costs = await costsDAO.findAll();
       final expenseCount = costs.length;
 
-      // 10 despesas
-      if (expenseCount >= 10) {
-        await _unlockAchievementIfNotExists(
-          id: 'expenses_10',
-          type: AchievementType.fiftyExpenses,
-          title: '📝 Organizador Iniciante',
-          description: '10 despesas cadastradas! O controle está funcionando!',
-          rarity: AchievementRarity.bronze,
-        );
-      }
-
-      // 50 despesas
-      if (expenseCount >= 50) {
-        await _unlockAchievementIfNotExists(
-          id: 'expenses_50',
-          type: AchievementType.fiftyExpenses,
-          title: '📊 Controlador Financeiro',
-          description: '50 despesas registradas! Você está sempre atento!',
-          rarity: AchievementRarity.silver,
-        );
-      }
-
       // 100 despesas
       if (expenseCount >= 100) {
         await _unlockAchievementIfNotExists(
           id: 'expenses_100',
+          type: AchievementType.fiftyExpenses,
+          title: '📝 Organizador Iniciante',
+          description: '100 despesas cadastradas! O controle está funcionando!',
+          rarity: AchievementRarity.bronze,
+        );
+      }
+
+      // 500 despesas
+      if (expenseCount >= 500) {
+        await _unlockAchievementIfNotExists(
+          id: 'expenses_500',
+          type: AchievementType.fiftyExpenses,
+          title: '📊 Controlador Financeiro',
+          description: '500 despesas registradas! Você está sempre atento!',
+          rarity: AchievementRarity.silver,
+        );
+      }
+
+      // 1000 despesas
+      if (expenseCount >= 1000) {
+        await _unlockAchievementIfNotExists(
+          id: 'expenses_1000',
           type: AchievementType.hundredExpenses,
           title: '🎯 Mestre do Controle',
-          description: '100 despesas! Você é um verdadeiro expert!',
+          description: '1000 despesas! Você é um verdadeiro expert!',
           rarity: AchievementRarity.gold,
         );
       }
@@ -343,9 +343,9 @@ class AchievementChecker {
     try {
       int consecutiveMonths = 0;
 
-      // Verificar os últimos 6 meses
-      for (int i = 0; i < 6; i++) {
-        final checkDate = DateTime(currentDate.year, currentDate.month - i, 1);
+      // ✅ VERIFICAR ATÉ 60 MESES (5 ANOS) PARA CONQUISTAS ÉPICAS
+      for (int i = 0; i < 60; i++) {
+        final checkDate = _subtractMonths(currentDate, i);
 
         final monthCosts = costs
             .where((cost) =>
@@ -359,16 +359,39 @@ class AchievementChecker {
                 revenue.data.month == checkDate.month)
             .toList();
 
-        final monthBalance = monthRevenues.fold<double>(
-                0, (sum, revenue) => sum + revenue.preco) -
+        final totalCosts =
             monthCosts.fold<double>(0, (sum, cost) => sum + cost.preco);
+        final totalRevenues = monthRevenues.fold<double>(
+            0, (sum, revenue) => sum + revenue.preco);
+        final monthBalance = totalRevenues - totalCosts;
+
+        // Log apenas para os primeiros 12 meses (evitar spam)
+        if (i < 12) {
+          _logger.d(
+              '📊 ${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}: '
+              'Receitas: R\$ ${totalRevenues.toStringAsFixed(2)}, '
+              'Despesas: R\$ ${totalCosts.toStringAsFixed(2)}, '
+              'Saldo: R\$ ${monthBalance.toStringAsFixed(2)}');
+        }
 
         if (monthBalance > 0) {
           consecutiveMonths++;
+          if (i < 12) {
+            _logger.d('✅ Mês positivo! Consecutivos: $consecutiveMonths');
+          }
         } else {
-          break; // Para na primeira quebra da sequência
+          if (i < 12) {
+            _logger.d(
+                '❌ Mês não positivo (${monthBalance.toStringAsFixed(2)}), quebrando sequência');
+          }
+          break;
         }
       }
+
+      _logger.i(
+          '🎯 RESULTADO ÉPICO: $consecutiveMonths meses consecutivos positivos');
+
+      // ✅ DESBLOQUEAR CONQUISTAS BASEADAS NO RESULTADO
 
       // 3 meses consecutivos
       if (consecutiveMonths >= 3) {
@@ -391,9 +414,148 @@ class AchievementChecker {
           rarity: AchievementRarity.gold,
         );
       }
+
+      // ✅ ADICIONAR ESTA LINHA AQUI - ATUALIZAR PROGRESSO
+      await _updateLongTermProgress(consecutiveMonths);
+
+      // 🌟 12 meses consecutivos (1 ANO!)
+      if (consecutiveMonths >= 12) {
+        await _unlockAchievementIfNotExists(
+          id: 'consecutive_12_months',
+          type: AchievementType.firstMonth,
+          title: '🌟 Um Ano Perfeito',
+          description:
+              'UM ANO INTEIRO positivo! Você é um MESTRE das finanças!',
+          rarity: AchievementRarity.legendary,
+        );
+
+        // 🎊 NOTIFICAÇÃO ESPECIAL PARA 1 ANO
+        await NotificationService.showAchievementNotification(
+          title: '🎊 CONQUISTA ÉPICA DESBLOQUEADA!',
+          body: '🌟 Um Ano Perfeito - Você é um MESTRE das finanças!',
+          achievementId: 'consecutive_12_months',
+        );
+      }
+
+      // 🏛️ 24 meses consecutivos (2 ANOS!)
+      if (consecutiveMonths >= 24) {
+        await _unlockAchievementIfNotExists(
+          id: 'consecutive_24_months',
+          type: AchievementType.masterSaver,
+          title: '🏛️ Imperador Financeiro',
+          description:
+              'DOIS ANOS consecutivos! Você construiu um IMPÉRIO financeiro!',
+          rarity: AchievementRarity.legendary,
+        );
+
+        // 🏛️ NOTIFICAÇÃO IMPERIAL
+        await NotificationService.showAchievementNotification(
+          title: '🏛️ CONQUISTA IMPERIAL!',
+          body: '🏛️ Imperador Financeiro - DOIS ANOS de domínio total!',
+          achievementId: 'consecutive_24_months',
+        );
+      }
+
+      // 👑 36 meses consecutivos (3 ANOS!)
+      if (consecutiveMonths >= 36) {
+        await _unlockAchievementIfNotExists(
+          id: 'consecutive_36_months',
+          type: AchievementType.masterSaver,
+          title: '👑 Rei das Finanças',
+          description:
+              'TRÊS ANOS consecutivos! Você é REALEZA financeira! LENDÁRIO!',
+          rarity: AchievementRarity.legendary,
+        );
+
+        // 👑 NOTIFICAÇÃO REAL
+        await NotificationService.showAchievementNotification(
+          title: '👑 COROAÇÃO FINANCEIRA!',
+          body: '👑 Rei das Finanças - TRÊS ANOS de reinado absoluto!',
+          achievementId: 'consecutive_36_months',
+        );
+      }
+
+      // 🌌 60 meses consecutivos (5 ANOS!) - IMPOSSÍVEL
+      if (consecutiveMonths >= 60) {
+        await _unlockAchievementIfNotExists(
+          id: 'consecutive_60_months',
+          type: AchievementType.masterSaver,
+          title: '🌌 Deus das Finanças',
+          description:
+              'CINCO ANOS consecutivos! Você transcendeu! É IMPOSSÍVEL!',
+          rarity: AchievementRarity.legendary,
+        );
+
+        // 🌌 NOTIFICAÇÃO DIVINA
+        await NotificationService.showAchievementNotification(
+          title: '🌌 ASCENSÃO DIVINA!',
+          body:
+              '🌌 Deus das Finanças - Você transcendeu a mortalidade financeira!',
+          achievementId: 'consecutive_60_months',
+        );
+      }
+
+      // 📊 LOG ESPECIAL PARA MARCOS IMPORTANTES
+      if (consecutiveMonths >= 12) {
+        final years = (consecutiveMonths / 12).floor();
+        final remainingMonths = consecutiveMonths % 12;
+
+        if (remainingMonths == 0) {
+          _logger.i('🎉 MARCO ÉPICO: $years ano(s) completo(s) consecutivos!');
+        } else {
+          _logger.i(
+              '🎯 PROGRESSO: $years ano(s) e $remainingMonths mês(es) consecutivos!');
+        }
+      }
     } catch (e) {
-      _logger.e('❌ Erro ao verificar meses consecutivos: $e');
+      _logger.e('❌ Erro ao verificar meses consecutivos épicos: $e');
     }
+  }
+
+  /// 📊 MOSTRAR PROGRESSO PARA CONQUISTAS DE LONGO PRAZO
+  static Future<void> _updateLongTermProgress(int consecutiveMonths) async {
+    try {
+      // Progresso para 1 ano (12 meses)
+      if (consecutiveMonths < 12) {
+        await AchievementService.updateAchievementProgress(
+            'consecutive_12_months', consecutiveMonths / 12.0);
+      }
+
+      // Progresso para 2 anos (24 meses)
+      if (consecutiveMonths >= 12 && consecutiveMonths < 24) {
+        await AchievementService.updateAchievementProgress(
+            'consecutive_24_months', consecutiveMonths / 24.0);
+      }
+
+      // Progresso para 3 anos (36 meses)
+      if (consecutiveMonths >= 24 && consecutiveMonths < 36) {
+        await AchievementService.updateAchievementProgress(
+            'consecutive_36_months', consecutiveMonths / 36.0);
+      }
+
+      // Progresso para 5 anos (60 meses)
+      if (consecutiveMonths >= 36 && consecutiveMonths < 60) {
+        await AchievementService.updateAchievementProgress(
+            'consecutive_60_months', consecutiveMonths / 60.0);
+      }
+
+      _logger.d('📊 Progresso de conquistas épicas atualizado');
+    } catch (e) {
+      _logger.e('❌ Erro ao atualizar progresso épico: $e');
+    }
+  }
+
+// ✅ MÉTODO AUXILIAR PARA CÁLCULO CORRETO DE MESES
+  static DateTime _subtractMonths(DateTime date, int months) {
+    int newYear = date.year;
+    int newMonth = date.month - months;
+
+    while (newMonth <= 0) {
+      newMonth += 12;
+      newYear--;
+    }
+
+    return DateTime(newYear, newMonth, 1);
   }
 
   /// 👻 EASTER EGG DO MURPHY (SECRETO!)
@@ -408,7 +570,7 @@ class AchievementChecker {
           type: AchievementType.dailyUser,
           title: '👻 Murphy Apareceu!',
           description:
-              'Você desbloqueou o fantasma Murphy! Ele vai te "ajudar" com bugs!',
+              'Você desbloqueou o fantasma Murphy! Ele vai te "ajudar" com as bugs!',
           rarity: AchievementRarity.legendary,
           secretDescription: '🥜 Algo sobre paçocas...',
         );
