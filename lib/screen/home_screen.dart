@@ -3416,12 +3416,12 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Versão: 1.0.0'),
+            Text('Versão: 1.0.100'),
             SizedBox(height: 8),
             Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
             SizedBox(height: 8),
             Text(
-                'Por isso um preço simbólico e se possível me pague uma paçoca!'),
+                'Agradecimentos especiais aos Testers e usuários que contribuíram com feedback!'),
           ],
         ),
         actions: [
@@ -3526,39 +3526,249 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('🥜 Me Pague uma Paçoquinha'),
-        content: const Column(
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            const Text('🥜 Me Pague \numa Paçoquinha'),
+            const Spacer(),
+            // Easter egg: contador de paçocas
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.brown.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                '💰 PIX',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.brown,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Adoro paçocas!'),
-            SizedBox(height: 16),
-            Text('Apoie o desenvolvimento do app!'),
-            SizedBox(height: 8),
-            Text('Cada paçoca nos motiva a continuar! 🚀'),
-            SizedBox(height: 16),
-            Text('PIX: lucianofloripa@outlook.com'),
+            // Ícone animado da paçoca
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.brown.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Text(
+                '🥜',
+                style: TextStyle(fontSize: 48),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            const Text(
+              'Adoro paçocas e cafezinhos!',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Apoie o desenvolvimento do app com qualquer valor! 🚀',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              '(Cada paçoca nos motiva a continuar!)',
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 20),
+
+            // Container com o PIX
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.pix, color: Colors.blue.shade700),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'PIX:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    'lucianofloripa@outlook.com',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Aviso divertido
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Text('⚠️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      ('I love paçocas, mas não sou rico! Qualquer valor é bem-vindo! 🥜'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.amber.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: const Text('🚪 Sair sem pagar'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🥜 Obrigado! Pelo seu Apoio'),
-                  backgroundColor: Colors.brown,
-                ),
-              );
-            },
-            child: const Text('🥜 Pagar Paçoca'),
+          ElevatedButton.icon(
+            onPressed: () => _copyPixToClipboard(),
+            icon: const Icon(Icons.content_copy, size: 18),
+            label: const Text('📋 Copiar PIX'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.brown,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
     );
+  }
+
+// ✅ MÉTODO PARA COPIAR O PIX (ADICIONAR APÓS _showPacoca):
+  Future<void> _copyPixToClipboard() async {
+    const String pixKey = 'lucianofloripa@outlook.com';
+
+    try {
+      await Clipboard.setData(const ClipboardData(text: pixKey));
+
+      // Fechar o dialog primeiro
+      Navigator.pop(context);
+
+      // Mostrar confirmação com estilo
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('🥜', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '📋 PIX copiado com sucesso!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Cole no seu app de pagamentos',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.brown,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            action: SnackBarAction(
+              label: '🥜 Valeu!',
+              textColor: Colors.white,
+              onPressed: () {
+                // Fechar o SnackBar
+              },
+            ),
+          ),
+        );
+      }
+
+      // Vibração de sucesso
+      HapticFeedback.lightImpact();
+    } catch (e) {
+      // Em caso de erro
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 8),
+                Text('❌ Erro ao copiar PIX'),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
