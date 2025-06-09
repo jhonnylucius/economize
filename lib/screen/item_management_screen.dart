@@ -36,7 +36,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
   bool _showCelebration = false;
   late AnimationController _animationController;
   // chaves para tutorial interativo
-  final GlobalKey _backButtonKey = GlobalKey();
+
   final GlobalKey _helpButtonKey = GlobalKey();
 
   // Lista completa de categorias (mantida do original)
@@ -170,18 +170,27 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                         content: Row(
                           children: [
                             AnimatedCheckmark(
-                              color: theme.colorScheme.onPrimary,
+                              color: Colors.white, // ✅ Ícone branco
                               size: 24,
                             ),
                             const SizedBox(width: 12),
-                            const Text('Lista atualizada!'),
+                            const Text(
+                              'Lista atualizada!',
+                              style: TextStyle(
+                                color: Colors.white, // ✅ Texto branco
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
-                        backgroundColor: theme.colorScheme.primary,
+                        backgroundColor:
+                            _getSummaryCardBackgroundColor(), // ✅ Fundo colorido
                         behavior: SnackBarBehavior.floating,
                         margin: const EdgeInsets.all(12),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        duration: const Duration(seconds: 3),
                       ),
                     );
                   }
@@ -807,6 +816,17 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
     }
   }
 
+  Color _getSummaryCardBackgroundColor() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    if (isDark) {
+      return Colors.grey.shade800; // Fundo escuro para tema dark
+    } else {
+      return theme.colorScheme.primary; // Fundo colorido para tema light
+    }
+  }
+
   // Método _showAddDialog melhorado
   Future<void> _showAddDialog() async {
     final theme = Theme.of(context);
@@ -1088,18 +1108,27 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
             content: Row(
               children: [
                 AnimatedCheckmark(
-                  color: Colors.white,
+                  color: Colors.white, // ✅ Ícone branco
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Text('Produto adicionado com sucesso!'),
+                const Text(
+                  'Produto adicionado com sucesso!',
+                  style: TextStyle(
+                    color: Colors.white, // ✅ Texto branco
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
-            backgroundColor: theme.colorScheme.primary,
+            backgroundColor:
+                _getSummaryCardBackgroundColor(), // ✅ Fundo colorido
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(12),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -1153,7 +1182,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
             ),
             const SizedBox(width: 12),
             Text(
-              'Confirmar Exclusão',
+              'Confirme!',
               style: TextStyle(color: Colors.black87),
             ),
           ],
@@ -1292,17 +1321,26 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: Colors.white,
+                    color: Colors.white, // ✅ Ícone branco
                   ),
                   const SizedBox(width: 12),
-                  const Text('Produto removido com sucesso!'),
+                  const Text(
+                    'Produto removido com sucesso!',
+                    style: TextStyle(
+                      color: Colors.white, // ✅ Texto branco
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
-              backgroundColor: theme.colorScheme.primary,
+              backgroundColor:
+                  _getSummaryCardBackgroundColor(), // ✅ Fundo colorido
               behavior: SnackBarBehavior.floating,
               margin: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
