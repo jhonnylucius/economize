@@ -35,7 +35,7 @@ class DatabaseHelper {
         logger.d('Banco já existe, abrindo...');
         return await openDatabase(
           path,
-          version: 14, // Atualizamos de 12 para 13
+          version: 15, // Atualizamos de 14 para 15
           onUpgrade: (db, oldVersion, newVersion) async {
             logger.d('Atualizando banco de $oldVersion para $newVersion');
             await _onUpgrade(db, oldVersion, newVersion);
@@ -47,7 +47,7 @@ class DatabaseHelper {
       logger.d('Criando novo banco...');
       return await openDatabase(
         path,
-        version: 13, // Atualizamos de 12 para 13
+        version: 15, // Atualizamos de 14 para 15
         onCreate: (db, version) async {
           logger.d('Criando banco de dados pela primeira vez');
           await _createDB(db, version);
@@ -242,6 +242,36 @@ class DatabaseHelper {
     try {
       logger.d(
           'Iniciando upgrade do banco de dados de $oldVersion para $newVersion');
+
+      // ✅ NOVA MIGRAÇÃO PARA V15 - CONQUISTAS
+      if (oldVersion < 15) {
+        logger.i('🎯 [V15] Adicionando sistema de conquistas...');
+
+        try {
+          // Verificar se tabela já existe
+          final tables = await db.rawQuery(
+              "SELECT name FROM sqlite_master WHERE type='table' AND name='achievements'");
+
+          if (tables.isEmpty) {
+            logger.d('📝 [V15] Criando tabela achievements...');
+            await db.execute(AchievementDao.createTable);
+            logger.i('✅ [V15] Tabela achievements criada com sucesso!');
+          } else {
+            logger.d('⚠️ [V15] Tabela achievements já existe, pulando...');
+          }
+
+          // Verificar quantos registros existem
+          final count =
+              await db.rawQuery('SELECT COUNT(*) as count FROM achievements');
+          final recordCount = count.first['count'] as int;
+          logger.i('📊 [V15] Registros na tabela achievements: $recordCount');
+        } catch (e) {
+          logger.e('❌ [V15] Erro ao criar tabela achievements: $e');
+          // Continua mesmo com erro para não quebrar o app
+        }
+
+        logger.i('🎉 [V15] Migração para v15 concluída!');
+      }
 
       // Migração específica da versão 12 para 13
       if (oldVersion < 13) {
