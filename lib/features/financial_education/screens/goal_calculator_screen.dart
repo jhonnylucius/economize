@@ -6,8 +6,12 @@ import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/features/financial_education/models/savings_goal.dart';
 import 'package:economize/features/financial_education/widgets/goal_form.dart';
 import 'package:economize/features/financial_education/widgets/goal_result_card.dart';
+import 'package:economize/theme/app_themes.dart';
+import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:provider/provider.dart';
 
 class GoalCalculatorScreen extends StatefulWidget {
   const GoalCalculatorScreen({super.key});
@@ -72,36 +76,39 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Aqui usamos o tema apenas para os elementos que queremos roxos
-    Theme.of(context);
+    // ✅ USAR O ThemeManager CORRETAMENTE
+    final themeManager = Provider.of<ThemeManager>(context);
+    final isRoxoEscuro = themeManager.currentThemeType == ThemeType.roxoEscuro;
+
+    // ✅ LÓGICA CORRETA: roxo no roxoEscuro, preto no light
+    final headerColor =
+        isRoxoEscuro ? const Color.fromARGB(255, 43, 3, 138) : Colors.black87;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        // seta de voltar com GlobalKey
         leading: IconButton(
           key: _backButtonKey,
           icon: const Icon(Icons.arrow_back),
-          color: Colors.white,
+          color: Colors.white, // ✅ SEMPRE BRANCO
           onPressed: () => Navigator.pop(context),
         ),
         title: SlideAnimation.fromTop(
           child: const Text(
             'Calculadora de Metas',
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.white, // ✅ SEMPRE BRANCO
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        backgroundColor: _primaryPurple,
+        backgroundColor: headerColor, // ✅ AGORA SIM VAI FUNCIONAR!
         elevation: 0,
         actions: [
-          // ícone de ajuda para futuro tutorial
           IconButton(
             key: _helpButtonKey,
             icon: const Icon(Icons.help_outline),
-            color: Colors.white,
+            color: Colors.white, // ✅ SEMPRE BRANCO
             tooltip: 'Ajuda',
             onPressed: () => _showGoalCalculatorHelp(context),
           ),
