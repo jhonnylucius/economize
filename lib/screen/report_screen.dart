@@ -152,8 +152,7 @@ class _ReportScreenState extends State<ReportScreen>
     return ResponsiveScreen(
       appBar: _buildAppBar(theme, themeManager, isDarkTheme),
       backgroundColor: theme.scaffoldBackgroundColor,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _buildFloatingActionButton(themeManager),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       child: _buildBody(themeManager),
     );
   }
@@ -536,25 +535,6 @@ class _ReportScreenState extends State<ReportScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingActionButton(ThemeManager themeManager) {
-    return ScaleAnimation.bounceIn(
-      delay: const Duration(milliseconds: 400),
-      child: FloatingActionButton.extended(
-        heroTag: 'goto_home',
-        onPressed: () => Navigator.pushNamed(context, '/home'),
-        icon: const Icon(
-          Icons.home,
-          color: Colors.white,
-        ),
-        label: const Text(
-          'Voltar para Home',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: themeManager.getCurrentPrimaryColor(),
       ),
     );
   }
