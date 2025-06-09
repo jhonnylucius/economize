@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.100+110
+version: 1.0.100+112
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -89,6 +89,30 @@ flutter:
   - assets/conquistas/conquista1.png
   - assets/conquistas/conquista2.png
   - assets/conquistas/conquista3.png
+  - assets/conquistas/conquista4.png
+  - assets/conquistas/conquista5.png
+  - assets/conquistas/conquista6.png
+  - assets/conquistas/conquista7.png
+  - assets/conquistas/conquista8.png
+  - assets/conquistas/conquista9.png
+  - assets/conquistas/conquista10.png
+  - assets/conquistas/conquista11.png
+  - assets/conquistas/conquista12.png
+  - assets/conquistas/conquista13.png
+  - assets/conquistas/conquista14.png
+  - assets/conquistas/conquista15.png
+  - assets/conquistas/conquista16.png
+  - assets/conquistas/conquista17.png
+  - assets/conquistas/conquista18.png
+  - assets/conquistas/conquista19.png
+  - assets/conquistas/conquista20.png
+  - assets/conquistas/conquista21.png
+  - assets/conquistas/conquista22.png
+  - assets/conquistas/conquista23.png
+  - assets/conquistas/conquista24.png
+
+
+
   
 
   # An image asset can refer to one or more resolution-specific "variants", see
