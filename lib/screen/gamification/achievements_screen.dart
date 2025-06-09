@@ -7,7 +7,6 @@ import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/gamification/achievement.dart';
-import 'package:economize/theme/theme_manager.dart';
 import 'dart:math' as math;
 import 'package:logger/logger.dart';
 
@@ -168,7 +167,6 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final themeManager = ThemeManager();
 
     // ✅ CORES LIMPAS E MODERNAS
     final bool isDarkTheme = theme.brightness == Brightness.dark;
@@ -367,7 +365,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   Widget _buildCleanAchievementCard(Achievement achievement, int index,
       Color textColor, Color subtitleColor) {
     final isUnlocked = achievement.isUnlocked;
-    final rarityColor = _getCleanRarityColor(achievement.rarity);
+    final rarityColor = _getEpicRarityColor(achievement); // ✅ USAR CORES ÉPICAS
 
     return SlideAnimation.fromBottom(
       delay: Duration(milliseconds: 50 * index),
@@ -378,151 +376,240 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             offset: Offset(0, _floatingAnimation.value),
             child: GestureDetector(
               onTap: () => _showAchievementDetails(achievement),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isUnlocked
-                          ? rarityColor.withValues(alpha: 0.2)
-                          : Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: isUnlocked
-                        ? rarityColor.withValues(alpha: 0.3)
-                        : Colors.grey.withValues(alpha: 0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12), // ✅ REDUZIDO
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // ✅ IMPORTANTE!
-                    children: [
-                      // 🏆 Ícone da conquista
-                      Container(
-                        width: 50, // ✅ MENOR
-                        height: 50,
-                        decoration: BoxDecoration(
+              child: Stack(
+                // ✅ STACK PARA EFEITOS ÉPICOS
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
                           color: isUnlocked
-                              ? rarityColor.withValues(alpha: 0.1)
-                              : Colors.grey.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isUnlocked ? rarityColor : Colors.grey,
-                            width: 2,
+                              ? rarityColor.withValues(alpha: 0.2)
+                              : Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: isUnlocked
+                            ? rarityColor.withValues(alpha: 0.3)
+                            : Colors.grey.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 🏆 BRASÃO DA CONQUISTA - DOBRADO DE TAMANHO!
+                          Container(
+                            width: 80, // ✅ DOBRADO! (era 50)
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isUnlocked ? rarityColor : Colors.grey,
+                                width: 3, // ✅ BORDA MAIS GROSSA
+                              ),
+                              boxShadow: isUnlocked
+                                  ? [
+                                      BoxShadow(
+                                        color:
+                                            rarityColor.withValues(alpha: 0.3),
+                                        blurRadius: 12,
+                                        spreadRadius: 2,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: ClipOval(
+                              child: isUnlocked
+                                  ? Image.asset(
+                                      achievement.badgeImagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        // ✅ FALLBACK para ícone se imagem não carregar
+                                        return Container(
+                                          color: rarityColor.withValues(
+                                              alpha: 0.1),
+                                          child: Icon(
+                                            achievement.rarityIcon,
+                                            color: rarityColor,
+                                            size: 40,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      color: Colors.grey.withValues(alpha: 0.1),
+                                      child: Icon(
+                                        Icons.lock,
+                                        color: Colors.grey,
+                                        size: 40,
+                                      ),
+                                    ),
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          isUnlocked ? achievement.rarityIcon : Icons.lock,
-                          color: isUnlocked ? rarityColor : Colors.grey,
-                          size: 24, // ✅ MENOR
-                        ),
-                      ),
 
-                      const SizedBox(height: 8), // ✅ REDUZIDO
+                          const SizedBox(height: 12), // ✅ MAIS ESPAÇO
 
-                      // 🏷️ Título
-                      Text(
-                        isUnlocked ? achievement.title : '???',
-                        style: TextStyle(
-                          fontSize: 12, // ✅ MENOR
-                          fontWeight: FontWeight.bold,
-                          color: isUnlocked ? textColor : Colors.grey,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      const SizedBox(height: 4), // ✅ REDUZIDO
-
-                      // 📝 Descrição
-                      Expanded(
-                        // ✅ USAR EXPANDED
-                        child: Text(
-                          isUnlocked
-                              ? achievement.description
-                              : achievement.secretDescription,
-                          style: TextStyle(
-                            fontSize: 10, // ✅ MENOR
-                            color: subtitleColor,
+                          // 🏷️ Título com destaque épico
+                          Text(
+                            isUnlocked ? achievement.title : '???',
+                            style: TextStyle(
+                              fontSize: 13, // ✅ LIGEIRAMENTE MAIOR
+                              fontWeight: FontWeight.bold,
+                              color: isUnlocked ? textColor : Colors.grey,
+                              // ✅ BRILHO PARA CONQUISTAS ÉPICAS
+                              shadows: achievement.id
+                                          .contains('consecutive_') &&
+                                      (achievement.metadata['target_months'] ??
+                                              0) >=
+                                          12
+                                  ? [
+                                      Shadow(
+                                        color:
+                                            rarityColor.withValues(alpha: 0.5),
+                                        blurRadius: 3,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
 
-                      const SizedBox(height: 8),
+                          const SizedBox(height: 6),
 
-                      // 🎖️ Badge de raridade
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2), // ✅ MENOR
-                        decoration: BoxDecoration(
-                          color: rarityColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: rarityColor.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(achievement.rarityIcon,
-                                size: 10, color: rarityColor), // ✅ MENOR
-                            const SizedBox(width: 2),
-                            Text(
-                              _getRarityName(achievement.rarity),
+                          // 📝 Descrição
+                          Expanded(
+                            child: Text(
+                              isUnlocked
+                                  ? achievement.description
+                                  : achievement.secretDescription,
                               style: TextStyle(
-                                fontSize: 8, // ✅ MENOR
-                                fontWeight: FontWeight.bold,
-                                color: rarityColor,
+                                fontSize: 10,
+                                color: subtitleColor,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // 🎖️ Badge de raridade - ÉPICO
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: rarityColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: rarityColor.withValues(alpha: 0.3)),
+                              // ✅ GRADIENTE PARA CONQUISTAS ÉPICAS
+                              gradient: achievement.id
+                                          .contains('consecutive_') &&
+                                      (achievement.metadata['target_months'] ??
+                                              0) >=
+                                          12
+                                  ? LinearGradient(
+                                      colors: [
+                                        rarityColor.withValues(alpha: 0.1),
+                                        rarityColor.withValues(alpha: 0.2),
+                                      ],
+                                    )
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // ✅ ÍCONE ESPECIAL PARA CONQUISTAS ÉPICAS
+                                if (achievement.id.contains('consecutive_') &&
+                                    (achievement.metadata['target_months'] ??
+                                            0) >=
+                                        12)
+                                  Icon(
+                                    Icons.auto_awesome,
+                                    size: 10,
+                                    color: rarityColor,
+                                  ),
+                                if (achievement.id.contains('consecutive_') &&
+                                    (achievement.metadata['target_months'] ??
+                                            0) >=
+                                        12)
+                                  SizedBox(width: 4),
+                                Text(
+                                  _getEpicRarityName(achievement),
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: rarityColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // 📊 Progresso (se não desbloqueada)
+                          if (!isUnlocked && achievement.progress > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${(achievement.progress * 100).toInt()}%',
+                                    style: TextStyle(
+                                        fontSize: 8, color: subtitleColor),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: LinearProgressIndicator(
+                                      value: achievement.progress,
+                                      backgroundColor: Colors.grey.shade300,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          rarityColor),
+                                      minHeight: 3,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                        ],
                       ),
-
-                      // 📊 Progresso (se não desbloqueada)
-                      if (!isUnlocked && achievement.progress > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Column(
-                            children: [
-                              Text(
-                                '${(achievement.progress * 100).toInt()}%',
-                                style: TextStyle(
-                                    fontSize: 8,
-                                    color: subtitleColor), // ✅ MENOR
-                              ),
-                              const SizedBox(height: 2),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(2),
-                                child: LinearProgressIndicator(
-                                  value: achievement.progress,
-                                  backgroundColor: Colors.grey.shade300,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      rarityColor),
-                                  minHeight: 3, // ✅ MENOR
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // ✅ EFEITOS ÉPICOS SOBREPOSTOS
+                  _buildEpicEffects(achievement),
+                ],
               ),
             ),
           );
         },
       ),
     );
+  }
+
+// ✅ MÉTODO PARA NOMES ÉPICOS
+  String _getEpicRarityName(Achievement achievement) {
+    if (achievement.id.contains('consecutive_')) {
+      final months = achievement.metadata['target_months'] ?? 0;
+
+      if (months >= 60) return 'DIVINO'; // 5 anos
+      if (months >= 36) return 'REAL'; // 3 anos
+      if (months >= 24) return 'IMPERIAL'; // 2 anos
+      if (months >= 12) return 'ÉPICO'; // 1 ano
+    }
+
+    return _getRarityName(achievement.rarity);
   }
 
   Widget _buildStatsHeader(
@@ -765,6 +852,44 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     }
   }
 
+  Color _getEpicRarityColor(Achievement achievement) {
+    // Conquistas épicas de anos consecutivos ganham cores especiais
+    if (achievement.id.contains('consecutive_')) {
+      final months = achievement.metadata['target_months'] ?? 0;
+
+      if (months >= 60) return Colors.purple.shade900; // 5 anos - Divino
+      if (months >= 36) return Colors.amber.shade700; // 3 anos - Real
+      if (months >= 24) return Colors.deepPurple.shade600; // 2 anos - Imperial
+      if (months >= 12) return Colors.indigo.shade600; // 1 ano - Épico
+    }
+
+    return _getCleanRarityColor(achievement.rarity);
+  }
+
+// ✨ EFEITOS ESPECIAIS PARA CONQUISTAS ÉPICAS
+  Widget _buildEpicEffects(Achievement achievement) {
+    if (!achievement.id.contains('consecutive_') ||
+        (achievement.metadata['target_months'] ?? 0) < 12) {
+      return SizedBox.shrink();
+    }
+
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.amber.withValues(alpha: 0.1),
+              Colors.transparent,
+              Colors.amber.withValues(alpha: 0.1),
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _headerAnimationController.dispose();
@@ -836,17 +961,47 @@ class _CleanAchievementDetailDialogState
                 children: [
                   // Header com ícone
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: 120, // ✅ AINDA MAIOR NO DIÁLOGO
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: rarityColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
-                      border: Border.all(color: rarityColor, width: 3),
+                      border: Border.all(
+                          color: _getEpicRarityColor(achievement),
+                          width: 4), // ✅ COR ÉPICA
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getEpicRarityColor(achievement)
+                              .withValues(alpha: 0.3), // ✅ COR ÉPICA
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
-                    child: Icon(
-                      isUnlocked ? achievement.rarityIcon : Icons.lock,
-                      size: 40,
-                      color: isUnlocked ? rarityColor : Colors.grey,
+                    child: ClipOval(
+                      child: isUnlocked
+                          ? Image.asset(
+                              achievement.badgeImagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: _getEpicRarityColor(achievement)
+                                      .withValues(alpha: 0.1),
+                                  child: Icon(
+                                    achievement.rarityIcon,
+                                    size: 60,
+                                    color: _getEpicRarityColor(achievement),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.grey.withValues(alpha: 0.1),
+                              child: Icon(
+                                Icons.lock,
+                                color: Colors.grey,
+                                size: 60,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -1005,6 +1160,20 @@ Desbloqueada no app Economize! 💰
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Color _getEpicRarityColor(Achievement achievement) {
+    // Conquistas épicas de anos consecutivos ganham cores especiais
+    if (achievement.id.contains('consecutive_')) {
+      final months = achievement.metadata['target_months'] ?? 0;
+
+      if (months >= 60) return Colors.purple.shade900; // 5 anos - Divino
+      if (months >= 36) return Colors.amber.shade700; // 3 anos - Real
+      if (months >= 24) return Colors.deepPurple.shade600; // 2 anos - Imperial
+      if (months >= 12) return Colors.indigo.shade600; // 1 ano - Épico
+    }
+
+    return _getCleanRarityColor(achievement.rarity);
   }
 
   @override
