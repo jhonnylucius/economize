@@ -261,6 +261,7 @@ class _GoalFormState extends State<GoalForm>
     bool isOptional = false,
   }) {
     return GlassContainer(
+      frostedEffect: true,
       blur: 3,
       opacity: 0.05,
       borderRadius: 12,
@@ -338,6 +339,7 @@ class _GoalFormState extends State<GoalForm>
 
   Widget _buildCalculationTypeSelector() {
     return GlassContainer(
+      frostedEffect: true,
       blur: 3,
       opacity: 0.05,
       borderRadius: 12,
