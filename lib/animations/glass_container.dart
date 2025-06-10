@@ -52,7 +52,8 @@ class GlassContainer extends StatelessWidget {
                 ? Border.all(
                     width: borderWidth,
                     color: borderColor ??
-                        Colors.white.withAlpha((0.3 * 255).round()),
+                        const Color.fromARGB(255, 167, 7, 159)
+                            .withAlpha((0.4 * 255).round()),
                   )
                 : null,
             // 🎯 VIDRO FOSCO: Fundo mais opaco + gradiente sutil
@@ -61,22 +62,22 @@ class GlassContainer extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [
                 // Cor base mais opaca para legibilidade
-                theme.colorScheme.surface.withAlpha((0.85 * 255).round()),
-                theme.colorScheme.surface.withAlpha((0.75 * 255).round()),
+                theme.colorScheme.surface.withAlpha((0.95 * 255).round()),
+                theme.colorScheme.surface.withAlpha((0.785 * 255).round()),
               ],
             ),
             // ✨ EFEITO JATEADO: Sombra interna sutil
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withAlpha((0.1 * 255).round()),
+                color: Colors.white.withAlpha((0.4 * 255).round()),
                 offset: const Offset(0, 1),
-                blurRadius: 0,
+                blurRadius: 1,
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Colors.black.withAlpha((0.05 * 255).round()),
+                color: Colors.black.withAlpha((0.2 * 255).round()),
                 offset: const Offset(0, -1),
-                blurRadius: 0,
+                blurRadius: 1,
                 spreadRadius: 0,
               ),
             ],
@@ -89,11 +90,13 @@ class GlassContainer extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withAlpha((0.1 * 255).round()),
-                  Colors.transparent,
-                  Colors.black.withAlpha((0.05 * 255).round()),
+                  Colors.white.withAlpha((0.3 * 255).round()),
+                  Colors.white.withAlpha((0.15 * 255).round()),
+                  Colors.black.withAlpha((0.2 * 255).round()),
                 ],
               ),
+              // 🎯 ADICIONAR: Fundo sólido branco translúcido
+              color: Colors.white.withAlpha((0.8 * 255).round()),
             ),
             child: child,
           ),
