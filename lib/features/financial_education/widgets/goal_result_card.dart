@@ -64,6 +64,7 @@ class _GoalResultCardState extends State<GoalResultCard>
         // Card principal com efeito de glass
         ScaleAnimation.bounceIn(
           child: GlassContainer(
+            frostedEffect: true,
             borderRadius: 20,
             blur: 8,
             opacity: 0.1,
@@ -379,6 +380,7 @@ class _GoalResultCardState extends State<GoalResultCard>
     }
 
     return GlassContainer(
+      frostedEffect: true,
       blur: 1,
       opacity: 0.05,
       borderRadius: 12,
@@ -396,6 +398,7 @@ class _GoalResultCardState extends State<GoalResultCard>
     final finalValue = widget.goal.calculateFinalValue();
 
     return GlassContainer(
+      frostedEffect: true,
       blur: 1,
       opacity: 0.05,
       borderRadius: 12,
@@ -440,6 +443,7 @@ class _GoalResultCardState extends State<GoalResultCard>
     if (isReasonable) return const SizedBox.shrink();
 
     return GlassContainer(
+      frostedEffect: true,
       blur: 3,
       opacity: 0.05,
       borderRadius: 12,
