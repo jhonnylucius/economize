@@ -235,6 +235,7 @@ class _ReportScreenState extends State<ReportScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -580,6 +581,7 @@ class _ReportScreenState extends State<ReportScreen>
 
     return SlideAnimation.fromTop(
       child: GlassContainer(
+        frostedEffect: true,
         borderRadius: 0,
         opacity: 0.1,
         blur: 5,
@@ -951,38 +953,45 @@ class _ReportScreenState extends State<ReportScreen>
   }
 
   Widget _buildGridView(ThemeManager themeManager, Color textColor) {
-    return Column(
-      children: [
-        // Total por Tipo Card
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: _buildTotalsByType(themeManager, textColor),
-        ),
-
-        // Total geral
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: _buildTotal(themeManager, textColor),
-        ),
-
-        // Grid de itens
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: _reportData.length,
-            itemBuilder: (context, index) {
-              final item = _reportData[index];
-              return _buildGridItem(item, index, themeManager, textColor);
-            },
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 100),
+      child: Column(
+        children: [
+          // ✅ Total por Tipo Card - DENTRO DO SCROLL
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: _buildTotalsByType(themeManager, textColor),
           ),
-        ),
-      ],
+
+          // ✅ Total geral - DENTRO DO SCROLL
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: _buildTotal(themeManager, textColor),
+          ),
+
+          // ✅ Grid de itens - DENTRO DO SCROLL com altura fixa
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: GridView.builder(
+              shrinkWrap:
+                  true, // ✅ IMPORTANTE: Permite o grid crescer conforme necessário
+              physics:
+                  const NeverScrollableScrollPhysics(), // ✅ Desabilita scroll próprio do grid
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: _reportData.length,
+              itemBuilder: (context, index) {
+                final item = _reportData[index];
+                return _buildGridItem(item, index, themeManager, textColor);
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
