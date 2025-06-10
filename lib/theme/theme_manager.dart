@@ -54,6 +54,21 @@ class ThemeManager with ChangeNotifier {
     }
   }
 
+  Color getAppBarIconColor() {
+    // ✅ SEMPRE BRANCO para ícones do AppBar em AMBOS os temas
+    return Colors.white;
+  }
+
+  Color getAppBarTextColor() {
+    // ✅ SEMPRE BRANCO para textos do AppBar em AMBOS os temas
+    return Colors.white;
+  }
+
+  Color getAppBarElementsColor() {
+    // ✅ SEMPRE BRANCO para TODOS os elementos do AppBar
+    return Colors.white;
+  }
+
 // Retorna a cor secundária do tema atual
   Color getCurrentSecondaryColor() {
     switch (currentThemeType) {
