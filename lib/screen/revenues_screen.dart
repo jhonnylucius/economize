@@ -266,8 +266,9 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color:
-                                        isDark ? Colors.white : Colors.black87,
+                                    color: isDark
+                                        ? const Color.fromARGB(255, 0, 0, 0)
+                                        : Colors.black87,
                                   ),
                                 ),
                                 Text(
