@@ -169,24 +169,24 @@ class AchievementChecker {
       final savings = totalRevenues - totalCosts;
 
       // R$ 500 economizados
-      if (savings >= 500) {
+      if (savings >= 2000) {
         await _unlockAchievementIfNotExists(
           id: 'savings_500',
           type: AchievementType.firstSaving,
           title: '💰 Primeiras Economias',
           description:
-              'Você economizou seus primeiros R\$ 500! Cada centavo conta!',
+              'Você economizou seus primeiros R\$ 2000! Cada centavo conta!',
           rarity: AchievementRarity.bronze,
         );
       }
 
       // R$ 1.000 economizados
-      if (savings >= 1000) {
+      if (savings >= 4000) {
         await _unlockAchievementIfNotExists(
           id: 'savings_1000',
           type: AchievementType.fiveThousand,
-          title: '💎 Mil Reais',
-          description: 'R\$ 1.000 economizados! Você está no caminho certo!',
+          title: '💎 Qautro mil Reais',
+          description: 'R\$ 4.000 economizados! Você está no caminho certo!',
           rarity: AchievementRarity.silver,
         );
       }
@@ -613,29 +613,21 @@ class AchievementChecker {
           },
         );
 
+        // ✅ SÓ ESTA CHAMADA - AchievementService cuida da notificação
         await AchievementService.unlockAchievement(achievement);
-
-        // 🎉 NOTIFICAÇÃO DE CONQUISTA!
-        await NotificationService.showAchievementNotification(
-          title: '🏆 Nova Conquista Desbloqueada!',
-          body: '$title - $description',
-          achievementId: id,
-        );
-
         _logger.i('🎉 Nova conquista desbloqueada: $title');
       } else if (!existingAchievement.isUnlocked) {
-        // Desbloquear conquista existente
+        // ✅ SÓ ESTA CHAMADA - AchievementService cuida da notificação
         await AchievementService.unlockAchievementById(id);
-
-        // 🎉 NOTIFICAÇÃO DE CONQUISTA!
-        await NotificationService.showAchievementNotification(
-          title: '🏆 Conquista Desbloqueada!',
-          body: '$title - $description',
-          achievementId: id,
-        );
-
         _logger.i('🔓 Conquista desbloqueada: $title');
       }
+
+      // ❌ REMOVER ESTAS LINHAS DUPLICADAS:
+      // await NotificationService.showAchievementNotification(
+      //   title: '🏆 Conquista Desbloqueada!',
+      //   body: '$title - $description',
+      //   achievementId: id,
+      // );
     } catch (e) {
       _logger.e('❌ Erro ao desbloquear conquista $id: $e');
     }
