@@ -138,6 +138,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                       delay: const Duration(milliseconds: 100),
                       child: ScaleAnimation(
                         child: GlassContainer(
+                          frostedEffect: true,
                           blur: 5,
                           opacity: 0.1,
                           child: Padding(
@@ -194,6 +195,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
                       child: Padding(
                         padding: const EdgeInsets.only(top: 24),
                         child: GlassContainer(
+                          frostedEffect: true,
                           blur: 3,
                           opacity: 0.08,
                           child: Padding(
@@ -290,6 +292,7 @@ class _GoalCalculatorScreenState extends State<GoalCalculatorScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
