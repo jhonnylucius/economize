@@ -316,6 +316,7 @@ class _CostsScreenState extends State<CostsScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -1059,6 +1060,7 @@ class _CostsScreenState extends State<CostsScreen>
 
     return SlideAnimation.fromTop(
       child: GlassContainer(
+        frostedEffect: true,
         borderRadius: 16,
         opacity: 0.1,
         child: Padding(
