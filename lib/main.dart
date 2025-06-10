@@ -1,6 +1,7 @@
 import 'package:economize/features/financial_education/screens/goal_calculator_screen.dart';
 import 'package:economize/features/financial_education/screens/tips_screen.dart';
 import 'package:economize/model/budget/budget.dart';
+import 'package:economize/scheduler/notification_scheduler.dart';
 import 'package:economize/screen/balance_screen.dart';
 import 'package:economize/screen/budget/budget_compare_screen.dart';
 import 'package:economize/screen/budget/budget_detail_screen.dart';
@@ -29,19 +30,20 @@ final logger = Logger();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa o banco ANTES de qualquer coisa
   try {
     await AchievementService.initializeAchievements();
     Logger().i('✅ Sistema de conquistas inicializado!');
   } catch (e) {
     Logger().e('❌ Erro ao inicializar conquistas: $e');
   }
-  // ADICIONAR ESTAS LINHAS APÓS O COMENTÁRIO ACIMA:
-  // Inicializar notificações ANTES do app
+
   final notificationService = NotificationService();
   await notificationService.initialize();
 
-  // Reagendar todas as notificações ao abrir o app
+  // ADICIONAR ESTAS 2 LINHAS:
+  final scheduler = NotificationScheduler();
+  await scheduler.initialize();
+
   await _rescheduleAllNotifications();
 
   runApp(
@@ -49,20 +51,16 @@ void main() async {
   );
 }
 
-// ADICIONAR ESTA FUNÇÃO COMPLETA APÓS A FUNÇÃO main():
-/// Reagenda todas as notificações pendentes ao abrir o app
 Future<void> _rescheduleAllNotifications() async {
   try {
     final costsService = CostsService();
     final notificationService = NotificationService();
 
-    // Buscar todas as despesas não pagas
     final allCosts = await costsService.getAllCosts();
     final unpaidCosts = allCosts
         .where((cost) => !cost.pago && cost.data.isAfter(DateTime.now()))
         .toList();
 
-    // Reagendar notificações para cada despesa
     for (final cost in unpaidCosts) {
       await notificationService.schedulePaymentNotification(
         paymentId: cost.id,
