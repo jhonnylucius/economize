@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'dart:math' as math;
+import 'package:economize/theme/theme_manager.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -91,6 +92,7 @@ class _GoalsScreenState extends State<GoalsScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final themeManager = ThemeManager();
 
     return ResponsiveScreen(
       appBar: AppBar(
@@ -133,28 +135,36 @@ class _GoalsScreenState extends State<GoalsScreen>
       backgroundColor: Colors.white, // Sempre fundo branco
       floatingActionButton: ScaleAnimation.bounceIn(
         delay: const Duration(milliseconds: 300),
-        child: GlassContainer(
-          borderRadius: 24,
-          blur: 10,
-          opacity: 0.2,
-          child: FloatingActionButton.extended(
-            onPressed: _addNewGoal,
-            icon: Icon(
-              Icons.add_circle_outline,
-              color: theme.colorScheme.primary,
-            ),
-            label: Text(
-              'Nova Meta',
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: themeManager.getTipCardTextColor(), // ✅ COR DE FUNDO
+            borderRadius: BorderRadius.circular(12), // ✅ QUADRADO ARREDONDADO
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _addNewGoal,
+              borderRadius: BorderRadius.circular(12),
+              child: Icon(
+                Icons.add, // ✅ ÍCONE + SIMPLES
+                color:
+                    themeManager.getTipCardBackgroundColor(), // ✅ COR DO ÍCONE
+                size: 28,
               ),
             ),
-            backgroundColor: Colors.white,
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       child: Stack(
         children: [
           // Background pattern
@@ -245,6 +255,7 @@ class _GoalsScreenState extends State<GoalsScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -570,6 +581,7 @@ class _GoalsScreenState extends State<GoalsScreen>
       child: FadeAnimation(
         child: ScaleAnimation(
           child: GlassContainer(
+            frostedEffect: true,
             blur: 5,
             opacity: 0.1,
             borderRadius: 20,
@@ -717,6 +729,7 @@ class _GoalsScreenState extends State<GoalsScreen>
       onPress: () => _showGoalDetails(goal),
       pressedScale: 0.98,
       child: GlassContainer(
+        frostedEffect: true,
         borderRadius: 20,
         blur: 5,
         opacity: 0.08,
@@ -1206,6 +1219,7 @@ class _GoalsScreenState extends State<GoalsScreen>
     required ThemeData theme,
   }) {
     return GlassContainer(
+      frostedEffect: true,
       blur: 3,
       opacity: 0.05,
       borderRadius: 16,
