@@ -117,17 +117,17 @@ class AchievementService {
       ),
 
       Achievement(
-        id: 'savings_500',
+        id: 'savings_2000',
         title: '💰 Primeiras Economias',
         description:
-            'Você economizou seus primeiros R\$ 500! Cada centavo conta!',
-        secretDescription: 'Economize R\$ 500 para desbloquear',
+            'Você economizou seus primeiros R\$ 2000! Cada centavo conta!',
+        secretDescription: 'Economize R\$ 2000 para desbloquear',
         type: AchievementType.firstSaving,
         rarity: AchievementRarity.silver,
         imagePath: 'assets/conquistas/conquista5.png',
         isUnlocked: false,
         progress: 0.0,
-        metadata: {'category': 'economias', 'target_amount': 500},
+        metadata: {'category': 'economias', 'target_amount': 2000},
       ),
 
       Achievement(
@@ -145,16 +145,16 @@ class AchievementService {
 
       // 🥇 OURO - Conquistas avançadas
       Achievement(
-        id: 'savings_1000',
+        id: 'savings_4000',
         title: '💎 Mil Reais',
-        description: 'R\$ 1.000 economizados! Você está no caminho certo!',
-        secretDescription: 'Economize R\$ 1.000 para desbloquear',
+        description: 'R\$ 4.000 economizados! Você está no caminho certo!',
+        secretDescription: 'Economize R\$ 4.000 para desbloquear',
         type: AchievementType.fiveThousand,
         rarity: AchievementRarity.gold,
         imagePath: 'assets/conquistas/conquista7.png',
         isUnlocked: false,
         progress: 0.0,
-        metadata: {'category': 'economias', 'target_amount': 1000},
+        metadata: {'category': 'economias', 'target_amount': 4000},
       ),
 
       Achievement(
@@ -375,7 +375,7 @@ class AchievementService {
         id: 'murphy_special',
         title: '👻 Murphy Apareceu!',
         description:
-            'Você desbloqueou o fantasma Murphy! Ele vai te "ajudar" com bugs!',
+            'Você desbloqueou o fantasma Murphy! Ele vai te "ajudar" com os bugs!',
         secretDescription: '🥜 Algo sobre paçocas...',
         type: AchievementType.dailyUser,
         rarity: AchievementRarity.legendary,
