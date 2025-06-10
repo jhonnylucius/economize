@@ -27,12 +27,12 @@ import 'package:url_launcher/url_launcher.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static final GlobalKey<_HomeScreenState> homeKey =
+  static final GlobalKey<_HomeScreenState> _homeKey =
       GlobalKey<_HomeScreenState>();
 
   static void refreshHomeData() {
     try {
-      final homeState = homeKey.currentState; // ✅ CORRIGIDO
+      final homeState = _homeKey.currentState; // ✅ CORRIGIDO
       if (homeState != null && homeState.mounted) {
         homeState._loadFinancialData();
         debugPrint('✅ HomeScreen atualizada via método estático');
@@ -443,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen>
     final isDarkMode = themeManager.currentThemeType != ThemeType.light;
 
     return ResponsiveScreen(
-      key: HomeScreen.homeKey,
+      key: HomeScreen._homeKey,
       backgroundColor: themeManager.getDashboardHeaderBackgroundColor(),
       appBar: _buildAppBar(theme, isDarkMode, themeManager),
       bottomNavigationBar: buildBottomNavBar(theme, padding),
@@ -479,9 +479,6 @@ class _HomeScreenState extends State<HomeScreen>
                         ? _buildExpandedView(screenSize, themeManager)
                         : _buildGridView(screenSize, themeManager),
                   ),
-
-                  // REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O ESPAÇO EXTRA:
-                  // SizedBox(height: padding.bottom + 80), // ❌ DELETAR ESTA LINHA!
                 ],
               ),
             ),
@@ -1599,6 +1596,7 @@ class _HomeScreenState extends State<HomeScreen>
           right: 16,
           left: 16,
           child: GlassContainer(
+            frostedEffect: true,
             borderRadius: 16,
             opacity: isDark ? 0.15 : 0.1, // Ajustado para melhor visibilidade
             borderColor:
@@ -2365,6 +2363,7 @@ class _HomeScreenState extends State<HomeScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -2606,6 +2605,7 @@ class _HomeScreenState extends State<HomeScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -3204,6 +3204,7 @@ extension GlassContainerExtension on GlassContainer {
     Color? borderColor,
   }) {
     return GlassContainer(
+      frostedEffect: true,
       borderRadius: borderRadius,
       opacity: opacity,
       borderColor: borderColor,
