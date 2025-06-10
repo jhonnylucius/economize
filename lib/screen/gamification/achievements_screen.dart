@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:economize/service/gamification/achievement_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
@@ -9,6 +13,8 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'dart:math' as math;
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -24,6 +30,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   late AnimationController _confettiController;
   late AnimationController _floatingController;
   late AnimationController _murphyDanceController;
+
+  final GlobalKey _cardKey = GlobalKey();
 
   // Animations
   late Animation<double> _headerRotation;
@@ -184,6 +192,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       appBar: AppBar(
         elevation: 0,
         backgroundColor: headerColor,
+        iconTheme: IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white, // ✅ FORÇA TODOS OS ELEMENTOS BRANCOS
         title: SlideAnimation.fromLeft(
           child: Row(
             children: [
@@ -194,7 +204,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                     angle: _headerRotation.value,
                     child: Icon(
                       Icons.emoji_events,
-                      color: headerTextColor,
+                      color: Colors.white, // ✅ SEMPRE BRANCO
                       size: 28,
                     ),
                   );
@@ -209,7 +219,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                     Text(
                       'Conquistas',
                       style: TextStyle(
-                        color: headerTextColor,
+                        color: Colors.white, // ✅ SEMPRE BRAN
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -218,7 +228,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                       Text(
                         '${_stats['unlocked']}/${_stats['total']} desbloqueadas',
                         style: TextStyle(
-                          color: headerTextColor.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
                         ),
                       ),
@@ -241,7 +251,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         actions: [
           SlideAnimation.fromRight(
             child: PopupMenuButton<String>(
-              icon: Icon(Icons.filter_list, color: headerTextColor),
+              icon: Icon(Icons.filter_list, color: Colors.white),
               onSelected: (value) {
                 if (value == 'unlocked') {
                   setState(() {
@@ -385,17 +395,15 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: isUnlocked
-                              ? rarityColor.withValues(alpha: 0.2)
-                              : Colors.black.withValues(alpha: 0.1),
+                          color: const Color.fromARGB(255, 206, 91, 196)
+                              .withValues(alpha: 0.4), // ✅ ROSA FORTE
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
                       ],
                       border: Border.all(
-                        color: isUnlocked
-                            ? rarityColor.withValues(alpha: 0.3)
-                            : Colors.grey.withValues(alpha: 0.2),
+                        color: const Color.fromARGB(255, 206, 91, 196)
+                            .withValues(alpha: 0.4), // ✅ ROSA FORTE
                         width: 1.5,
                       ),
                     ),
@@ -915,6 +923,7 @@ class _CleanAchievementDetailDialogState
     extends State<_CleanAchievementDetailDialog> with TickerProviderStateMixin {
   late AnimationController _dialogController;
   late Animation<double> _scaleAnimation;
+  final GlobalKey _cardKey = GlobalKey();
 
   @override
   void initState() {
@@ -959,118 +968,160 @@ class _CleanAchievementDetailDialogState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header com ícone
-                  Container(
-                    width: 120, // ✅ AINDA MAIOR NO DIÁLOGO
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: _getEpicRarityColor(achievement),
-                          width: 4), // ✅ COR ÉPICA
-                      boxShadow: [
-                        BoxShadow(
-                          color: _getEpicRarityColor(achievement)
-                              .withValues(alpha: 0.3), // ✅ COR ÉPICA
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: isUnlocked
-                          ? Image.asset(
-                              achievement.badgeImagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
+                  // ✅ ENVOLVER O CONTEÚDO DO CARD COM RepaintBoundary
+                  RepaintBoundary(
+                    key: _cardKey,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        // ✅ GRADIENTE SUTIL PARA FICAR MAIS BONITO NA IMAGEM
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header com ícone
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: _getEpicRarityColor(achievement),
+                                  width: 4),
+                              boxShadow: [
+                                BoxShadow(
                                   color: _getEpicRarityColor(achievement)
-                                      .withValues(alpha: 0.1),
-                                  child: Icon(
-                                    achievement.rarityIcon,
-                                    size: 60,
-                                    color: _getEpicRarityColor(achievement),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.lock,
-                                color: Colors.grey,
-                                size: 60,
-                              ),
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
                             ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Título
-                  Text(
-                    isUnlocked
-                        ? achievement.title
-                        : '??? Conquista Secreta ???',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: rarityColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Data de desbloqueio
-                  if (isUnlocked && achievement.unlockedAt != null)
-                    Text(
-                      'Desbloqueada em ${_formatDate(achievement.unlockedAt!)}',
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-
-                  const SizedBox(height: 16),
-
-                  // Descrição
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      isUnlocked
-                          ? achievement.description
-                          : achievement.secretDescription,
-                      style: const TextStyle(fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Raridade
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: rarityColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(achievement.rarityIcon, color: rarityColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          _getRarityName(achievement.rarity),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: rarityColor,
+                            child: ClipOval(
+                              child: isUnlocked
+                                  ? Image.asset(
+                                      achievement.badgeImagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Container(
+                                          color:
+                                              _getEpicRarityColor(achievement)
+                                                  .withValues(alpha: 0.1),
+                                          child: Icon(
+                                            achievement.rarityIcon,
+                                            size: 60,
+                                            color: _getEpicRarityColor(
+                                                achievement),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      color: Colors.grey.withValues(alpha: 0.1),
+                                      child: Icon(
+                                        Icons.lock,
+                                        color: Colors.grey,
+                                        size: 60,
+                                      ),
+                                    ),
+                            ),
                           ),
-                        ),
-                      ],
+
+                          const SizedBox(height: 16),
+
+                          // Título
+                          Text(
+                            isUnlocked
+                                ? achievement.title
+                                : '??? Conquista Secreta ???',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: rarityColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Data de desbloqueio
+                          if (isUnlocked && achievement.unlockedAt != null)
+                            Text(
+                              'Desbloqueada em ${_formatDate(achievement.unlockedAt!)}',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: const ui.Color.fromARGB(255, 0, 0, 0)),
+                            ),
+
+                          const SizedBox(height: 16),
+
+                          // Descrição
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isUnlocked
+                                  ? achievement.description
+                                  : achievement.secretDescription,
+                              style: const TextStyle(fontSize: 14),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Raridade
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: rarityColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(achievement.rarityIcon,
+                                    color: rarityColor),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _getRarityName(achievement.rarity),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: rarityColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // ✅ ADICIONAR MARCA D'ÁGUA DO APP
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.savings,
+                                  color: Colors.grey.shade400, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Economize App',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade400,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -1088,11 +1139,15 @@ class _CleanAchievementDetailDialogState
                       if (isUnlocked)
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: _shareAchievement,
-                            icon: const Icon(Icons.share),
-                            label: const Text('Compartilhar'),
+                            onPressed:
+                                _shareAchievementAsImage, // ✅ MUDANÇA AQUI
+                            icon: const Icon(Icons.share, color: Colors.white),
+                            label: const Text('Compartilhar',
+                                style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: rarityColor),
+                              backgroundColor: rarityColor,
+                              foregroundColor: Colors.white,
+                            ),
                           ),
                         ),
                     ],
@@ -1106,9 +1161,45 @@ class _CleanAchievementDetailDialogState
     );
   }
 
-  void _shareAchievement() {
-    final achievementText = '''
-🏆 Nova Conquista Desbloqueada!
+  // ✅ NOVO MÉTODO PARA COMPARTILHAR COMO IMAGEM
+  Future<void> _shareAchievementAsImage() async {
+    try {
+      // Mostrar loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Aguardar um frame para garantir que o widget está renderizado
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Capturar o widget como imagem
+      RenderRepaintBoundary boundary =
+          _cardKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+
+      ui.Image image =
+          await boundary.toImage(pixelRatio: 3.0); // ✅ Alta qualidade
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      // Salvar temporariamente
+      final directory = await getTemporaryDirectory();
+      final imagePath =
+          '${directory.path}/conquista_${widget.achievement.id}.png';
+      final imageFile = File(imagePath);
+      await imageFile.writeAsBytes(pngBytes);
+
+      // Fechar loading
+      Navigator.pop(context);
+
+      // Compartilhar
+      await Share.shareXFiles(
+        [XFile(imagePath)],
+        text: '''🏆 Nova Conquista Desbloqueada!
 
 ${widget.achievement.title}
 ${widget.achievement.description}
@@ -1116,16 +1207,35 @@ ${widget.achievement.description}
 Raridade: ${_getRarityName(widget.achievement.rarity)}
 Desbloqueada no app Economize! 💰
 
-#Economize #Conquistas #${_getRarityName(widget.achievement.rarity)}
-''';
+#Economize #Conquistas #${_getRarityName(widget.achievement.rarity)}''',
+      );
 
-    Clipboard.setData(ClipboardData(text: achievementText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('🏆 Conquista "${widget.achievement.title}" copiada!'),
-        backgroundColor: _getCleanRarityColor(widget.achievement.rarity),
-      ),
-    );
+      // Mostrar sucesso
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🏆 Conquista "${widget.achievement.title}" compartilhada!'),
+            backgroundColor: _getCleanRarityColor(widget.achievement.rarity),
+          ),
+        );
+      }
+    } catch (e) {
+      // Fechar loading se ainda estiver aberto
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Mostrar erro
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Erro ao compartilhar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Color _getCleanRarityColor(AchievementRarity rarity) {
