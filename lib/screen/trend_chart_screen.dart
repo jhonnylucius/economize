@@ -766,6 +766,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
