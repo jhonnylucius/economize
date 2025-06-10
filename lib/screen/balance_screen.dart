@@ -362,14 +362,14 @@ class _BalanceScreenState extends State<BalanceScreen>
                                   animation: _waveAnimation,
                                   builder: (context, child) {
                                     return Container(
-                                      width: 240 + 20 * _waveAnimation.value,
-                                      height: 240 + 20 * _waveAnimation.value,
+                                      width: 240 + 15 * _waveAnimation.value,
+                                      height: 240 + 15 * _waveAnimation.value,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: Colors.green
-                                              .withAlpha((0.2 * 255).toInt()),
-                                          width: 3,
+                                              .withAlpha((0.15 * 255).toInt()),
+                                          width: 2,
                                         ),
                                       ),
                                     );
@@ -677,6 +677,7 @@ class _BalanceScreenState extends State<BalanceScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
