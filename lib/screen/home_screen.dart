@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/interactive_animations.dart';
@@ -25,6 +27,23 @@ import 'package:url_launcher/url_launcher.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  static final GlobalKey<_HomeScreenState> homeKey =
+      GlobalKey<_HomeScreenState>();
+
+  static void refreshHomeData() {
+    try {
+      final homeState = homeKey.currentState; // ✅ CORRIGIDO
+      if (homeState != null && homeState.mounted) {
+        homeState._loadFinancialData();
+        debugPrint('✅ HomeScreen atualizada via método estático');
+      } else {
+        debugPrint('⚠️ HomeScreen não está disponível para atualização');
+      }
+    } catch (e) {
+      debugPrint('❌ Erro ao atualizar HomeScreen: $e');
+    }
+  }
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -33,6 +52,11 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   final ScrollController _gridController = ScrollController();
   static const String _lastTipShownKey = 'last_tip_shown_date';
+
+  // Adicionar estes novos elementos
+  StreamSubscription<String>? _updateSubscription;
+  Timer? _periodicTimer;
+
   // Returns the route for each functionality index
   String _getRouteForIndex(int index) {
     switch (index) {
@@ -117,6 +141,8 @@ class _HomeScreenState extends State<HomeScreen>
   double _previousBalance = 0.0;
   double _balanceVariationPercent = 0.0;
 
+  bool isLoadingFinancialData = false;
+
   // Categorias de funcionalidades
   final List<String> _categories = [
     "Principais",
@@ -165,6 +191,11 @@ class _HomeScreenState extends State<HomeScreen>
 
     loadPreviousBalance();
     _loadFinancialData();
+
+    _setupUpdateListeners();
+
+    // NOVO: Timer periódico para atualizações automáticas (opcional)
+    _setupPeriodicUpdates();
   }
 
   Future<void> _checkIfTipShouldBeShown() async {
@@ -197,6 +228,47 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  void _setupUpdateListeners() {
+    // Listener para mudanças via SharedPreferences
+    _updateSubscription = _watchForUpdates().listen((_) {
+      if (mounted) {
+        _loadFinancialData();
+      }
+    });
+  }
+
+  // NOVO: Stream que monitora mudanças
+  Stream<String> _watchForUpdates() async* {
+    String lastUpdate = '';
+    while (true) {
+      await Future.delayed(const Duration(seconds: 1));
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final currentUpdate = prefs.getString('last_finance_update') ?? '';
+        if (currentUpdate != lastUpdate && currentUpdate.isNotEmpty) {
+          lastUpdate = currentUpdate;
+          yield currentUpdate;
+        }
+      } catch (e) {
+        debugPrint('Erro ao verificar atualizações: $e');
+      }
+    }
+  }
+
+  // NOVO: Timer periódico (backup)
+  void _setupPeriodicUpdates() {
+    _periodicTimer = Timer.periodic(
+      const Duration(minutes: 10), // Atualiza a cada 5minutos
+      (timer) {
+        if (mounted && !isLoadingFinancialData) {
+          // ✅ ADICIONAR !isLoadingFinancialData
+          debugPrint('⏰ Atualização periódica automática');
+          _loadFinancialData();
+        }
+      },
+    );
+  }
+
   void scrollToTop() {
     if (_gridController.hasClients) {
       _gridController.animateTo(
@@ -218,69 +290,93 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  // MODIFICAR: Método _loadFinancialData para incluir mais logs
   Future<void> _loadFinancialData() async {
+    // Evitar múltiplas execuções simultâneas
+    if (isLoadingFinancialData) {
+      debugPrint('⚠️ Carregamento já em andamento, ignorando nova solicitação');
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoadingFinancialData = true;
+      });
+    }
+
     try {
-      // Obter receitas e despesas (código existente)
+      debugPrint('🔄 Atualizando dados financeiros...');
+
+      // Obter receitas e despesas
       final costs = await _costsService.getAllCosts();
       final revenues = await _revenuesService.getAllRevenues();
 
-      // Calcular saldo total (todas as receitas - todas as despesas) (código existente)
+      debugPrint('💰 Receitas encontradas: ${revenues.length}');
+      debugPrint('💸 Despesas encontradas: ${costs.length}');
+
+      // Calcular saldo total
       final totalCosts = costs.fold<double>(0, (sum, cost) => sum + cost.preco);
       final totalRevenues =
           revenues.fold<double>(0, (sum, revenue) => sum + revenue.preco);
 
-      // Armazenar o saldo atual como saldo anterior para a próxima comparação
-      // Certifique-se de que _previousBalance é uma variável de estado (e.g., double _previousBalance = 0.0;)
-      // Este passo deve vir antes que _currentBalance seja atualizado para o 'newBalance'
-      _previousBalance = _currentBalance;
+      debugPrint('💰 Total receitas: R\$ ${totalRevenues.toStringAsFixed(2)}');
+      debugPrint('💸 Total despesas: R\$ ${totalCosts.toStringAsFixed(2)}');
 
-      // Calcular o novo saldo (será atribuído a _currentBalance no setState)
+      // Armazenar o saldo anterior
+      _previousBalance = _currentBalance;
       final newBalance = totalRevenues - totalCosts;
 
-      // Novo código: calcular variação percentual
+      // Calcular variação percentual
       double variationPercent = 0.0;
       if (_previousBalance != 0) {
-        // Calcula a variação baseada no saldo anterior
         variationPercent =
             ((newBalance - _previousBalance) / _previousBalance.abs()) * 100;
       } else if (newBalance > 0) {
-        // Se o saldo anterior era zero e o novo é positivo, é um aumento de 100%
         variationPercent = 100.0;
       }
-      // Se _previousBalance for 0 e newBalance for 0 ou negativo, variationPercent permanece 0.0
 
-      // Calcular progresso de metas (exemplos) (código existente)
-      // Suponha que a meta de economia seja 30% da receita total
+      // Calcular progresso de metas
       final savingsGoal = totalRevenues * 0.3;
-      final currentSavings = newBalance; // currentSavings é o newBalance
-
-      // Suponha que o orçamento de gastos seja 70% da receita total
+      final currentSavings = newBalance > 0 ? newBalance : 0; // ✅ CORRIGIDO
       final expensesBudget = totalRevenues * 0.7;
 
-      setState(() {
-        _currentBalance = newBalance; // Atualiza o saldo atual
-        _balanceVariationPercent =
-            variationPercent; // Adiciona a nova variável de variação
+      if (mounted) {
+        setState(() {
+          _currentBalance = newBalance;
+          _balanceVariationPercent = variationPercent;
 
-        // Limitar o progresso entre 0 e 1 (código existente)
-        _savingsGoalProgress = savingsGoal > 0
-            ? (currentSavings / savingsGoal).clamp(0.0, 1.0)
-            : 0.0;
+          _savingsGoalProgress = savingsGoal > 0
+              ? (currentSavings / savingsGoal).clamp(0.0, 1.0)
+              : 0.0;
 
-        _expensesBudgetProgress = expensesBudget > 0
-            ? (totalCosts / expensesBudget).clamp(0.0, 1.0)
-            : 0.0;
-      });
+          _expensesBudgetProgress = expensesBudget > 0
+              ? (totalCosts / expensesBudget).clamp(0.0, 1.0)
+              : 0.0;
+        });
+
+        debugPrint(
+            '✅ Dados atualizados - Saldo: R\$ ${newBalance.toStringAsFixed(2)}');
+        debugPrint(
+            '📊 Progresso economia: ${(_savingsGoalProgress * 100).toStringAsFixed(1)}%');
+        debugPrint(
+            '📊 Progresso despesas: ${(_expensesBudgetProgress * 100).toStringAsFixed(1)}%');
+      }
     } catch (e) {
-      debugPrint('Erro ao carregar dados financeiros: $e');
-      // Em caso de erro, manter os valores padrão (código existente)
-      setState(() {
-        _currentBalance = 0.0;
-        _savingsGoalProgress = 0.0;
-        _expensesBudgetProgress = 0.0;
-        _balanceVariationPercent =
-            0.0; // Também reseta a variação em caso de erro
-      });
+      debugPrint('❌ Erro ao carregar dados financeiros: $e');
+      if (mounted) {
+        setState(() {
+          _currentBalance = 0.0;
+          _savingsGoalProgress = 0.0;
+          _expensesBudgetProgress = 0.0;
+          _balanceVariationPercent = 0.0;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoadingFinancialData = false; // ✅ SEMPRE limpar loading
+        });
+      }
     }
   }
 
@@ -319,15 +415,20 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _updateSubscription?.cancel();
+    _periodicTimer?.cancel();
     _pageController.dispose();
     _scrollProgress.dispose();
     _showFloatingPanel.dispose();
     _controller.dispose();
     _gridController.dispose();
-    // Não dispose _notificationService aqui se ele for um singleton global
-    // ou gerenciado por Provider ou GetIt. Se ele for local a este widget, dispose.
-    // Assumindo que é um singleton ou gerenciado globalmente.
     super.dispose();
+  }
+
+  // NOVO: Método para forçar atualização (chamado pelos botões)
+  void _forceRefresh() {
+    debugPrint('🔄 Atualização forçada solicitada');
+    _loadFinancialData();
   }
 
   @override
@@ -336,18 +437,17 @@ class _HomeScreenState extends State<HomeScreen>
     final themeManager = context.watch<ThemeManager>();
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
-    final padding = mediaQuery.padding;
+    final padding = mediaQuery.padding; // ✅ ADICIONAR ESTA LINHA
 
     // Determinar se estamos no tema escuro para ajustar detalhes visuais
     final isDarkMode = themeManager.currentThemeType != ThemeType.light;
 
     return ResponsiveScreen(
+      key: HomeScreen.homeKey,
       backgroundColor: themeManager.getDashboardHeaderBackgroundColor(),
-      // Use o novo _buildAppBar
       appBar: _buildAppBar(theme, isDarkMode, themeManager),
-      bottomNavigationBar: _buildBottomNavBar(theme, padding),
-      floatingActionButtonLocation: FloatingActionButtonLocation
-          .endDocked, // or another suitable location
+      bottomNavigationBar: buildBottomNavBar(theme, padding),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -405,6 +505,26 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    DateTime? lastUpdateTime;
+    // Verificar se voltou de outra tela
+    // Só atualizar se não estiver já carregando e for necessário
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isLoadingFinancialData && mounted) {
+        // Verificar se realmente precisa atualizar
+        final now = DateTime.now();
+        if (lastUpdateTime == null ||
+            now.difference(lastUpdateTime!).inSeconds > 5) {
+          lastUpdateTime = now;
+          _loadFinancialData();
+        }
+      }
+    });
+  }
+
+  DateTime? lastUpdateTime;
   // Appbar personalizado com animações e CONTADOR DE NOTIFICAÇÕES (Substituído)
   AppBar _buildAppBar(
       ThemeData theme, bool isDarkMode, ThemeManager themeManager) {
@@ -544,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   // Barra de navegação inferior
   // Barra de navegação inferior
-  Widget _buildBottomNavBar(ThemeData theme, EdgeInsets padding) {
+  Widget buildBottomNavBar(ThemeData theme, EdgeInsets padding) {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -786,12 +906,30 @@ class _HomeScreenState extends State<HomeScreen>
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Seu saldo atual',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Seu saldo atual',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  // ADICIONAR: Indicador de loading pequeno
+                                  if (isLoadingFinancialData) ...[
+                                    const SizedBox(width: 8),
+                                    const SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.5,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white70),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ],
                           ),
@@ -807,8 +945,7 @@ class _HomeScreenState extends State<HomeScreen>
                           letterSpacing: 1,
                         ),
                       ),
-                      const SizedBox(
-                          height: 8), // Espaço entre saldo e variação
+                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -823,12 +960,9 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Row(
                               children: [
                                 Icon(
-                                  // O problema está aqui: a condição estava verificando apenas _balanceVariationPercent,
-                                  // mas deveria verificar o valor atual do saldo também
                                   _currentBalance >= 0
                                       ? Icons.trending_up
                                       : Icons.trending_down,
-                                  // Cor baseada na direção do saldo, não da variação
                                   color: _currentBalance >= 0
                                       ? Colors.greenAccent
                                       : Colors.redAccent,
@@ -836,12 +970,10 @@ class _HomeScreenState extends State<HomeScreen>
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  // Mantém o sinal + ou - da variação percentual
                                   _balanceVariationPercent >= 0
                                       ? '+${_balanceVariationPercent.toStringAsFixed(1)}%'
                                       : '${_balanceVariationPercent.toStringAsFixed(1)}%',
                                   style: TextStyle(
-                                    // Cor baseada na direção do saldo, não da variação
                                     color: _currentBalance >= 0
                                         ? Colors.greenAccent
                                         : Colors.redAccent,
@@ -854,13 +986,12 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ],
                       ),
-                      const SizedBox(
-                          height: 16), // Espaço antes das barras de progresso
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
                             child: _buildProgressIndicator(
-                              'Meta de Economia', // Ajuste o label se necessário
+                              'Meta de Economia',
                               _savingsGoalProgress,
                               Colors.greenAccent,
                             ),
@@ -868,7 +999,7 @@ class _HomeScreenState extends State<HomeScreen>
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildProgressIndicator(
-                              'Gastos do Orçamento', // Ajuste o label se necessário
+                              'Gastos do Orçamento',
                               _expensesBudgetProgress,
                               Colors.amberAccent,
                             ),
@@ -879,26 +1010,134 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
 
-                // Botão de ajuda (posição absoluta na stack)
+                // ✅ NOVOS BOTÕES NO TOPO DIREITO
                 Positioned(
                   top: 10,
                   right: 10,
-                  child: PressableCard(
-                    onPress: () => _showFinancialCardHelp(context),
-                    pressedScale: 0.9,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha((0.2 * 255).round()),
-                      shape: BoxShape.circle,
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(
-                      Icons.help_outline,
-                      color: Colors
-                          .white, // Mantendo a cor branca no card para contraste
-                      size: 20,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 🔄 BOTÃO DE REFRESH
+                      PressableCard(
+                        onPress: () {
+                          debugPrint('🔄 Refresh manual do card financeiro');
+                          _forceRefresh();
+
+                          // Feedback visual
+                          HapticFeedback.lightImpact();
+
+                          // Mostrar SnackBar de confirmação
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    '🔄 Atualizando dados...',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor:
+                                  themeManager.getCurrentPrimaryColor(),
+                              duration: const Duration(milliseconds: 1500),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          );
+                        },
+                        pressedScale: 0.85,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha((0.2 * 255).round()),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: AnimatedRotation(
+                          turns: isLoadingFinancialData ? 1 : 0,
+                          duration: const Duration(milliseconds: 500),
+                          child: Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8), // Espaço entre os botões
+
+                      // ❓ BOTÃO DE AJUDA (já existia)
+                      PressableCard(
+                        onPress: () => _showFinancialCardHelp(context),
+                        pressedScale: 0.85,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha((0.2 * 255).round()),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(
+                          Icons.help_outline,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
+                // ADICIONAR: Overlay de loading para o card inteiro (opcional)
+                if (isLoadingFinancialData)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        color: Colors.black.withAlpha((0.1 * 255).round()),
+                      ),
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha((0.9 * 255).round()),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    themeManager.getCurrentPrimaryColor(),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Atualizando...',
+                                style: TextStyle(
+                                  color: themeManager.getCurrentPrimaryColor(),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -3043,7 +3282,6 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
       curve: Curves.elasticInOut,
     ));
 
-    // Iniciar animações
     _slideController.forward();
     _bounceController.forward();
   }
