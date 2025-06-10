@@ -271,6 +271,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: GlassContainer(
+                    frostedEffect: true,
                     blur: 3,
                     opacity: 0.1,
                     borderRadius: 24,
@@ -466,6 +467,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: GlassContainer(
+            frostedEffect: true,
             blur: 10,
             opacity: 0.2,
             borderRadius: 24,
@@ -1197,6 +1199,7 @@ class _ItemManagementScreenState extends State<ItemManagementScreen>
             ),
             const SizedBox(height: 16),
             GlassContainer(
+              frostedEffect: true,
               blur: 3,
               opacity: 0.08,
               borderRadius: 12,
