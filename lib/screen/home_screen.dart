@@ -789,7 +789,14 @@ class _HomeScreenState extends State<HomeScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => const ThemeSelector(),
+      isScrollControlled: true, // ADICIONA ESTA LINHA
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom, // ADICIONA ESTE PADDING
+        ),
+        child: const ThemeSelector(),
+      ),
     );
   }
 
