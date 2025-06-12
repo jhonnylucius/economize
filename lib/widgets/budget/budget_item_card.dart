@@ -605,25 +605,39 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
   Widget _buildBody() {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildUnitSelector(),
-          const SizedBox(height: 16),
-          Text(
-            'Preços por Local:',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
+    return Container(
+      // ADICIONADO: Altura máxima para permitir scroll
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height *
+            0.6, // AUMENTADO: De 0.5 para 0.6
+      ),
+      child: SingleChildScrollView(
+        // ADICIONADO: Scroll interno
+        physics: const ClampingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildUnitSelector(),
+              const SizedBox(height: 16),
+              Text(
+                'Preços por Local:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ..._buildPriceInputs(),
+              const SizedBox(height: 16),
+              _buildActionButtons(),
+              const SizedBox(
+                  height:
+                      100), // AUMENTADO: De 20 para 100 (espaço para o teclado)
+            ],
           ),
-          const SizedBox(height: 8),
-          ..._buildPriceInputs(),
-          const SizedBox(height: 16),
-          _buildActionButtons(),
-        ],
+        ),
       ),
     );
   }

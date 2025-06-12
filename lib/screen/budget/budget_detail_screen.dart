@@ -82,11 +82,9 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
   Widget build(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
 
-    // Substitui Scaffold por ResponsiveScreen
     return ResponsiveScreen(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        // seta de voltar visível e identificável via GlobalKey
         leading: IconButton(
           key: _backButtonKey,
           icon: const Icon(Icons.arrow_back),
@@ -108,7 +106,6 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             onPressed: _refreshBudget,
             color: themeManager.getDetailHeaderTextColor(),
           ),
-          // ícone de ajuda (substitui o home) com GlobalKey
           IconButton(
             key: _helpButtonKey,
             icon: const Icon(Icons.help_outline),
@@ -122,7 +119,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
           unselectedLabelColor:
               themeManager.getDetailHeaderTextColor().withAlpha(
                     (0.7 * 255).toInt(),
-                  ), // Ajustado para usar withAlpha
+                  ),
           indicatorColor: themeManager.getDetailHeaderTextColor(),
           tabs: const [
             Tab(text: 'Locais', icon: Icon(MyFlutterApp.location)),
@@ -131,9 +128,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
           ],
         ),
       ),
-      // Passa a cor de fundo original para o ResponsiveScreen
       backgroundColor: themeManager.getDetailCardColor(),
-      // Passa o FloatingActionButton original para o ResponsiveScreen
       floatingActionButton: _isEditingCard
           ? null
           : FloatingActionButton(
@@ -150,19 +145,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                 color: themeManager.getDetailHeaderTextColor(),
               ),
             ),
-      // Parâmetro obrigatório para ResponsiveScreen
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // O body original agora é o child do ResponsiveScreen
       child: Column(
-        // Esta é a Column em budget_detail_screen.dart:140
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: BudgetSummaryCard(
-              summary: widget.budget.summary,
-              showDetails: false,
+          // CONDICIONAL: Card de resumo SÓ aparece se NÃO estiver editando OU se estiver em outra aba
+          if (!_isEditingCard || _tabController.index != 1)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: BudgetSummaryCard(
+                summary: widget.budget.summary,
+                showDetails: false,
+              ),
             ),
-          ),
+
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -174,7 +169,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
             ),
           ),
         ],
-      ), // Mantém a posição original
+      ),
     );
   }
 
@@ -557,10 +552,25 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
                 fontSize: 14,
               ),
             ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              color: appThemes.getInputErrorColor(),
-              onPressed: () => _confirmAndRemoveLocation(location),
+            // ALTERAÇÃO: Substituir o trailing por Row com dois botões
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // NOVO: Botão de Editar
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  color: appThemes.getCardIconColor(),
+                  onPressed: () => _showEditLocationDialog(location),
+                  tooltip: 'Editar local',
+                ),
+                // Botão de Deletar (já existia)
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  color: appThemes.getInputErrorColor(),
+                  onPressed: () => _confirmAndRemoveLocation(location),
+                  tooltip: 'Remover local',
+                ),
+              ],
             ),
           ),
         );
@@ -595,27 +605,30 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ItemSearchBar(onItemSelected: _moveItemToTop),
-        ),
+        // CONDICIONAL: Só mostra a barra de pesquisa se NÃO estiver editando
+        if (!_isEditingCard)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ItemSearchBar(onItemSelected: _moveItemToTop),
+          ),
+
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               8,
-              0,
+              _isEditingCard ? 8 : 0,
               8,
-              80,
-            ), // Padding para evitar sobreposição do FAB
+              150, // AUMENTADO: De 80 para 150 (mais espaço para o teclado)
+            ),
             itemCount: widget.budget.items.length,
             itemBuilder: (context, index) {
               final item = widget.budget.items[index];
               return BudgetItemCard(
-                key: ValueKey(item.id), // Usa ValueKey para melhor performance
+                key: ValueKey(item.id),
                 item: item,
                 locationNames: locationNames,
                 budgetId: widget.budget.id,
-                budget: widget.budget, // Passa o budget completo
+                budget: widget.budget,
                 budgetService: _budgetService,
                 priceHistoryService: _historyService,
                 onDelete: () => _removeItem(item.id),
@@ -951,5 +964,105 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen>
         backgroundColor: context.read<ThemeManager>().getDetailErrorColor(),
       ),
     );
+  }
+
+  Future<void> _showEditLocationDialog(BudgetLocation location) async {
+    final appThemes = AppThemes();
+    final nameController = TextEditingController(text: location.name);
+    final addressController = TextEditingController(text: location.address);
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: appThemes.getDialogBackgroundColor(),
+        title: Text(
+          'Editar Local',
+          style: appThemes.getDialogTitleStyle(),
+        ),
+        content: SizedBox(
+          height: 200.0,
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: appThemes.getStandardInputDecoration(
+                    'Nome do Local',
+                    hint: 'Ex: Mercado Central',
+                  ),
+                  style: TextStyle(
+                    color: appThemes.getInputTextColor(),
+                  ),
+                  cursorColor: appThemes.getInputCursorColor(),
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: addressController,
+                  decoration: appThemes.getStandardInputDecoration(
+                    'Endereço',
+                    hint: 'Ex: Rua Principal, 123',
+                  ),
+                  style: TextStyle(
+                    color: appThemes.getInputTextColor(),
+                  ),
+                  cursorColor: appThemes.getInputCursorColor(),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: appThemes.getDialogCancelButtonTextColor(),
+              backgroundColor: appThemes.getDialogCancelButtonColor(),
+            ),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (nameController.text.isNotEmpty) {
+                // Criar local atualizado mantendo o ID original
+                final updatedLocation = BudgetLocation(
+                  id: location.id, // MANTER O ID ORIGINAL
+                  name: nameController.text.trim(),
+                  address: addressController.text.trim(),
+                  priceDate: location.priceDate, // MANTER DATA ORIGINAL
+                  budgetId: location.budgetId, // MANTER BUDGET ID
+                );
+                _updateLocation(updatedLocation);
+                Navigator.pop(context);
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: appThemes.getDialogButtonColor(),
+              foregroundColor: appThemes.getDialogButtonTextColor(),
+            ),
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateLocation(BudgetLocation updatedLocation) async {
+    setState(() => _isLoading = true);
+    try {
+      await _budgetService.updateLocation(widget.budget.id, updatedLocation);
+      await _refreshBudget();
+      if (mounted) {
+        _showSuccess('Local atualizado com sucesso!');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Erro ao atualizar local: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

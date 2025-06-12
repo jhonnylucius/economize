@@ -90,6 +90,29 @@ class BudgetService {
     }
   }
 
+  Future<void> updateLocation(
+      String budgetId, BudgetLocation updatedLocation) async {
+    try {
+      final budget = await getBudget(budgetId);
+      if (budget == null) throw Exception('Orçamento não encontrado');
+
+      // Encontrar e atualizar o local na lista
+      final locationIndex =
+          budget.locations.indexWhere((loc) => loc.id == updatedLocation.id);
+      if (locationIndex == -1) throw Exception('Local não encontrado');
+
+      // Substituir o local antigo pelo atualizado
+      budget.locations[locationIndex] = updatedLocation;
+
+      // Salvar as alterações no banco
+      await _budgetDAO.insert(budget);
+
+      debugPrint('✅ Local atualizado: ${updatedLocation.name}');
+    } catch (e) {
+      throw Exception('Erro ao atualizar local: $e');
+    }
+  }
+
   Future<void> updateItemPrice(
     String budgetId,
     String itemId,
