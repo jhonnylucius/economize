@@ -327,25 +327,6 @@ screenshot: ^2.1.0        # Screen capture
 
 ---
 
-## **🚀 PRÓXIMOS PASSOS & ESCALABILIDADE**
-
-### **🔮 FUTURAS IMPLEMENTAÇÕES**
-
-- 🔄 **Sincronização em nuvem** (Firebase/Supabase)
-- 🤖 **IA real** para análises preditivas
-- 💳 **Integração bancária** via Open Banking
-- 📱 **Versão web** com Flutter Web
-- 🌍 **Internacionalização** completa
-
-### **📈 POTENCIAL COMERCIAL**
-
-- 🎯 **Monetização** via premium features
-- 🤝 **Parcerias** com instituições financeiras
-- 📊 **Analytics** para insights de mercado
-- 🏆 **White label** para empresas
-
----
-
 ## **💼 HABILIDADES DEMONSTRADAS**
 
 ### **🎯 TECHNICAL SKILLS**
