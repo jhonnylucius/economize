@@ -497,7 +497,7 @@ Notificações da fameficação e de suas despesas a vencer
 </p>
 
 ### Sistema de notificações
-Notificações da fameficação e de suas despesas a vencer
+Notificações da gameficação e de suas despesas a vencer
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game1.jpg" width="20%" />
