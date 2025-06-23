@@ -470,9 +470,11 @@ Dicas financeiras e calculadora de metas para planejamento:
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora1.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora2.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora3.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas1.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta2.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta4.jpg" width="20%" />
+
 </p>
 
 
@@ -518,13 +520,13 @@ Cada tela tem um icone de ajuda para pessoas com menos intimidade com a tecnolog
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda5.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda6.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda7.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/cajuda8.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda8.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda9.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda10.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda11.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda12.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docsajuda13.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docsajuda14.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda13.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda14.jpg" width="20%" />
 </p>
 
 ## 🚀 Como Executar o Projeto
