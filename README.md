@@ -508,7 +508,7 @@ Notificações da gameficação e de suas despesas a vencer
 </p>
 
 ### Tutorial de ajuda em cada tela 
-Cada tela tem um icone de ajuda para pessoas com menos intimidade com a tecnolofia
+Cada tela tem um icone de ajuda para pessoas com menos intimidade com a tecnologia
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda1.jpg" width="20%" />
