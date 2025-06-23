@@ -433,7 +433,7 @@ Cadastre receitas e despesas com categorias personalizáveis:
 </p>
 
 ### relatóios despesas e receitas
-com filtas, tipo de visisualização de temas em receitas e despesas com categorias personalizáveis:
+com filtros, tipo de visisualização de temas em receitas e despesas com categorias personalizáveis:
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/relatorios1.jpg" width="20%" />
