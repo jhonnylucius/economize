@@ -2,9 +2,12 @@ Vou ajudar a melhorar seu README para torná-lo detalhado e adequado para um pro
 
 # Economize$
 
-![Logo do app](assets/icon_removedbg.png)
+<p align="center">
+  <img src="assets/icon_removedbg.png" alt="Logo do app" width="120"/>
+</p>
 
 [![Vídeo de demonstração](https://img.shields.io/badge/YouTube-Assista_ao_vídeo_de_demonstração-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/shorts/rsK6p769ZFI)
+[![Disponível na Play Store - FREE](https://img.shields.io/badge/Play%20Store-Baixar%20na%20Play%20Store%20free-3DDC84?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.lucianoribeiro.economize)
 
 ## **📱 VISÃO GERAL DO PROJETO**
 
