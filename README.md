@@ -474,7 +474,7 @@ Crie orçamentos e compare preços entre estabelecimentos:
 Visualize gráficos de evolução de receitas e despesas ao longo do tempo:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/grafico1.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/grafico1.jpg" width="50%" />
   </p>
 
 ### Ferramentas Educacionais
@@ -482,13 +482,13 @@ Dicas financeiras e calculadora de metas para planejamento:
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dicasfinanceiras.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas11.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta11.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora1.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora2.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora3.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas1.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas2.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/meta3.jpg" width="20%" />
 </p>
 
 
@@ -501,9 +501,6 @@ Visualização rapida de suas finanças
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad3.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad4.jpg" width="20%" />
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/saldoatual1.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas1.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas2.jpg" width="20%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas3.jpg" width="20%" />
 </p>
 
 ### Sistema de notificações
