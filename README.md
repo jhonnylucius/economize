@@ -4,94 +4,546 @@ Vou ajudar a melhorar seu README para torná-lo detalhado e adequado para um pro
 
 ![Logo do app](assets/icon_removedbg.png)
 
-## 📱 Sobre o Projeto
-
-**Economize$** é um aplicativo Flutter completo para controle financeiro pessoal, desenvolvido para auxiliar usuários a gerenciar suas finanças de forma simples e eficiente. O projeto foi criado como um exemplo prático e educacional para estudantes e desenvolvedores Flutter.
-
-O aplicativo oferece ferramentas para:
-- Controle de receitas e despesas
-- Planejamento de orçamentos
-- Comparação de preços entre estabelecimentos
-- Análise de tendências financeiras
-- Dicas de educação financeira
-- Calculadora de metas
-
 [![Vídeo de demonstração](https://img.shields.io/badge/YouTube-Assista_ao_vídeo_de_demonstração-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/shorts/rsK6p769ZFI)
 
-## 🛠️ Tecnologias e Pacotes Utilizados
+## **📱 VISÃO GERAL DO PROJETO**
 
-- **Flutter** (Material 3)
-- **Provider** para gerenciamento de tema e estados
-- **Sqflite** para banco de dados local
-- **Intl** para formatação de datas e moedas
-- **Percent Indicator** para gráficos circulares
-- **FL Chart** para gráficos de linha e pizza
-- **PDF** e **Share Plus** para exportação de relatórios
-- **Logger** para debug
-- **Path Provider** para manipulação de arquivos
-- **Mask Text Input Formatter** para máscaras de campos
-- **UUID** para geração de IDs únicos
+**O Economize** é um aplicativo completo de gestão financeira pessoal desenvolvido em Flutter, que combina funcionalidades avançadas de controle de gastos, educação financeira e gamificação para criar uma experiência única e engajante para o usuário.
 
-## 📊 Arquitetura e Estrutura do Projeto
+---
 
-O projeto segue uma arquitetura limpa e organizada, ideal para estudo e expansão:
+## **🎯 OBJETIVO PRINCIPAL**
 
+Criar uma solução completa que democratize o acesso à educação financeira através de:
+
+- ✅ Controle inteligente de despesas e receitas
+- ✅ Sistema de orçamentos comparativos
+- ✅ Educação financeira gamificada
+- ✅ Análises preditivas e relatórios avançados
+- ✅ Interface moderna e acessível
+
+---
+
+## **🛠️ TECNOLOGIAS E ARQUITETURA**
+
+### **FRAMEWORK E LINGUAGEM**
+
+- **Flutter 3.x** - Framework multiplataforma
+- **Dart** - Linguagem de programação
+- **Material Design 3** - Sistema de design moderno
+
+### **GERENCIAMENTO DE ESTADO**
+
+- **Provider** - Gerenciamento reativo de estado
+- **ChangeNotifier** - Padrão Observer implementado
+- **ValueNotifier** - Estados específicos otimizados
+
+### **BANCO DE DADOS E PERSISTÊNCIA**
+
+- **SQLite** com **sqflite** - Banco local robusto
+- **SharedPreferences** - Preferências do usuário
+- **DAO Pattern** - Data Access Objects para separação de responsabilidades
+
+### **ARQUITETURA DO PROJETO**
 ```
-lib/
-├── data/                # DAOs e helpers para banco de dados SQLite
-├── controller/          # Controladores para gerenciamento de estados
-├── features/            # Funcionalidades especiais (ex: educação financeira)
-├── icons/               # Ícones customizados
-├── model/               # Modelos de dados (Cost, Revenue, Budget, etc)
-├── provider/            # Providers para gerenciamento de estado
-├── screen/              # Telas principais do app
-├── service/             # Serviços de negócio (ex: PDF, relatórios)
-├── theme/               # Gerenciamento e definição de temas
-├── utils/               # Utilitários e helpers
-├── widgets/             # Componentes reutilizáveis
-└── main.dart            # Ponto de entrada do app
+📁 lib/
+
+├── 🎨 animations/          # Sistema completo de animações
+├── 🎮 controller/          # Controladores de estado
+├── 💾 data/               # Camada de dados (DAOs)
+├── 🎓 features/           # Módulos especializados
+├── 🖼️ icons/              # Ícones personalizados
+├── 🏠 screen/             # Telas da aplicação
+├── ⚙️ service/            # Lógica de negócio
+├── 🎨 theme/              # Sistema de temas
+├── 🧩 widgets/            # Componentes reutilizáveis
+└── 🔧 utils/              # Utilitários
 ```
+## **✨ FUNCIONALIDADES PRINCIPAIS**
 
+### **1. 💰 GESTÃO FINANCEIRA AVANÇADA**
 
+### **📊 Controle de Despesas e Receitas**
 
-## 🧩 Funcionalidades
+- ✅ Cadastro categorizado de despesas e receitas
+- ✅ Sistema de recorrência automática
+- ✅ Notificações inteligentes de vencimentos
+- ✅ Filtros avançados por período e categoria
 
-### Dashboard e Saldo Mensal
-Visão geral das suas finanças com gráficos intuitivos:
+**Tecnologias:** SQLite, DateTime manipulation, LocalNotifications
+
+### **📈 Dashboard Interativo**
+
+- ✅ Gráficos de pizza dinâmicos com FL_Chart
+- ✅ Análise de tendências mensais
+- ✅ Indicadores de saldo em tempo real
+- ✅ Visualização de dados responsiva
+
+**Tecnologias:** fl_chart, Provider, Custom Painters
+
+### **🎯 Sistema de Metas Financeiras**
+
+- ✅ Criação e acompanhamento de objetivos
+- ✅ Calculadora inteligente de economia
+- ✅ Progress indicators animados
+- ✅ Notificações de progresso
+
+**Tecnologias:** percent_indicator, Custom algorithms
+
+### **2. 🛒 ORÇAMENTOS COMPARATIVOS**
+
+### **📋 Criação de Orçamentos Inteligentes**
+
+- ✅ Sistema de templates de produtos
+- ✅ Comparação automática entre estabelecimentos
+- ✅ Cálculo de melhor custo-benefício
+- ✅ Histórico de preços com análise de variação
+
+**Tecnologias:** Complex algorithms, Data normalization
+
+### **📊 Análises Avançadas**
+
+- ✅ Relatórios de economia por localização
+- ✅ Gráficos comparativos de preços
+- ✅ Sugestões inteligentes de compras
+- ✅ Export para PDF com customização
+
+**Tecnologias:** pdf package, Data analytics, Custom widgets
+
+### **3. 🎓 EDUCAÇÃO FINANCEIRA**
+
+### **💡 Sistema de Dicas Financeiras**
+
+- ✅ Biblioteca categorizada de conteúdo educativo
+- ✅ Interface tabbed com animações
+- ✅ Sistema de favoritos e compartilhamento
+- ✅ Conteúdo adaptativo por perfil
+
+### **🧮 Calculadora de Objetivos**
+
+- ✅ Calculadora avançada de metas de economia
+- ✅ Simulações de cenários financeiros
+- ✅ Análise de viabilidade de objetivos
+- ✅ Recomendações personalizadas
+
+**Tecnologias:** Complex mathematical formulas, Currency formatting
+
+### **4. 🎮 SISTEMA DE GAMIFICAÇÃO**
+
+### **🏆 Conquistas e Achievements**
+
+- ✅ Sistema completo de conquistas (25+ achievements)
+- ✅ Diferentes níveis de raridade (Bronze, Prata, Ouro, Diamante, Legendary)
+- ✅ Animações de celebração personalizadas
+- ✅ Sistema de progresso e estatísticas
+
+### **🎊 Animações de Celebração**
+
+- ✅ Confetti animations customizadas
+- ✅ Particle systems avançados
+- ✅ Fireworks e starbursts
+- ✅ Efeitos visuais responsivos
+
+**Tecnologias:** Custom animations, Canvas painting, Particle physics
+
+### **5. 📱 EXPERIÊNCIA DO USUÁRIO**
+
+### **🎨 Sistema de Temas Dinâmico**
+
+- ✅ Multiple themes (Light, Dark, Custom)
+- ✅ Color tokens e design system
+- ✅ Transições suaves entre temas
+- ✅ Persistência de preferências
+
+### **🌟 Animações e Microinterações**
+
+- ✅ Biblioteca completa de animações (Fade, Slide, Scale)
+- ✅ Interactive animations (Ripple, Parallax, Morphing)
+- ✅ Loading states personalizados
+- ✅ Feedback tátil e visual
+
+### **📱 Design Responsivo**
+
+- ✅ Adaptação automática a diferentes telas
+- ✅ Safe area handling
+- ✅ Keyboard handling inteligente
+- ✅ Orientação portrait/landscape
+
+---
+
+## **🔧 RECURSOS TÉCNICOS AVANÇADOS**
+
+### **📊 VISUALIZAÇÃO DE DADOS**
+
+### **🎬 SISTEMA DE ANIMAÇÕES**
+
+### **💾 ARQUITETURA DE DADOS**
+
+### **🔔 SISTEMA DE NOTIFICAÇÕES**
+
+## **📈 MÉTRICAS E PERFORMANCE**
+
+### **🚀 OTIMIZAÇÕES IMPLEMENTADAS**
+
+- ✅ **Lazy Loading** de dados e widgets
+- ✅ **Caching** inteligente com estratégias TTL
+- ✅ **Memory management** otimizado
+- ✅ **Database indexing** para queries rápidas
+- ✅ **Asset optimization** (imagens, ícones)
+
+### **📱 COMPATIBILIDADE**
+
+- ✅ **Android 7.0+** (API level 24+)
+- ✅ **iOS 11.0+**
+- ✅ **Responsive design** para tablets
+- ✅ **Accessibility** features implementadas
+
+### **🔒 SEGURANÇA E CONFIABILIDADE**
+
+- ✅ **Data encryption** local
+- ✅ **Input validation** rigorosa
+- ✅ **Error handling** abrangente
+- ✅ **Crash protection** com fallbacks
+
+---
+
+## **🎨 DESIGN E UX**
+
+### **🎭 SISTEMA DE DESIGN**
+
+🎨 Design Tokens:
+```
+├── 🌈 Colors (Primary, Secondary, Neutral palettes)
+├── 📏 Spacing (8pt grid system)
+├── 🔄 Radius (Consistent border radius)
+├── 🌫️ Shadows (Elevation system)
+└── 📝 Typography (Responsive text scales)
+```
+### **✨ COMPONENTES VISUAIS**
+
+- ✅ **Glass morphism** containers
+- ✅ **Gradient overlays** dinâmicos
+- ✅ **Custom icons** otimizados
+- ✅ **Particle effects** para feedback
+- ✅ **Smooth transitions** entre estados
+
+---
+
+## **🧪 QUALIDADE E MANUTENIBILIDADE**
+
+### **📋 PADRÕES DE CÓDIGO**
+
+- ✅ **Clean Architecture** principles
+- ✅ **SOLID principles** aplicados
+- ✅ **Design Patterns** (Singleton, Factory, Observer)
+- ✅ **Error handling** consistente
+- ✅ **Documentation** detalhada
+
+## **📦 DEPENDÊNCIAS PRINCIPAIS**
+
+### **🎯 CORE PACKAGES**
+
+dependencies:
+
+flutter: sdk*:* flutter
+
+provider: ^6.0.5           # State management
+
+sqflite: ^2.3.0           # Local database
+
+shared_preferences: ^2.2.2 # User preferences
+
+intl: ^0.18.1             # Internationalization
+
+uuid: ^4.1.0              # Unique identifiers
+
+### **📊 DATA & CHARTS**
+
+fl_chart: ^0.64.0         # Advanced charts
+
+percent_indicator: ^4.2.3  # Progress indicators
+
+path_provider: ^2.1.1     # File system access
+
+pdf: ^3.10.7              # PDF generation
+
+### **🎬 ANIMATIONS & UI**
+
+flutter_local_notifications: ^16.1.0  # Local notifications
+
+url_launcher: ^6.2.2      # External links
+
+share_plus: ^7.2.1        # Social sharing
+
+screenshot: ^2.1.0        # Screen capture
+
+---
+
+## **🎯 DIFERENCIAIS TÉCNICOS**
+
+### **🧠 INTELIGÊNCIA ARTIFICIAL SIMULADA**
+
+- ✅ **Algoritmos de recomendação** para melhores compras
+- ✅ **Análise preditiva** de gastos
+- ✅ **Pattern recognition** em hábitos financeiros
+- ✅ **Smart categorization** automática
+
+### **🎮 GAMIFICAÇÃO AVANÇADA**
+
+- ✅ **Sistema de conquistas** dinâmico
+- ✅ **Feedback loops** motivacionais
+- ✅ **Progress tracking** visual
+- ✅ **Celebrações** contextuais
+
+### **📊 ANALYTICS E INSIGHTS**
+
+- ✅ **Data visualization** avançada
+- ✅ **Trend analysis** temporal
+- ✅ **Comparative analysis** entre períodos
+- ✅ **Actionable insights** personalizados
+
+---
+
+## **🏆 CONQUISTAS DO PROJETO**
+
+### **💡 INOVAÇÕES IMPLEMENTADAS**
+
+1. **Sistema híbrido** de orçamentos comparativos
+2. **Gamificação** aplicada à educação financeira
+3. **Animações contextuais** que melhoram UX
+4. **Design system** consistente e escalável
+5. **Arquitetura modular** facilmente extensível
+
+### **🎯 OBJETIVOS ALCANÇADOS**
+
+- ✅ **Interface intuitiva** para usuários não-técnicos
+- ✅ **Performance otimizada** em dispositivos diversos
+- ✅ **Experiência fluida** sem travamentos
+- ✅ **Funcionalidades completas** para gestão financeira
+- ✅ **Código limpo** e bem documentado
+
+---
+
+## **🚀 PRÓXIMOS PASSOS & ESCALABILIDADE**
+
+### **🔮 FUTURAS IMPLEMENTAÇÕES**
+
+- 🔄 **Sincronização em nuvem** (Firebase/Supabase)
+- 🤖 **IA real** para análises preditivas
+- 💳 **Integração bancária** via Open Banking
+- 📱 **Versão web** com Flutter Web
+- 🌍 **Internacionalização** completa
+
+### **📈 POTENCIAL COMERCIAL**
+
+- 🎯 **Monetização** via premium features
+- 🤝 **Parcerias** com instituições financeiras
+- 📊 **Analytics** para insights de mercado
+- 🏆 **White label** para empresas
+
+---
+
+## **💼 HABILIDADES DEMONSTRADAS**
+
+### **🎯 TECHNICAL SKILLS**
+
+- ✅ **Flutter/Dart** - Avançado
+- ✅ **State Management** - Provider, ChangeNotifier
+- ✅ **Database Design** - SQLite, DAO Pattern
+- ✅ **UI/UX Design** - Material Design 3, Custom themes
+- ✅ **Animations** - Custom animations, Canvas painting
+- ✅ **Architecture** - Clean Architecture, SOLID principles
+
+### **🧠 SOFT SKILLS**
+
+- ✅ **Problem Solving** - Soluções criativas para UX challenges
+- ✅ **Attention to Detail** - Polish em animações e microinterações
+- ✅ **User-Centric Thinking** - Foco na experiência do usuário
+- ✅ **Code Quality** - Clean code, documentation, maintainability
+
+### **🔧 DEVELOPMENT PRACTICES**
+
+- ✅ **Version Control** - Git workflow organizado
+- ✅ **Code Organization** - Modular architecture
+- ✅ **Documentation** - Comprehensive inline docs
+- ✅ **Error Handling** - Robust exception management
+- ✅ **Performance** - Optimized rendering and data access
+
+---
+
+## **📱 DEMONSTRAÇÃO VISUAL**
+
+### **🎬 FEATURES EM AÇÃO**
+
+📊 Dashboard → Gráficos interativos com animações suaves
+
+🛒 Orçamentos → Comparação inteligente entre estabelecimentos
+
+🏆 Conquistas → Sistema de gamificação com celebrações
+
+💡 Educação → Dicas financeiras categorizadas e interativas
+
+📈 Relatórios → Análises detalhadas com export PDF
+
+🎨 Temas → Transições fluidas entre light/dark modes
+
+### **🌟 MICROINTERAÇÕES**
+
+- ✨ **Ripple effects** em botões
+- 🎭 **Morphing animations** em transições
+- 🌊 **Parallax scrolling** em listas
+- 💫 **Particle systems** em celebrações
+- 🎯 **Smart feedback** em todas as ações
+
+---
+
+## **🎯 CONCLUSÃO**
+
+O **Economize** representa um **projeto completo e maduro** que demonstra:
+
+### **💪 COMPETÊNCIAS TÉCNICAS**
+
+- Domínio completo do ecossistema Flutter
+- Implementação de padrões arquiteturais avançados
+- Criação de sistemas complexos e escaláveis
+- Atenção aos detalhes de UX/UI
+
+### **🚀 POTENCIAL PROFISSIONAL**
+
+- Capacidade de entregar projetos end-to-end
+- Visão holística de desenvolvimento mobile
+- Foco em qualidade e experiência do usuário
+- Preparação para trabalhar em equipes ágeis
+
+### **🎨 DIFERENCIAL CRIATIVO**
+
+- Implementação de gamificação efetiva
+- Sistema de animações abrangente
+- Design system consistente e profissional
+- Soluções inovadoras para problemas comuns
+
+### Telas 
+
+  -- home
 
 <p float="left">
-<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto8.jpg" width="40%" />
-<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto7.jpg" width="40%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/home1.jpg" width="20%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/home2.jpg" width="20%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/home3.jpg" width="20%" />
+<img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/temas1.jpg" width="20%" />
 </p>
 
 ### Lançamentos
 Cadastre receitas e despesas com categorias personalizáveis:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto6.jpg" width="40%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto5.jpg" width="40%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/despesas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/despesas2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/despesas3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/despesas4.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/despesaslancadas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/receitas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/receitas2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/receitas3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/receitaslancadas1.jpg" width="20%" />
 </p>
+
+### relatóios despesas e receitas
+com filtas, tipo de visisualização de temas em receitas e despesas com categorias personalizáveis:
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/relatorios1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/relatorios1.jpg" width="20%" />
+  </p>
 
 ### Orçamentos
 Crie orçamentos e compare preços entre estabelecimentos:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto3.jpg" width="40%" />
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto4.jpg" width="40%" />
-</p>
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento4.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento5.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento6.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento7.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/orcamento8.jpg" width="20%" />
+ </p>
 
 ### Tendência de Finanças
 Visualize gráficos de evolução de receitas e despesas ao longo do tempo:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/capa1.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/grafico1.png" width="50%" />
   </p>
 
 ### Ferramentas Educacionais
 Dicas financeiras e calculadora de metas para planejamento:
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/foto11.jpg" width="40%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dicasfinanceiras.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas11.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/calculadora3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas3.jpg" width="20%" />
+</p>
+
+
+### Dashboard e saldo atual
+Visualização rapida de suas finanças
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/dashboad4.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/saldoatual1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/metas3.jpg" width="20%" />
+</p>
+
+### Sistema de notificações
+Notificações da fameficação e de suas despesas a vencer
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/notificacoes1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/notificaçõesConquistas1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/notificacoesContaAVencer1.jpg" width="20%" />
+</p>
+
+### Sistema de notificações
+Notificações da fameficação e de suas despesas a vencer
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game4.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game5.jpg" width="20%" />
+</p>
+
+### Tutorial de ajuda em cada tela 
+CAda tela tem um icone de ajuda para pessoas com menos intimidade com a tecnolofia
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda1.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda2.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda3.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda4.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda5.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda6.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda7.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/cajuda8.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda9.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda10.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda11.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/ajuda12.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docsajuda13.jpg" width="20%" />
+  <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docsajuda14.jpg" width="20%" />
 </p>
 
 ## 🚀 Como Executar o Projeto
