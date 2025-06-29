@@ -433,7 +433,7 @@ Cadastre receitas e despesas com categorias personalizáveis:
 </p>
 
 ### relatóios despesas e receitas
-com filtas, tipo de visisualização de temas em receitas e despesas com categorias personalizáveis:
+com filtros, tipo de visisualização de temas em receitas e despesas com categorias personalizáveis:
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/relatorios1.jpg" width="20%" />
@@ -490,7 +490,7 @@ Visualização rapida de suas finanças
 </p>
 
 ### Sistema de notificações
-Notificações da fameficação e de suas despesas a vencer
+Notificações da gameficação e de suas despesas a vencer
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/notificacoes1.jpg" width="20%" />
@@ -498,8 +498,8 @@ Notificações da fameficação e de suas despesas a vencer
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/notificacoesContaAVencer1.jpg" width="20%" />
 </p>
 
-### Sistema de notificações
-Notificações da gameficação e de suas despesas a vencer
+### Sistema de  gameficação
+
 
 <p float="left">
   <img src="https://raw.githubusercontent.com/jhonnylucius/economize/main/docs/game1.jpg" width="20%" />
