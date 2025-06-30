@@ -78,6 +78,8 @@ class _HomeScreenState extends State<HomeScreen>
         return '/trend';
       case 8:
         return '/goals';
+      case 9:
+        return '/accounts';
       default:
         return '';
     }
@@ -104,6 +106,8 @@ class _HomeScreenState extends State<HomeScreen>
         return 'Tendências';
       case 8:
         return 'Metas';
+      case 9:
+        return 'Contas';
       default:
         return '';
     }
@@ -972,19 +976,22 @@ class _HomeScreenState extends State<HomeScreen>
                                       : Colors.redAccent,
                                   size: 16,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _balanceVariationPercent >= 0
-                                      ? '+${_balanceVariationPercent.toStringAsFixed(1)}%'
-                                      : '${_balanceVariationPercent.toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    color: _currentBalance >= 0
-                                        ? Colors.greenAccent
-                                        : Colors.redAccent,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                // Só mostra a porcentagem se houver saldo anterior diferente de zero
+                                if (_previousBalance != 0) ...[
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _balanceVariationPercent >= 0
+                                        ? '+${_balanceVariationPercent.toStringAsFixed(1)}%'
+                                        : '${_balanceVariationPercent.toStringAsFixed(1)}%',
+                                    style: TextStyle(
+                                      color: _currentBalance >= 0
+                                          ? Colors.greenAccent
+                                          : Colors.redAccent,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ),
@@ -1293,10 +1300,9 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (selectedCategoryTab == 0) {
       // Se for "Principais", mostrar todos os itens
-      filteredIndices = List.generate(8, (index) => index);
+      filteredIndices = List.generate(10, (index) => index);
     } else if (selectedCategoryTab == 1) {
-      // Financeiro
-      filteredIndices = [0, 1, 2, 3];
+      filteredIndices = [0, 1, 2, 3, 9]; // <-- ADICIONE O 9 AQUI
     } else if (selectedCategoryTab == 2) {
       // Gestão
       filteredIndices = [4, 5];
@@ -1443,11 +1449,12 @@ class _HomeScreenState extends State<HomeScreen>
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            itemCount: 8,
+            itemCount: 10,
             itemBuilder: (context, index) {
               // Filtrar por categoria selecionada
               if (selectedCategoryTab != 0) {
-                if (selectedCategoryTab == 1 && ![0, 1, 2, 3].contains(index)) {
+                if (selectedCategoryTab == 1 &&
+                    ![0, 1, 2, 3, 9].contains(index)) {
                   return const SizedBox.shrink();
                 } else if (selectedCategoryTab == 2 &&
                     ![4, 5].contains(index)) {
@@ -1584,6 +1591,8 @@ class _HomeScreenState extends State<HomeScreen>
         return 'Descubra tendências e insights sobre seus gastos.';
       case 8:
         return 'Cadastre suas metas e objetivos financeiros.';
+      case 9:
+        return 'Gerencie suas contas bancárias e cartões de crédito.';
       default:
         return '';
     }
@@ -2904,6 +2913,10 @@ class _HomeScreenState extends State<HomeScreen>
         return Icons.lightbulb_outline; // Dicas
       case 7:
         return Icons.trending_up; // Tendências
+      case 8:
+        return Icons.flag; // Metas
+      case 9: // <-- NOVO ITEM
+        return Icons.account_balance_wallet_outlined;
       default:
         return Icons.apps;
     }
@@ -3099,6 +3112,8 @@ class AppSearchDelegate extends SearchDelegate<String> {
         return '/trend';
       case 'metas financeiras':
         return '/goals';
+      case 'contas': // <-- NOVO CASE
+        return '/accounts';
       default:
         return '/home'; // Rota padrão
     }
