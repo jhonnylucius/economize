@@ -1,13 +1,14 @@
+import 'package:economize/accounts/model/account_model.dart';
+import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
-import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/model/revenues.dart';
+import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/screen/responsive_screen.dart';
-import 'package:economize/service/gamification/achievement_checker.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_themes.dart';
@@ -35,20 +36,38 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   List<Revenues> listRevenues = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final RevenuesService _revenuesService = RevenuesService();
+  final AccountService _accountService = AccountService(); // Adicionado
   bool _isLoading = false;
   bool _isFiltering = false;
   String _searchQuery = '';
   DateTime? _startDate;
   DateTime? _endDate;
   late AnimationController _animationController;
-  // chaves para tutorial
   final GlobalKey _helpKey = GlobalKey();
 
-  final brazilianCurrency =
-      NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
+  // ... (sua lista de categorias de receita permanece a mesma) ...
   static const List<Map<String, dynamic>> _categoriasReceita = [
     {'icon': Icons.credit_card, 'name': 'Salário'},
+    {'icon': Icons.attach_money, 'name': '13º Salário'},
+    {'icon': Icons.money, 'name': 'Rendimentos'},
+    {'icon': Icons.account_balance, 'name': 'Conta Poupança'},
+    {'icon': Icons.account_balance, 'name': 'Conta Corrente'},
+    {'icon': Icons.account_balance, 'name': 'Conta Digital'},
+    {'icon': Icons.account_balance, 'name': 'Conta Salário'},
+    {'icon': Icons.account_balance, 'name': 'Conta Investimento'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Pagamento'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Criptomoedas'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Ações'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Fundos Imobiliários'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Previdência Privada'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Tesouro Direto'},
+    {'icon': Icons.account_balance, 'name': 'Conta de CDB/LCI/LCA'},
+    {'icon': Icons.account_balance, 'name': 'Conta de Poupança Digital'},
+    {'icon': Icons.account_balance_wallet, 'name': 'Carteira'},
+    {'icon': Icons.receipt, 'name': 'Reembolsos'},
+    {'icon': Icons.business_center, 'name': 'Emprego'},
     {'icon': Icons.savings, 'name': 'Investimentos'},
     {'icon': Icons.schedule, 'name': 'Meio Período'},
     {'icon': Icons.card_giftcard, 'name': 'Prêmios'},
@@ -87,11 +106,17 @@ class _RevenuesScreenState extends State<RevenuesScreen>
       final revenues = await _revenuesService.getAllRevenues();
       // Ordenar por data, mais recente primeiro
       revenues.sort((a, b) => b.data.compareTo(a.data));
-      setState(() => listRevenues = revenues);
+      if (mounted) {
+        setState(() => listRevenues = revenues);
+      }
     } catch (e) {
-      _showErrorDialog('Erro ao carregar receitas: $e');
+      if (mounted) {
+        _showErrorDialog('Erro ao carregar receitas: $e');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -952,7 +977,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                brazilianCurrency.format(totalValue), // ✅ DEPOIS
+                _currencyFormat.format(totalValue), // ✅ DEPOIS
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -1221,7 +1246,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          brazilianCurrency.format(revenue.preco), // ✅ DEPOIS
+                          _currencyFormat.format(revenue.preco), // ✅ DEPOIS
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -1412,6 +1437,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     );
     String selectedTipo = model?.tipoReceita ?? _categoriasReceita[0]['name'];
 
+    int? _selectedAccountId = model?.accountId;
+
     final dateFormatter = MaskTextInputFormatter(
       mask: '##/##/####',
       filter: {"#": RegExp(r'[0-9]')},
@@ -1462,6 +1489,77 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
+
+                      // --- NOVO WIDGET: SELETOR DE CONTA ---
+                      Text('Conta',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 8),
+                      FutureBuilder<List<Account>>(
+                        future: _accountService.getAllAccounts(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text(
+                                'Nenhuma conta encontrada. Crie uma primeiro.');
+                          }
+                          final accounts = snapshot.data!;
+                          if (_selectedAccountId != null &&
+                              !accounts
+                                  .any((acc) => acc.id == _selectedAccountId)) {
+                            _selectedAccountId = null;
+                          }
+
+                          return DropdownButtonFormField<int>(
+                            value: _selectedAccountId,
+                            isExpanded: true,
+                            hint: const Text('Selecione uma conta'),
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.account_balance),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                            ),
+                            items: accounts.map((account) {
+                              return DropdownMenuItem<int>(
+                                value: account.id,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                        IconData(account.icon,
+                                            fontFamily: 'MaterialIcons'),
+                                        size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(account.name),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedAccountId = value;
+                              });
+                            },
+                            validator: (value) => value == null
+                                ? 'Por favor, selecione uma conta.'
+                                : null,
+                          );
+                        },
+                      ),
+                      // --- FIM DO NOVO WIDGET ---
+
+                      const SizedBox(height: 24),
 
                       // Cabeçalho
                       Row(
@@ -1811,6 +1909,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                                     preco: valorNumerico, // ✅ VALOR CORRETO
                                     descricaoDaReceita: selectedTipo,
                                     tipoReceita: selectedTipo,
+                                    accountId:
+                                        _selectedAccountId, // <-- PASSANDO O ID DA CONTA
                                   );
 
                                   try {
