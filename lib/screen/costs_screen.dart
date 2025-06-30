@@ -66,6 +66,10 @@ class _CostsScreenState extends State<CostsScreen>
     {'icon': Icons.medical_services, 'name': 'Saúde'},
     {'icon': Icons.local_hospital, 'name': 'Hospital'},
     {'icon': Icons.local_cafe, 'name': 'Café'},
+    {
+      'icon': Icons.transfer_within_a_station,
+      'name': 'Transferências entre contas'
+    },
     {'icon': Icons.movie, 'name': 'Cinema'},
     {'icon': Icons.card_giftcard, 'name': 'Presentes'},
     {'icon': Icons.card_membership, 'name': 'Assinaturas'},
@@ -1172,7 +1176,7 @@ class _CostsScreenState extends State<CostsScreen>
     final filteredCosts = _getFilteredCosts();
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), // Espaço para os FABs
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 140), // Espaço para os FABs
       itemCount: filteredCosts.length,
       itemBuilder: (context, index) {
         final cost = filteredCosts[index];
@@ -1634,7 +1638,7 @@ class _CostsScreenState extends State<CostsScreen>
 
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
     bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
-    int? _selectedAccountId = model?.accountId;
+    int? selectedAccountId = model?.accountId;
 
     void showAchievementSnackbar(List<Achievement> achievements) {
       if (achievements.length == 1) {
@@ -1726,11 +1730,11 @@ class _CostsScreenState extends State<CostsScreen>
                   ),
                 ],
               ),
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                left: 20,
-                right: 20,
-                top: 20,
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                math.max(MediaQuery.of(context).viewInsets.bottom, 26),
               ),
               child: SingleChildScrollView(
                 child: Form(
@@ -1876,14 +1880,14 @@ class _CostsScreenState extends State<CostsScreen>
                           }
                           final accounts = snapshot.data!;
                           // Garante que o valor selecionado seja válido
-                          if (_selectedAccountId != null &&
+                          if (selectedAccountId != null &&
                               !accounts
-                                  .any((acc) => acc.id == _selectedAccountId)) {
-                            _selectedAccountId = null;
+                                  .any((acc) => acc.id == selectedAccountId)) {
+                            selectedAccountId = null;
                           }
 
                           return DropdownButtonFormField<int>(
-                            value: _selectedAccountId,
+                            value: selectedAccountId,
                             isExpanded: true,
                             hint: const Text('Selecione uma conta'),
                             decoration: InputDecoration(
@@ -1916,7 +1920,7 @@ class _CostsScreenState extends State<CostsScreen>
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
-                                _selectedAccountId = value;
+                                selectedAccountId = value;
                               });
                             },
                             validator: (value) => value == null
@@ -2240,7 +2244,7 @@ class _CostsScreenState extends State<CostsScreen>
                                       pago: pago,
                                       category: selectedTipo,
                                       accountId:
-                                          _selectedAccountId // <-- PASSANDO O ID DA CONTA
+                                          selectedAccountId // <-- PASSANDO O ID DA CONTA
                                       );
                                   try {
                                     await _costsService.saveCost(cost);
