@@ -1477,7 +1477,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                 20,
                 20,
                 20,
-                math.max(MediaQuery.of(context).viewInsets.bottom, 24),
+                math.max(MediaQuery.of(context).viewInsets.bottom, 48),
               ),
               child: SingleChildScrollView(
                 child: Form(
