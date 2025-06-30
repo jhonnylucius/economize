@@ -3645,16 +3645,41 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('📱 Sobre o Economize'),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Versão: 1.0.100'),
-            SizedBox(height: 8),
-            Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
-            SizedBox(height: 8),
-            Text(
+            const Text('Versão: 1.0.100'),
+            const SizedBox(height: 8),
+            const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
+            const SizedBox(height: 8),
+            const Text(
                 'Agradecimentos especiais aos Testers e usuários que contribuíram com feedback!'),
+            const SizedBox(height: 16),
+            // Links das políticas
+            TextButton.icon(
+              icon: const Icon(Icons.privacy_tip, size: 18),
+              label: const Text('Política de Privacidade'),
+              onPressed: () async {
+                const url = 'https://union.dev.br/politica-de-privacidade.html';
+                if (await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(Uri.parse(url),
+                      mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
+            TextButton.icon(
+              icon: const Icon(Icons.shield_outlined, size: 18),
+              label: const Text('Política de Coleta de Dados'),
+              onPressed: () async {
+                const url =
+                    'https://union.dev.br/politica-de-coleta-de-dados.html';
+                if (await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(Uri.parse(url),
+                      mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
           ],
         ),
         actions: [
