@@ -1,6 +1,6 @@
 import 'package:economize/accounts/enum/account_type.dart';
+import 'package:economize/accounts/model/account_model.dart';
 import 'package:flutter/material.dart';
-import '../model/account.dart';
 
 class AccountSelector extends StatelessWidget {
   final List<Account> accounts;
@@ -20,7 +20,7 @@ class AccountSelector extends StatelessWidget {
       value: selectedId,
       items: accounts
           .map((acc) => DropdownMenuItem(
-                value: acc.id,
+                value: acc.id.toString(),
                 child: Text('${acc.name} (${acc.type.displayName})'),
               ))
           .toList(),
