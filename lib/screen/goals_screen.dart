@@ -139,7 +139,7 @@ class _GoalsScreenState extends State<GoalsScreen>
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: themeManager.getTipCardTextColor(), // ✅ COR DE FUNDO
+            color: themeManager.getHomeButtonIconColor(), // ✅ COR DE FUNDO
             borderRadius: BorderRadius.circular(12), // ✅ QUADRADO ARREDONDADO
             boxShadow: [
               BoxShadow(
@@ -174,8 +174,7 @@ class _GoalsScreenState extends State<GoalsScreen>
               builder: (context, child) {
                 return CustomPaint(
                   painter: _GoalsBackgroundPainter(
-                    color: theme.colorScheme.primary
-                        .withAlpha((0.3 * 255).toInt()),
+                    color: theme.colorScheme.primary,
                     progress: _backgroundController.value,
                   ),
                 );
