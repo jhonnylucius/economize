@@ -128,7 +128,7 @@ class NotificationScheduler {
         );
 
         debugPrint(
-            '✅ Notificação agendada: ${cost.tipoDespesa} para ${notificationTime}');
+            '✅ Notificação agendada: ${cost.tipoDespesa} para $notificationTime');
       } else {
         // Se for hoje mas já passou das 9h, enviar notificação imediata
         await _pushService.showNotification(
@@ -194,7 +194,7 @@ class NotificationScheduler {
           await _costsService.saveCost(newRecurrentCost);
 
           debugPrint(
-              '✅ Nova despesa recorrente criada: ${newRecurrentCost.tipoDespesa} para ${nextMonthDate}');
+              '✅ Nova despesa recorrente criada: ${newRecurrentCost.tipoDespesa} para $nextMonthDate');
 
           // Agendar notificação para a nova despesa se estiver dentro do prazo de 5 dias
           final daysUntilNewDue = nextMonthDate.difference(now).inDays;
