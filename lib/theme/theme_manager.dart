@@ -59,6 +59,14 @@ class ThemeManager with ChangeNotifier {
     return Colors.white;
   }
 
+  Color getRelatorioFundoFiltrosTemaRoxo() {
+    return const Color.fromARGB(255, 43, 3, 138);
+  }
+
+  Color getRelatorioFundoTemaRoxo() {
+    return Colors.white;
+  }
+
   Color getAppBarTextColor() {
     // ✅ SEMPRE BRANCO para textos do AppBar em AMBOS os temas
     return Colors.white;
@@ -87,6 +95,62 @@ class ThemeManager with ChangeNotifier {
       case ThemeType.roxoEscuro:
         return Colors.white;
     }
+  }
+
+  Color getBosdasRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getTextosRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getTextos2Relatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return const Color.fromARGB(255, 255, 255, 255);
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getIconesRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getFundosCardsRelatorios() {
+    // Fundo branco para todos os fundos independente do tema
+    return Colors.white;
+  }
+
+  Color getFundosTelaEFundoFiltrosRelatorios() {
+    // Fundo branco para todos os fundos independente do tema
+    return Colors.white;
+  }
+
+  Color getTextoButtonsRelatorios() {
+    // Fundo branco para todos os diálogos independente do tema
+    return Colors.white;
+  }
+
+  Color getFundoTextoButtonsRelatorios() {
+    // Fundo branco para todos os diálogos independente do tema
+    return const Color.fromARGB(255, 221, 31, 164);
   }
 
   Color getHomeButtonIconColor() {
