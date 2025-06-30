@@ -11,12 +11,17 @@ extension AccountTypeExtension on AccountType {
   String get displayName {
     switch (this) {
       case AccountType.savings:
-        return 'Savings';
+        return 'Poupança';
       case AccountType.checking:
-        return 'Checking';
-      // add other cases as needed
-      default:
-        return toString();
+        return 'Cheque';
+      case AccountType.creditCard:
+        return 'Cartão de Crédito';
+      case AccountType.cash:
+        return 'Dinheiro';
+      case AccountType.investment:
+        return 'Investimento';
+      case AccountType.other:
+        return 'Outros';
     }
   }
 }
@@ -24,16 +29,16 @@ extension AccountTypeExtension on AccountType {
 String accountTypeToString(AccountType type) {
   switch (type) {
     case AccountType.checking:
-      return 'Checking';
+      return 'Cheque';
     case AccountType.savings:
-      return 'Savings';
+      return 'Poupança';
     case AccountType.creditCard:
-      return 'Credit Card';
+      return 'Cartão de Crédito';
     case AccountType.cash:
-      return 'Cash';
+      return 'Dinheiro';
     case AccountType.investment:
-      return 'Investment';
+      return 'Investimento';
     case AccountType.other:
-      return 'Other';
+      return 'Outros';
   }
 }
