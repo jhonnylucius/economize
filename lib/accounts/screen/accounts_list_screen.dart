@@ -2,6 +2,7 @@ import 'package:economize/accounts/model/account_model.dart';
 import 'package:economize/accounts/screen/account_form_screen.dart';
 import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/accounts/widgets/account_card.dart';
+import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/loading_animations.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -51,6 +52,13 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
         title: const Text('Minhas Contas'),
         backgroundColor: themeManager.getCurrentPrimaryColor(),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Ajuda',
+            onPressed: () => _showAccountsHelp(context),
+          ),
+        ],
       ),
       backgroundColor: themeManager.currentTheme.scaffoldBackgroundColor,
       body: FutureBuilder<List<Account>>(
@@ -112,6 +120,203 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
         label: const Text('Nova Conta'),
         backgroundColor: themeManager.getCurrentPrimaryColor(),
         foregroundColor: Colors.white,
+      ),
+    );
+  }
+
+  void _showAccountsHelp(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            frostedEffect: true,
+            blur: 10,
+            opacity: 0.2,
+            borderRadius: 24,
+            borderColor: Colors.white.withAlpha((0.3 * 255).round()),
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: theme.colorScheme.primary,
+                          child: Icon(
+                            Icons.account_balance_wallet,
+                            color: theme.colorScheme.onPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Minhas Contas",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "Como gerenciar suas contas bancárias e carteiras",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Seção 1: Cards de Conta
+                    _buildHelpSection(
+                      context: context,
+                      title: "1. Cards de Conta",
+                      icon: Icons.credit_card,
+                      iconColor: theme.colorScheme.primary,
+                      content:
+                          "Cada card representa uma conta bancária, carteira ou outro local onde você guarda dinheiro.\n\n"
+                          "• Nome da Conta: Identifique facilmente cada conta\n"
+                          "• Saldo: Veja quanto há disponível\n"
+                          "• Ícone: Ajuda a diferenciar visualmente suas contas\n"
+                          "• Toque para editar ou ver detalhes",
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Seção 2: Adicionar Conta
+                    _buildHelpSection(
+                      context: context,
+                      title: "2. Adicionar Nova Conta",
+                      icon: Icons.add_circle_outline,
+                      iconColor: Colors.green,
+                      content:
+                          "Toque no botão '+' para adicionar uma nova conta.\n\n"
+                          "• Dê um nome para a conta (ex: Carteira, Banco X)\n"
+                          "• Escolha um ícone e tipo\n"
+                          "• Informe o saldo inicial (opcional)\n"
+                          "• Salve para começar a usar",
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Seção 3: Editar ou Excluir Conta
+                    _buildHelpSection(
+                      context: context,
+                      title: "3. Editar ou Excluir",
+                      icon: Icons.edit,
+                      iconColor: Colors.blue,
+                      content: "Toque em uma conta para editar seus dados.\n\n"
+                          "Para excluir, use o ícone de lixeira no card da conta.\n\n"
+                          "Atenção: Excluir uma conta remove todos os dados associados a ela.",
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Seção 4: Dicas
+                    _buildHelpSection(
+                      context: context,
+                      title: "4. Dicas",
+                      icon: Icons.lightbulb_outline,
+                      iconColor: Colors.amber,
+                      content:
+                          "• Mantenha suas contas organizadas para melhor controle financeiro.\n"
+                          "• Atualize os saldos sempre que fizer movimentações fora do app, lançando a despesa ou receita no app.\n"
+                          "• Use nomes e ícones que facilitem sua identificação.",
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Botão para fechar
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: const Text(
+                          "Entendi!",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHelpSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: iconColor.withAlpha((0.2 * 255).round()),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              content,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
