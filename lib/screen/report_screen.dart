@@ -458,8 +458,9 @@ class _ReportScreenState extends State<ReportScreen>
                           onPressed: () => Navigator.pop(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                const Color.fromARGB(255, 216, 78, 196),
-                            foregroundColor: Colors.white,
+                                themeManager.getFundoTextoButtonsRelatorios(),
+                            foregroundColor:
+                                themeManager.getTextoButtonsRelatorios(),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -546,9 +547,11 @@ class _ReportScreenState extends State<ReportScreen>
 
     return Stack(
       children: [
-        // Fundo decorativo com padrão sutil
-        _buildBackgroundPattern(themeManager),
-
+        // Troque o fundo decorativo pelo fundo branco do getter
+        Container(
+          color:
+              themeManager.getFundosTelaEFundoFiltrosRelatorios(), // <-- aqui!
+        ),
         Column(
           children: [
             _buildFilters(themeManager, textColor),
@@ -561,221 +564,203 @@ class _ReportScreenState extends State<ReportScreen>
     );
   }
 
-  Widget _buildBackgroundPattern(ThemeManager themeManager) {
-    final isDark = themeManager.currentThemeType != ThemeType.light;
-
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: _PatternPainter(
-          color: isDark
-              ? Colors.white.withAlpha((0.03 * 255).toInt())
-              : Colors.black.withAlpha((0.03 * 255).toInt()),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFilters(ThemeManager themeManager, Color textColor) {
     Theme.of(context);
     final isDark = themeManager.currentThemeType != ThemeType.light;
 
     return SlideAnimation.fromTop(
-      child: GlassContainer(
-        frostedEffect: true,
-        borderRadius: 0,
-        opacity: 0.1,
-        blur: 5,
-        borderWidth: 0,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Título
-              SlideAnimation.fromLeft(
-                delay: const Duration(milliseconds: 100),
-                child: Text(
-                  'Filtrar Relatório',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: themeManager.getFundosTelaEFundoFiltrosRelatorios(),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(24),
+            bottomRight: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Título
+            SlideAnimation.fromLeft(
+              delay: const Duration(milliseconds: 100),
+              child: Text(
+                'Filtrar Relatório',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: themeManager.getTextosRelatorios(),
                 ),
               ),
-              const SizedBox(height: 16),
+            ),
+            const SizedBox(height: 16),
 
-              // Botões para escolher entre Receitas e Despesas
-              SlideAnimation.fromRight(
-                delay: const Duration(milliseconds: 150),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildFilterButton(
-                          'receitas',
-                          'Receitas',
-                          Icons.attach_money,
-                          Colors.green,
-                          themeManager,
-                        ),
+            // Botões para escolher entre Receitas e Despesas
+            SlideAnimation.fromRight(
+              delay: const Duration(milliseconds: 150),
+              child: SizedBox(
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildFilterButton(
+                        'receitas',
+                        'Receitas',
+                        Icons.attach_money,
+                        Colors.green,
+                        themeManager,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildFilterButton(
-                          'despesas',
-                          'Despesas',
-                          Icons.money_off,
-                          Colors.red,
-                          themeManager,
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildFilterButton(
+                        'despesas',
+                        'Despesas',
+                        Icons.money_off,
+                        Colors.red,
+                        themeManager,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Dropdown para tipos específicos
-              SlideAnimation.fromLeft(
-                delay: const Duration(milliseconds: 200),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FutureBuilder<Map<String, List<String>>>(
-                    future: Future.value(_availableTypes),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData || snapshot.data == null) {
-                        return SizedBox(
-                          height: 60,
-                          child: (snapshot.hasError)
-                              ? Center(
-                                  child: Text(
-                                    'Erro ao carregar tipos',
-                                    style: TextStyle(color: textColor),
-                                  ),
-                                )
-                              : null,
-                        );
-                      }
+            // Dropdown para tipos específicos
+            SlideAnimation.fromLeft(
+              delay: const Duration(milliseconds: 200),
+              child: SizedBox(
+                width: double.infinity,
+                child: FutureBuilder<Map<String, List<String>>>(
+                  future: Future.value(_availableTypes),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return SizedBox(
+                        height: 60,
+                        child: (snapshot.hasError)
+                            ? Center(
+                                child: Text(
+                                  'Erro ao carregar tipos',
+                                  style: TextStyle(
+                                      color:
+                                          themeManager.getTextosRelatorios()),
+                                ),
+                              )
+                            : null,
+                      );
+                    }
 
-                      final typesMap = snapshot.data!;
-                      final currentTypeList = typesMap[
-                              _selectedType == 'receitas'
-                                  ? 'receitas'
-                                  : 'despesas'] ??
-                          [];
-                      final dropdownItems = [
-                        'Todas',
-                        ...currentTypeList.where((t) => t != 'Todas')
-                      ];
-                      final validSelectedValue =
-                          dropdownItems.contains(_selectedSpecificType)
-                              ? _selectedSpecificType
-                              : 'Todas';
+                    final typesMap = snapshot.data!;
+                    final currentTypeList = typesMap[_selectedType == 'receitas'
+                            ? 'receitas'
+                            : 'despesas'] ??
+                        [];
+                    final dropdownItems = [
+                      'Todas',
+                      ...currentTypeList.where((t) => t != 'Todas')
+                    ];
+                    final validSelectedValue =
+                        dropdownItems.contains(_selectedSpecificType)
+                            ? _selectedSpecificType
+                            : 'Todas';
 
-                      if (_selectedSpecificType != validSelectedValue) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) {
-                            setState(() {
-                              _selectedSpecificType = validSelectedValue;
-                            });
-                          }
-                        });
-                      }
+                    if (_selectedSpecificType != validSelectedValue) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedSpecificType = validSelectedValue;
+                          });
+                        }
+                      });
+                    }
 
-                      return Container(
-                        decoration: BoxDecoration(
+                    return Container(
+                      decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color.fromARGB(255, 216, 78, 196)
-                                .withAlpha((0.5 * 255).toInt()),
+                            color: themeManager.getTextosRelatorios(),
                             width: 1,
                           ),
                           color: isDark
-                              ? Colors.black26
-                              : Colors.white.withAlpha((0.7 * 255).toInt()),
+                              ? themeManager.getFundosCardsRelatorios()
+                              : themeManager.getFundosCardsRelatorios()),
+                      child: DropdownButtonFormField<String>(
+                        value: validSelectedValue,
+                        decoration: InputDecoration(
+                          labelText: 'Tipo Específico',
+                          labelStyle: TextStyle(
+                            color: themeManager.getTextoButtonsRelatorios(),
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                         ),
-                        child: DropdownButtonFormField<String>(
-                          value: validSelectedValue,
-                          decoration: InputDecoration(
-                            labelText: 'Tipo Específico',
-                            labelStyle: TextStyle(
-                              color: textColor.withAlpha((0.7 * 255).toInt()),
+                        dropdownColor:
+                            themeManager.getFundosTelaEFundoFiltrosRelatorios(),
+                        isExpanded: true,
+                        icon: Icon(
+                          Icons.arrow_drop_down_circle,
+                          color: themeManager.getIconesRelatorios(),
+                        ),
+                        items: dropdownItems.map((tipo) {
+                          return DropdownMenuItem<String>(
+                            value: tipo,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color:
+                                            themeManager.getTextosRelatorios(),
+                                        width: 2),
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: validSelectedValue == tipo
+                                        ? themeManager.getTextosRelatorios()
+                                        : themeManager.getTextosRelatorios(),
+                                  ),
+                                  child: validSelectedValue == tipo
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 18,
+                                          color:
+                                              Color.fromARGB(255, 216, 78, 196),
+                                        )
+                                      : null,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    tipo,
+                                    style: TextStyle(
+                                      color: themeManager.getTextosRelatorios(),
+                                      fontWeight: validSelectedValue == tipo
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                          ),
-                          dropdownColor:
-                              isDark ? Colors.grey.shade900 : Colors.white,
-                          isExpanded: true,
-                          icon: Icon(
-                            Icons.arrow_drop_down_circle,
-                            color: const Color.fromARGB(255, 216, 78, 196),
-                          ),
-                          items: dropdownItems.map((tipo) {
-                            return DropdownMenuItem<String>(
-                              value: tipo,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: const Color.fromARGB(
-                                              255, 216, 78, 196),
-                                          width: 2),
-                                      borderRadius: BorderRadius.circular(4),
-                                      color: validSelectedValue == tipo
-                                          ? const Color.fromARGB(
-                                                  255, 216, 78, 196)
-                                              .withAlpha((0.2 * 255).toInt())
-                                          : Colors.transparent,
-                                    ),
-                                    child: validSelectedValue == tipo
-                                        ? const Icon(
-                                            Icons.check,
-                                            size: 18,
-                                            color: Color.fromARGB(
-                                                255, 216, 78, 196),
-                                          )
-                                        : null,
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      tipo,
-                                      style: TextStyle(
-                                        color: textColor,
-                                        fontWeight: validSelectedValue == tipo
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null &&
-                                value != _selectedSpecificType) {
-                              setState(() => _selectedSpecificType = value);
-                              _generateReport();
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null && value != _selectedSpecificType) {
+                            setState(() => _selectedSpecificType = value);
+                            _generateReport();
+                          }
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -806,14 +791,14 @@ class _ReportScreenState extends State<ReportScreen>
             color: isSelected
                 ? accentColor.withAlpha((0.2 * 255).toInt())
                 : isDark
-                    ? Colors.black26
-                    : Colors.white.withAlpha((0.7 * 255).toInt()),
+                    ? themeManager.getBosdasRelatorios()
+                    : themeManager.getBosdasRelatorios(),
             border: Border.all(
               color: isSelected
                   ? accentColor
                   : isDark
-                      ? Colors.white.withAlpha((0.2 * 255).toInt())
-                      : Colors.black.withAlpha((0.1 * 255).toInt()),
+                      ? themeManager.getBosdasRelatorios()
+                      : themeManager.getBosdasRelatorios(),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -863,7 +848,7 @@ class _ReportScreenState extends State<ReportScreen>
             Text(
               'Carregando relatório...',
               style: TextStyle(
-                color: textColor,
+                color: themeManager.getTextosRelatorios(),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -876,9 +861,12 @@ class _ReportScreenState extends State<ReportScreen>
       return _buildEmptyState(themeManager);
     }
 
-    return _isFiltering
-        ? _buildGridView(themeManager, textColor)
-        : _buildListView(themeManager, textColor);
+    return Container(
+      color: themeManager.getRelatorioFundoTemaRoxo(), // <-- aqui!
+      child: _isFiltering
+          ? _buildGridView(themeManager, textColor)
+          : _buildListView(themeManager, textColor),
+    );
   }
 
   Widget _buildEmptyState(ThemeManager themeManager) {
@@ -901,7 +889,7 @@ class _ReportScreenState extends State<ReportScreen>
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: textColor,
+                color: themeManager.getTextosRelatorios(),
               ),
             ),
             const SizedBox(height: 8),
@@ -911,7 +899,7 @@ class _ReportScreenState extends State<ReportScreen>
                 'Não encontramos registros para os filtros selecionados. Tente outros critérios de busca.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: textColor.withAlpha((0.7 * 255).toInt()),
+                  color: themeManager.getTextosRelatorios(),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -922,8 +910,8 @@ class _ReportScreenState extends State<ReportScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('Atualizar'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 216, 78, 196),
-                foregroundColor: Colors.white,
+                backgroundColor: themeManager.getFundoTextoButtonsRelatorios(),
+                foregroundColor: themeManager.getTextoButtonsRelatorios(),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -1011,14 +999,11 @@ class _ReportScreenState extends State<ReportScreen>
       delay: Duration(milliseconds: 50 * index % 300),
       child: Card(
         elevation: 3,
-        color: isDark ? Colors.grey.shade900 : Colors.white,
+        color: themeManager.getFundosCardsRelatorios(),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: isDark
-                ? const Color.fromARGB(255, 43, 3, 138)
-                    .withAlpha((0.3 * 255).toInt())
-                : Colors.black.withAlpha((0.1 * 255).toInt()),
+            color: themeManager.getBosdasRelatorios(),
             width: 1,
           ),
         ),
@@ -1078,7 +1063,7 @@ class _ReportScreenState extends State<ReportScreen>
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: textColor,
+                  color: themeManager.getTextosRelatorios(),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1091,7 +1076,7 @@ class _ReportScreenState extends State<ReportScreen>
                 subtitleText,
                 style: TextStyle(
                   fontSize: 13,
-                  color: textColor.withAlpha((0.7 * 255).toInt()),
+                  color: themeManager.getTextosRelatorios(),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1105,11 +1090,7 @@ class _ReportScreenState extends State<ReportScreen>
                 decoration: BoxDecoration(
                   color: isDark ? Colors.black26 : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withAlpha((0.1 * 255).toInt())
-                        : Colors.black.withAlpha((0.1 * 255).toInt()),
-                  ),
+                  border: Border.all(color: themeManager.getBosdasRelatorios()),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1119,14 +1100,14 @@ class _ReportScreenState extends State<ReportScreen>
                           ? Icons.account_balance_wallet_outlined
                           : Icons.shopping_bag_outlined,
                       size: 12,
-                      color: textColor.withAlpha((0.7 * 255).toInt()),
+                      color: themeManager.getTextosRelatorios(),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _selectedType == 'receitas' ? 'Receita' : 'Despesa',
                       style: TextStyle(
                         fontSize: 12,
-                        color: textColor.withAlpha((0.7 * 255).toInt()),
+                        color: themeManager.getTextosRelatorios(),
                       ),
                     ),
                   ],
@@ -1152,16 +1133,13 @@ class _ReportScreenState extends State<ReportScreen>
     return SlideAnimation.fromTop(
       child: Card(
         margin: const EdgeInsets.all(8),
-        color: isDark ? Colors.black26 : Colors.white,
-        elevation: isDark ? 0 : 2,
+        color: themeManager.getFundosCardsRelatorios(),
+        elevation: isDark ? 2 : 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: isDark
-                ? const Color.fromARGB(255, 43, 3, 138)
-                    .withAlpha((0.3 * 255).toInt())
-                : Colors.black.withAlpha((0.1 * 255).toInt()),
-            width: 1,
+            color: themeManager.getBosdasRelatorios(),
+            width: 1.5,
           ),
         ),
         child: Padding(
@@ -1173,13 +1151,13 @@ class _ReportScreenState extends State<ReportScreen>
                 children: [
                   Icon(
                     Icons.pie_chart_outline,
-                    color: const Color.fromARGB(255, 216, 78, 196),
+                    color: themeManager.getIconesRelatorios(),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Total por Categoria',
                     style: TextStyle(
-                      color: textColor,
+                      color: themeManager.getTextosRelatorios(),
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -1189,7 +1167,7 @@ class _ReportScreenState extends State<ReportScreen>
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Divider(
-                  color: textColor.withAlpha((0.1 * 255).toInt()),
+                  color: themeManager.getTextosRelatorios(),
                   thickness: 1,
                 ),
               ),
@@ -1210,7 +1188,7 @@ class _ReportScreenState extends State<ReportScreen>
                               child: Text(
                                 entry.key,
                                 style: TextStyle(
-                                  color: textColor,
+                                  color: themeManager.getTextosRelatorios(),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -1268,8 +1246,12 @@ class _ReportScreenState extends State<ReportScreen>
     return List.generate(_reportData.length, (index) {
       final item = _reportData[index];
       final titleText = _selectedType == 'receitas'
-          ? (item['descricaoDaReceita'] ?? 'Sem descrição')
-          : (item['descricaoDaDespesa'] ?? 'Sem descrição');
+          ? (item['descricaoDaReceita']?.isNotEmpty == true
+              ? item['descricaoDaReceita']
+              : (item['tipoReceita'] ?? 'Sem descrição'))
+          : (item['descricaoDaDespesa']?.isNotEmpty == true
+              ? item['descricaoDaDespesa']
+              : (item['tipoDespesa'] ?? 'Sem descrição'));
       final subtitleText = _selectedType == 'receitas'
           ? (item['tipoReceita'] ?? 'Tipo não especificado')
           : (item['tipoDespesa'] ?? 'Tipo não especificado');
@@ -1279,15 +1261,12 @@ class _ReportScreenState extends State<ReportScreen>
         delay: Duration(milliseconds: 50 * index % 300),
         child: Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          color: isDark ? Colors.black26 : Colors.white,
-          elevation: isDark ? 0 : 1,
+          color: themeManager.getFundosCardsRelatorios(),
+          elevation: isDark ? 1 : 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: isDark
-                  ? const Color.fromARGB(255, 43, 3, 138)
-                      .withAlpha((0.3 * 255).toInt())
-                  : Colors.black.withAlpha((0.1 * 255).toInt()),
+              color: themeManager.getBosdasRelatorios(),
               width: 1,
             ),
           ),
@@ -1312,7 +1291,7 @@ class _ReportScreenState extends State<ReportScreen>
             title: Text(
               titleText,
               style: TextStyle(
-                color: textColor,
+                color: themeManager.getTextosRelatorios(),
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 2,
@@ -1323,14 +1302,14 @@ class _ReportScreenState extends State<ReportScreen>
                 Icon(
                   Icons.category_outlined,
                   size: 12,
-                  color: textColor.withAlpha((0.6 * 255).toInt()),
+                  color: themeManager.getIconesRelatorios(),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     subtitleText,
                     style: TextStyle(
-                      color: textColor.withAlpha((0.7 * 255).toInt()),
+                      color: themeManager.getTextosRelatorios(),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1366,17 +1345,12 @@ class _ReportScreenState extends State<ReportScreen>
       delay: const Duration(milliseconds: 300),
       child: Card(
         margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        color: isDark
-            ? const Color.fromARGB(255, 216, 78, 196)
-                .withAlpha((0.3 * 255).toInt())
-            : const Color.fromARGB(255, 216, 78, 196)
-                .withAlpha((0.2 * 255).toInt()),
-        elevation: isDark ? 0 : 4,
+        color: themeManager.getFundosCardsRelatorios(), // <-- aqui!
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: const Color.fromARGB(255, 216, 78, 196)
-                .withAlpha((0.5 * 255).toInt()),
+            color: themeManager.getBosdasRelatorios(), // <-- aqui!
             width: 1.5,
           ),
         ),
@@ -1391,7 +1365,7 @@ class _ReportScreenState extends State<ReportScreen>
                   Text(
                     'Total ${_selectedType == 'receitas' ? 'Recebido' : 'Gasto'}',
                     style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: themeManager.getTextosRelatorios(),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1403,14 +1377,14 @@ class _ReportScreenState extends State<ReportScreen>
                         _selectedType == 'receitas'
                             ? Icons.trending_up
                             : Icons.trending_down,
-                        color: isDark ? Colors.white70 : Colors.black54,
+                        color: themeManager.getFundosCardsRelatorios(),
                         size: 16,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Período atual',
                         style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black54,
+                          color: themeManager.getTextosRelatorios(),
                           fontSize: 12,
                         ),
                       ),
@@ -1421,7 +1395,7 @@ class _ReportScreenState extends State<ReportScreen>
               Text(
                 _currencyFormat.format(_total),
                 style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
+                  color: themeManager.getTextosRelatorios(),
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1461,7 +1435,7 @@ class _ReportScreenState extends State<ReportScreen>
         content: Text(
           message,
           style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
+            color: themeManager.getTextosRelatorios(),
           ),
         ),
         actions: [
