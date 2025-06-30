@@ -3639,7 +3639,6 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
     );
   }
 
-  // 🎭 MÉTODOS DE AÇÃO
   void _showAboutDialog() {
     showDialog(
       context: context,
@@ -3649,7 +3648,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.100'),
+            const Text('Versão: 1.0.105'),
             const SizedBox(height: 8),
             const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
             const SizedBox(height: 8),
@@ -3662,9 +3661,36 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
               label: const Text('Política de Privacidade'),
               onPressed: () async {
                 const url = 'https://union.dev.br/politica-de-privacidade.html';
-                if (await canLaunchUrl(Uri.parse(url))) {
-                  await launchUrl(Uri.parse(url),
-                      mode: LaunchMode.externalApplication);
+                try {
+                  final uri = Uri.parse(url);
+                  final launched = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!launched) {
+                    // Se não abrir, copia o link e avisa o usuário
+                    await Clipboard.setData(ClipboardData(text: url));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Não foi possível abrir o link. Link copiado para a área de transferência!'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  await Clipboard.setData(const ClipboardData(text: url));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Não foi possível abrir o link. Link copiado para a área de transferência!'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
                 }
               },
             ),
@@ -3674,9 +3700,35 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
               onPressed: () async {
                 const url =
                     'https://union.dev.br/politica-de-coleta-de-dados.html';
-                if (await canLaunchUrl(Uri.parse(url))) {
-                  await launchUrl(Uri.parse(url),
-                      mode: LaunchMode.externalApplication);
+                try {
+                  final uri = Uri.parse(url);
+                  final launched = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!launched) {
+                    await Clipboard.setData(ClipboardData(text: url));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Não foi possível abrir o link. Link copiado para a área de transferência!'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  await Clipboard.setData(const ClipboardData(text: url));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Não foi possível abrir o link. Link copiado para a área de transferência!'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
                 }
               },
             ),
