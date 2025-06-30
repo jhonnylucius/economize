@@ -1734,7 +1734,7 @@ class _CostsScreenState extends State<CostsScreen>
                 20,
                 20,
                 20,
-                math.max(MediaQuery.of(context).viewInsets.bottom, 26),
+                math.max(MediaQuery.of(context).viewInsets.bottom, 48),
               ),
               child: SingleChildScrollView(
                 child: Form(
