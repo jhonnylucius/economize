@@ -49,6 +49,53 @@ class AppThemes {
     return Colors.white;
   }
 
+  Color getBosdasRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getTextosRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getIconesRelatorios() {
+    switch (currentThemeType) {
+      case ThemeType.light:
+        return Colors.black;
+      case ThemeType.roxoEscuro:
+        return const Color.fromARGB(255, 43, 3, 138);
+    }
+  }
+
+  Color getFundosCardsRelatorios() {
+    // Fundo branco para todos os fundos independente do tema
+    return Colors.white;
+  }
+
+  Color getFundosTelaEFundoFiltrosRelatorios() {
+    // Fundo branco para todos os fundos independente do tema
+    return Colors.white;
+  }
+
+  Color getTextoButtonsRelatorios() {
+    // Fundo branco para todos os diálogos independente do tema
+    return Colors.white;
+  }
+
+  Color getFundoTextoButtonsRelatorios() {
+    // Fundo branco para todos os diálogos independente do tema
+    return const Color.fromARGB(255, 221, 31, 164);
+  }
+
   Color getCardTextColor() {
     switch (currentThemeType) {
       case ThemeType.light:
