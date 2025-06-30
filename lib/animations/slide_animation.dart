@@ -31,7 +31,7 @@ class SlideAnimation extends StatefulWidget {
 
   /// Cria uma animação de deslizamento com controle total dos parâmetros
   const SlideAnimation({
-    Key? key,
+    super.key,
     required this.child,
     this.duration = const Duration(milliseconds: 300),
     this.delay = Duration.zero,
@@ -40,7 +40,7 @@ class SlideAnimation extends StatefulWidget {
     this.curve = Curves.easeInOut,
     this.autoPlay = true,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   /// Cria uma animação de entrada deslizando da direita
   SlideAnimation.fromRight({
