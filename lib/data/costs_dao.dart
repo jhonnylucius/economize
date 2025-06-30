@@ -174,6 +174,7 @@ class CostsDAO {
     await db.execute('''
     CREATE TABLE IF NOT EXISTS $tableName (
       id TEXT PRIMARY KEY,
+      accountId INTEGER,
       data TEXT NOT NULL,
       preco REAL NOT NULL,
       descricaoDaDespesa TEXT NOT NULL,
