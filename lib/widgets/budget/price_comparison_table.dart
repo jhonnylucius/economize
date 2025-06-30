@@ -1,6 +1,6 @@
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
-import 'package:economize/service/pdf_Service.dart';
+import 'package:economize/service/pdf_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -55,9 +55,10 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
 
       if (context.mounted) {
         Navigator.pop(context);
-        await Share.shareXFiles([
-          XFile(pdfFile.path),
-        ], text: 'Tabela Comparativa de Preços');
+        await Share.shareXFiles(
+          [XFile(pdfFile.path)],
+          text: 'Tabela Comparativa de Preços',
+        );
       }
     } catch (e) {
       _handleError(context, e);
@@ -165,10 +166,10 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
                       1: const FixedColumnWidth(120),
                       for (var i = 0; i < widget.budget.locations.length; i++)
                         i + 2: const FixedColumnWidth(100),
-                      widget.budget.locations.length +
-                          2: const FixedColumnWidth(120),
-                      widget.budget.locations.length +
-                          3: const FixedColumnWidth(120),
+                      widget.budget.locations.length + 2:
+                          const FixedColumnWidth(120),
+                      widget.budget.locations.length + 3:
+                          const FixedColumnWidth(120),
                     },
                     children: [
                       TableRow(
@@ -290,10 +291,9 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
         text,
         style: TextStyle(
           color: getTextColor(),
-          fontWeight:
-              isOrderNumber || isHighlighted || isGreen || isTotalRow
-                  ? FontWeight.bold
-                  : null,
+          fontWeight: isOrderNumber || isHighlighted || isGreen || isTotalRow
+              ? FontWeight.bold
+              : null,
         ),
         textAlign: isOrderNumber ? TextAlign.center : TextAlign.left,
       ),
