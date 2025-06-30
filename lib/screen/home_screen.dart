@@ -143,7 +143,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   // Adicione estas variáveis na classe _HomeScreenState
   double _previousBalance = 0.0;
-  double _balanceVariationPercent = 0.0;
 
   bool isLoadingFinancialData = false;
 
@@ -331,13 +330,8 @@ class _HomeScreenState extends State<HomeScreen>
       final newBalance = totalRevenues - totalCosts;
 
       // Calcular variação percentual
-      double variationPercent = 0.0;
       if (_previousBalance != 0) {
-        variationPercent =
-            ((newBalance - _previousBalance) / _previousBalance.abs()) * 100;
-      } else if (newBalance > 0) {
-        variationPercent = 100.0;
-      }
+      } else if (newBalance > 0) {}
 
       // Calcular progresso de metas
       final savingsGoal = totalRevenues * 0.3;
@@ -347,7 +341,6 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) {
         setState(() {
           _currentBalance = newBalance;
-          _balanceVariationPercent = variationPercent;
 
           _savingsGoalProgress = savingsGoal > 0
               ? (currentSavings / savingsGoal).clamp(0.0, 1.0)
@@ -372,7 +365,6 @@ class _HomeScreenState extends State<HomeScreen>
           _currentBalance = 0.0;
           _savingsGoalProgress = 0.0;
           _expensesBudgetProgress = 0.0;
-          _balanceVariationPercent = 0.0;
         });
       }
     } finally {
@@ -383,8 +375,6 @@ class _HomeScreenState extends State<HomeScreen>
       }
     }
   }
-
-  bool _hasRealPreviousBalance = false;
 
   // Método para carregar o saldo anterior (mês passado ou período anterior)
   Future<void> loadPreviousBalance() async {
@@ -410,12 +400,12 @@ class _HomeScreenState extends State<HomeScreen>
 
       setState(() {
         _previousBalance = lastMonthTotalRevenues - lastMonthTotalCosts;
-        _hasRealPreviousBalance = true; // <-- só aqui!
+// <-- só aqui!
       });
     } catch (e) {
       debugPrint('Erro ao carregar saldo anterior: $e');
       _previousBalance = _currentBalance * 0.95;
-      _hasRealPreviousBalance = false; // <-- aqui!
+// <-- aqui!
     }
   }
 
@@ -967,35 +957,14 @@ class _HomeScreenState extends State<HomeScreen>
                                   Colors.white.withAlpha((0.15 * 255).round()),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _currentBalance >= 0
-                                      ? Icons.trending_up
-                                      : Icons.trending_down,
-                                  color: _currentBalance >= 0
-                                      ? Colors.greenAccent
-                                      : Colors.redAccent,
-                                  size: 16,
-                                ),
-                                // Só mostra a porcentagem se houver saldo anterior diferente de zero
-                                if (_hasRealPreviousBalance &&
-                                    _previousBalance != 0) ...[
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _balanceVariationPercent >= 0
-                                        ? '+${_balanceVariationPercent.toStringAsFixed(1)}%'
-                                        : '${_balanceVariationPercent.toStringAsFixed(1)}%',
-                                    style: TextStyle(
-                                      color: _currentBalance >= 0
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ],
+                            child: Icon(
+                              _currentBalance >= 0
+                                  ? Icons.trending_up
+                                  : Icons.trending_down,
+                              color: _currentBalance >= 0
+                                  ? Colors.greenAccent
+                                  : Colors.redAccent,
+                              size: 16,
                             ),
                           ),
                         ],
