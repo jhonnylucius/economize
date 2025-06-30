@@ -1,3 +1,6 @@
+import 'package:economize/accounts/model/account_model.dart';
+import 'package:economize/accounts/service/account_service.dart';
+import 'package:economize/accounts/widgets/account_selector.dart';
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
@@ -14,6 +17,7 @@ import 'package:economize/theme/app_colors.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +50,16 @@ class DashBoardScreenState extends State<DashBoardScreen>
   late AnimationController _chartAnimationController;
   final List<GlobalKey> _chartKeys = [GlobalKey(), GlobalKey()];
 
+  String? _selectedAccountId;
+  String _selectedTipo = 'receitas'; // receitas ou despesas
+  DateTimeRange? _selectedPeriod;
+  String? _selectedCategoria; // tipo de receita ou despesa
+
+  List<Account> _accounts = [];
+  List<Revenues> _filteredRevenues = [];
+  List<Costs> _filteredCosts = [];
+  bool _isLoadingCard = false;
+
   List<String> monthList = [
     'Todas',
     'Janeiro',
@@ -65,6 +79,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
   @override
   void initState() {
     super.initState();
+    _loadAccounts();
+    _loadFilteredData();
 
     _chartAnimationController = AnimationController(
       vsync: this,
@@ -92,6 +108,52 @@ class DashBoardScreenState extends State<DashBoardScreen>
   void dispose() {
     _chartAnimationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAccounts() async {
+    final accounts = await AccountService().getAllAccounts();
+    setState(() {
+      _accounts = accounts;
+      if (_accounts.isNotEmpty && _selectedAccountId == null) {
+        _selectedAccountId = _accounts.first.id?.toString();
+      }
+    });
+  }
+
+  Future<void> _loadFilteredData() async {
+    setState(() => _isLoadingCard = true);
+
+    if (_selectedTipo == 'receitas') {
+      final revenues = await RevenuesService().getAllRevenues();
+      _filteredRevenues = revenues.where((r) {
+        final matchAccount = _selectedAccountId == null ||
+            r.accountId?.toString() == _selectedAccountId;
+        final matchCategoria =
+            _selectedCategoria == null || r.tipoReceita == _selectedCategoria;
+        final matchPeriodo = _selectedPeriod == null ||
+            (r.data.isAfter(
+                    _selectedPeriod!.start.subtract(const Duration(days: 1))) &&
+                r.data.isBefore(
+                    _selectedPeriod!.end.add(const Duration(days: 1))));
+        return matchAccount && matchCategoria && matchPeriodo;
+      }).toList();
+    } else {
+      final costs = await CostsService().getAllCosts();
+      _filteredCosts = costs.where((c) {
+        final matchAccount = _selectedAccountId == null ||
+            c.accountId?.toString() == _selectedAccountId;
+        final matchCategoria =
+            _selectedCategoria == null || c.tipoDespesa == _selectedCategoria;
+        final matchPeriodo = _selectedPeriod == null ||
+            (c.data.isAfter(
+                    _selectedPeriod!.start.subtract(const Duration(days: 1))) &&
+                c.data.isBefore(
+                    _selectedPeriod!.end.add(const Duration(days: 1))));
+        return matchAccount && matchCategoria && matchPeriodo;
+      }).toList();
+    }
+
+    setState(() => _isLoadingCard = false);
   }
 
   Future<void> loadData() async {
@@ -573,6 +635,11 @@ class DashBoardScreenState extends State<DashBoardScreen>
                                     listRevenues, 'Receitas Anuais'),
                               )
                             : const SizedBox(height: 228), // Placeholder
+                        // Espaço no final
+                        const SizedBox(height: 24),
+
+                        // NOVO CARD DE CONTAS COM FILTROS (coloque aqui!)
+                        _buildAccountFilterCard(themeManager),
 
                         // Filtro de meses
                         Padding(
@@ -1093,6 +1160,272 @@ class DashBoardScreenState extends State<DashBoardScreen>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountFilterCard(ThemeManager themeManager) {
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final isReceita = _selectedTipo == 'receitas';
+
+    // Monta lista de categorias conforme tipo selecionado
+    final categorias = isReceita
+        ? _filteredRevenues.map((r) => r.tipoReceita).toSet().toList()
+        : _filteredCosts.map((c) => c.tipoDespesa).toSet().toList();
+
+    // Calcula total
+    final total = isReceita
+        ? _filteredRevenues.fold(0.0, (sum, r) => sum + r.preco)
+        : _filteredCosts.fold(0.0, (sum, c) => sum + c.preco);
+
+    return GlassContainer(
+      frostedEffect: true,
+      borderRadius: 20,
+      opacity: 0.08,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.account_balance_wallet,
+                    color: themeManager.getCurrentPrimaryColor()),
+                const SizedBox(width: 8),
+                Text(
+                  'Resumo por Conta',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: themeManager.getCurrentPrimaryColor(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Filtros em coluna para evitar overflow
+            AccountSelector(
+              accounts: _accounts,
+              selectedId: _selectedAccountId,
+              onChanged: (id) {
+                setState(() => _selectedAccountId = id);
+                _loadFilteredData();
+              },
+            ),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<String>(
+              value: _selectedTipo,
+              decoration: const InputDecoration(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'receitas', child: Text('Receitas')),
+                DropdownMenuItem(value: 'despesas', child: Text('Despesas')),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedTipo = value!;
+                  _selectedCategoria = null;
+                });
+                _loadFilteredData();
+              },
+            ),
+            const SizedBox(height: 8),
+
+            OutlinedButton.icon(
+              icon: Icon(Icons.date_range, color: Color(0xFF2B038A), size: 18),
+              label: Text(
+                _selectedPeriod == null
+                    ? 'Período'
+                    : '${DateFormat('dd/MM/yyyy').format(_selectedPeriod!.start)} - ${DateFormat('dd/MM/yyyy').format(_selectedPeriod!.end)}',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Color(0xFF2B038A), fontSize: 13),
+              ),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF2B038A),
+                side: const BorderSide(color: Color(0xFF2B038A)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                minimumSize: const Size(0, 36),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                final picked = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2027),
+                  initialDateRange: _selectedPeriod,
+                  builder: (context, child) => Theme(
+                    data: ThemeData(
+                      colorScheme: const ColorScheme.light(
+                        primary: Color(0xFF2B038A),
+                        onPrimary: Colors.white,
+                        onSurface: Color(0xFF2B038A),
+                        surface: Colors.white,
+                      ),
+                      dialogBackgroundColor: Colors.white,
+                      textTheme: const TextTheme(
+                        bodyMedium: TextStyle(color: Color(0xFF2B038A)),
+                        titleMedium: TextStyle(color: Color(0xFF2B038A)),
+                        labelLarge: TextStyle(color: Color(0xFF2B038A)),
+                      ),
+                      iconTheme: const IconThemeData(color: Color(0xFF2B038A)),
+                      buttonTheme: const ButtonThemeData(
+                        textTheme: ButtonTextTheme.primary,
+                        buttonColor: Color(0xFF2B038A),
+                      ),
+                    ),
+                    child: child!,
+                  ),
+                );
+                if (picked != null) {
+                  setState(() => _selectedPeriod = picked);
+                  _loadFilteredData();
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<String>(
+              value: _selectedCategoria,
+              hint: const Text('Tipo'),
+              decoration: const InputDecoration(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+              items: categorias
+                  .map((cat) => DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() => _selectedCategoria = value);
+                _loadFilteredData();
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Lista de lançamentos filtrados
+            if (_isLoadingCard)
+              const Center(child: CircularProgressIndicator())
+            else
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: isReceita
+                      ? _filteredRevenues.length
+                      : _filteredCosts.length,
+                  itemBuilder: (context, index) {
+                    if (isReceita) {
+                      final r = _filteredRevenues[index];
+                      return _buildMiniCard(
+                        title: r.tipoReceita,
+                        desc: r.descricaoDaReceita,
+                        value: r.preco,
+                        date: r.data,
+                        color: Colors.green.shade600,
+                        currencyFormat: currencyFormat,
+                      );
+                    } else {
+                      final c = _filteredCosts[index];
+                      return _buildMiniCard(
+                        title: c.tipoDespesa,
+                        desc: c.descricaoDaDespesa,
+                        value: c.preco,
+                        date: c.data,
+                        color: Colors.red.shade600,
+                        currencyFormat: currencyFormat,
+                      );
+                    }
+                  },
+                ),
+              ),
+            const SizedBox(height: 12),
+
+            // Total
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Total: ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: themeManager.getCurrentPrimaryColor(),
+                  ),
+                ),
+                Text(
+                  currencyFormat.format(total),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color:
+                        isReceita ? Colors.green.shade700 : Colors.red.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniCard({
+    required String title,
+    required String desc,
+    required double value,
+    required DateTime date,
+    required Color color,
+    required NumberFormat currencyFormat,
+  }) {
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withAlpha((0.2 * 255).round())),
+        boxShadow: [
+          BoxShadow(
+            color: color.withAlpha((0.8 * 255).round()),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+          if (desc.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, bottom: 2),
+              child: Text(desc,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+            ),
+          const Spacer(),
+          Text(currencyFormat.format(value),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: color, fontSize: 16)),
+          Text(DateFormat('dd/MM/yyyy').format(date),
+              style: const TextStyle(fontSize: 12, color: Colors.black38)),
         ],
       ),
     );
