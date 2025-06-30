@@ -792,7 +792,7 @@ class _ReportScreenState extends State<ReportScreen>
                 ? accentColor.withAlpha((0.2 * 255).toInt())
                 : isDark
                     ? themeManager.getBosdasRelatorios()
-                    : themeManager.getBosdasRelatorios(),
+                    : Colors.white,
             border: Border.all(
               color: isSelected
                   ? accentColor
