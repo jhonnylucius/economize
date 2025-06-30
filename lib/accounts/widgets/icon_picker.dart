@@ -23,6 +23,13 @@ class IconPicker extends StatelessWidget {
     Icons.card_giftcard,
     Icons.school,
     Icons.phone_android,
+    Icons.local_grocery_store,
+    Icons.local_mall,
+    Icons.local_atm,
+    Icons.local_offer,
+    Icons.attractions,
+    Icons.invert_colors,
+    Icons.center_focus_strong,
   ];
 
   @override
