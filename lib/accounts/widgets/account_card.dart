@@ -31,12 +31,14 @@ class AccountCard extends StatelessWidget {
         color: themeManager.currentTheme.cardTheme.color,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: themeManager.getCurrentPrimaryColor().withOpacity(0.2),
+          color: themeManager
+              .getCurrentPrimaryColor()
+              .withAlpha((0.2 * 255).round()),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withAlpha((0.8 * 255).round()),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -50,7 +52,9 @@ class AccountCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: themeManager.getCurrentPrimaryColor().withOpacity(0.1),
+                  color: themeManager
+                      .getCurrentPrimaryColor()
+                      .withAlpha((0.1 * 255).round()),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
