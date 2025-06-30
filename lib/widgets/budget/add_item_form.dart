@@ -274,10 +274,12 @@ class _AddItemFormState extends State<AddItemForm> {
                 style: FilledButton.styleFrom(
                   backgroundColor: appThemes.getDialogButtonColor(),
                   foregroundColor: appThemes.getDialogButtonTextColor(),
-                  disabledBackgroundColor:
-                      appThemes.getDialogButtonColor().withOpacity(0.5),
-                  disabledForegroundColor:
-                      appThemes.getDialogButtonTextColor().withOpacity(0.5),
+                  disabledBackgroundColor: appThemes
+                      .getDialogButtonColor()
+                      .withAlpha((0.5 * 255).round()),
+                  disabledForegroundColor: appThemes
+                      .getDialogButtonTextColor()
+                      .withAlpha((0.5 * 255).round()),
                 ),
                 child: const Text('Adicionar Selecionados'),
               ),
