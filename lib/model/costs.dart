@@ -1,5 +1,7 @@
 class Costs {
   final String id;
+  final int?
+      accountId; // Campo adicionado para compatibilidade com notificações
   final DateTime data;
   final double preco;
   final String descricaoDaDespesa;
@@ -11,6 +13,7 @@ class Costs {
 
   const Costs({
     required this.id,
+    this.accountId,
     required this.data,
     required this.preco,
     required this.descricaoDaDespesa,
@@ -23,6 +26,7 @@ class Costs {
   factory Costs.fromMap(Map<String, dynamic> map) {
     return Costs(
       id: map['id'] as String,
+      accountId: map['accountId'], // <-- ADICIONAR (pode ser nulo)
       data: DateTime.parse(map['data']),
       preco: (map['preco'] as num).toDouble(),
       descricaoDaDespesa: map['descricaoDaDespesa'] as String,
@@ -36,6 +40,7 @@ class Costs {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'accountId': accountId,
       'data': data.toIso8601String(),
       'preco': preco,
       'descricaoDaDespesa': descricaoDaDespesa,
