@@ -36,12 +36,12 @@ class AccountFormScreenState extends State<AccountFormScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.account?.name);
 
-    // Formata o saldo inicial como moeda
-    final balance = widget.account?.balance ?? 0.0;
-    final formattedBalance =
-        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(balance);
-    _balanceController = TextEditingController(
-        text: widget.account != null ? formattedBalance : '');
+    // Se for edição, mostra o saldo atual formatado; se for novo, campo vazio
+    final balance = widget.account?.balance;
+    final formattedBalance = (balance != null && balance > 0)
+        ? NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(balance)
+        : '';
+    _balanceController = TextEditingController(text: formattedBalance);
 
     _selectedType = widget.account?.type ?? AccountType.checking;
     _selectedIcon = widget.account?.icon ?? Icons.account_balance.codePoint;
@@ -73,15 +73,15 @@ class AccountFormScreenState extends State<AccountFormScreen> {
       final account = Account(
         id: widget.account?.id,
         name: name,
-        balance: balance,
+        balance: 0.0, // <-- Sempre criar conta com saldo 0.0
         type: _selectedType,
         icon: _selectedIcon,
       );
 
-      // Salva a conta e obtém a conta salva com id
+// Salva a conta e obtém a conta salva com id
       final savedAccount = await _service.saveAccount(account);
 
-      // Se for nova conta e saldo > 0, cria receita de saldo inicial
+// Se for nova conta e saldo > 0, cria receita de saldo inicial
       if (isNewAccount && balance > 0) {
         final now = DateTime.now();
         final revenue = Revenues(
