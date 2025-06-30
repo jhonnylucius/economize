@@ -1,3 +1,5 @@
+import 'package:economize/accounts/model/account_model.dart';
+import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
@@ -7,7 +9,6 @@ import 'package:economize/model/costs.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
-import 'package:economize/service/gamification/achievement_checker.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -16,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -34,15 +34,16 @@ class _CostsScreenState extends State<CostsScreen>
   List<Costs> listCosts = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final CostsService _costsService = CostsService();
+  final AccountService _accountService = AccountService(); // <-- Adicionado
   bool _isLoading = false;
   bool _isFiltering = false;
   String _searchQuery = '';
   DateTime? _startDate;
   DateTime? _endDate;
   late AnimationController _animationController;
-  // chaves para tutorial
   final GlobalKey _helpKey = GlobalKey();
 
+  // Categorias (sem alteração)
   static const List<Map<String, dynamic>> _categoriasDespesa = [
     {'icon': Icons.house, 'name': 'Aluguel'},
     {'icon': Icons.shopping_cart, 'name': 'Compras Mensal'},
@@ -107,8 +108,6 @@ class _CostsScreenState extends State<CostsScreen>
     {'icon': Icons.payments, 'name': 'Pagamentos Diversos'},
     {'icon': Icons.more_horiz, 'name': 'Outros'},
   ];
-
-// Adicione esta lista logo após a _categoriasDespesa, na mesma classe:
   static const List<String> _categoriasRecorrentes = [
     'Aluguel',
     'Energia',
@@ -119,22 +118,22 @@ class _CostsScreenState extends State<CostsScreen>
     'Alarme',
     'Compras Mensal',
     'Farmácia',
-    'IPVA', // anual, mas recorrente
-    'IRPF', // anual, mas recorrente
-    'IPTU', // anual, mas recorrente
-    'Impostos', // diversos, recorrentes
+    'IPVA',
+    'IRPF',
+    'IPTU',
+    'Impostos',
     'Supermercado',
-    'Animais de Estimação', // alimentação, vacinas, etc.
+    'Animais de Estimação',
     'Saúde',
     'Hospital',
     'Serviços em Nuvem',
     'Seguro de Vida',
     'Seguro Residencial',
     'Seguro de Carro',
-    'Cartão de Crédito', // fatura mensal
+    'Cartão de Crédito',
     'Empréstimos',
     'Dívidas',
-    'Banco', // tarifas, etc.
+    'Banco',
     'Pagamento Boleto',
     'Pagamento Pix',
     'Pagamento Cartão de Débito',
@@ -148,7 +147,6 @@ class _CostsScreenState extends State<CostsScreen>
     'Assinaturas',
   ];
 
-// Método auxiliar para verificar se uma categoria é recorrente por padrão
   bool _isRecurrentCategory(String category) {
     return _categoriasRecorrentes.contains(category);
   }
@@ -173,13 +171,18 @@ class _CostsScreenState extends State<CostsScreen>
     setState(() => _isLoading = true);
     try {
       final costs = await _costsService.getAllCosts();
-      // Ordenar por data, mais recente primeiro
       costs.sort((a, b) => b.data.compareTo(a.data));
-      setState(() => listCosts = costs);
+      if (mounted) {
+        setState(() => listCosts = costs);
+      }
     } catch (e) {
-      _showErrorDialog('Erro ao carregar despesas: $e');
+      if (mounted) {
+        _showErrorDialog('Erro ao carregar despesas: $e');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -1347,7 +1350,9 @@ class _CostsScreenState extends State<CostsScreen>
                                 // Descrição da despesa
                                 Expanded(
                                   child: Text(
-                                    cost.tipoDespesa,
+                                    (cost.descricaoDaDespesa.isNotEmpty)
+                                        ? cost.descricaoDaDespesa
+                                        : cost.tipoDespesa,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -1629,6 +1634,7 @@ class _CostsScreenState extends State<CostsScreen>
 
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
     bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
+    int? _selectedAccountId = model?.accountId;
 
     void showAchievementSnackbar(List<Achievement> achievements) {
       if (achievements.length == 1) {
@@ -1688,11 +1694,6 @@ class _CostsScreenState extends State<CostsScreen>
         );
       }
     }
-
-    final dateFormatter = MaskTextInputFormatter(
-      mask: '##/##/####',
-      filter: {"#": RegExp(r'[0-9]')},
-    );
 
     await showModalBottomSheet(
       context: context,
@@ -1857,6 +1858,76 @@ class _CostsScreenState extends State<CostsScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
+                      Text('Conta',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 8),
+                      FutureBuilder<List<Account>>(
+                        future: _accountService.getAllAccounts(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text(
+                                'Nenhuma conta encontrada. Crie uma primeiro.');
+                          }
+                          final accounts = snapshot.data!;
+                          // Garante que o valor selecionado seja válido
+                          if (_selectedAccountId != null &&
+                              !accounts
+                                  .any((acc) => acc.id == _selectedAccountId)) {
+                            _selectedAccountId = null;
+                          }
+
+                          return DropdownButtonFormField<int>(
+                            value: _selectedAccountId,
+                            isExpanded: true,
+                            hint: const Text('Selecione uma conta'),
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.account_balance),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                            ),
+                            items: accounts.map((account) {
+                              return DropdownMenuItem<int>(
+                                value: account.id,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                        IconData(account.icon,
+                                            fontFamily: 'MaterialIcons'),
+                                        size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(account.name),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedAccountId = value;
+                              });
+                            },
+                            validator: (value) => value == null
+                                ? 'Por favor, selecione uma conta.'
+                                : null,
+                          );
+                        },
+                      ),
+                      // --- FIM DO NOVO WIDGET ---
+
+                      const SizedBox(height: 20),
 
                       // Campo de Valor
                       Text(
@@ -2156,19 +2227,21 @@ class _CostsScreenState extends State<CostsScreen>
                                   }
 
                                   final cost = Costs(
-                                    id: model?.id ?? const Uuid().v4(),
-                                    data: dataFormatada,
-                                    preco:
-                                        valorNumerico, // ✅ VALOR CORRETO GARANTIDO
-                                    descricaoDaDespesa:
-                                        descricaoController.text.isEmpty
-                                            ? selectedTipo
-                                            : descricaoController.text,
-                                    tipoDespesa: selectedTipo,
-                                    recorrente: recorrente,
-                                    pago: pago,
-                                    category: selectedTipo,
-                                  );
+                                      id: model?.id ?? const Uuid().v4(),
+                                      data: dataFormatada,
+                                      preco:
+                                          valorNumerico, // ✅ VALOR CORRETO GARANTIDO
+                                      descricaoDaDespesa:
+                                          descricaoController.text.isEmpty
+                                              ? selectedTipo
+                                              : descricaoController.text,
+                                      tipoDespesa: selectedTipo,
+                                      recorrente: recorrente,
+                                      pago: pago,
+                                      category: selectedTipo,
+                                      accountId:
+                                          _selectedAccountId // <-- PASSANDO O ID DA CONTA
+                                      );
                                   try {
                                     await _costsService.saveCost(cost);
 
@@ -2206,7 +2279,7 @@ class _CostsScreenState extends State<CostsScreen>
                                     await prefs.setString('last_finance_update',
                                         DateTime.now().toIso8601String());
 
-                                    if (mounted) {
+                                    if (context.mounted) {
                                       Navigator.pop(context);
                                       _showSuccessSnackBar(
                                           'Despesa salva com sucesso!');
@@ -2248,7 +2321,7 @@ class _CostsScreenState extends State<CostsScreen>
 
   Future<void> _removeCost(Costs cost) async {
     try {
-      await _costsService.deleteCost(cost.id);
+      await _costsService.deleteCost((cost.id));
       await Future.delayed(const Duration(milliseconds: 300));
       final updatedCosts = await _costsService.getAllCosts();
       updatedCosts.sort((a, b) => b.data.compareTo(a.data));
