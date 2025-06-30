@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
   String _getRouteForIndex(int index) {
     switch (index) {
       case 0:
-        return '/budget/list';
+        return '/accounts';
       case 1:
         return '/costs';
       case 2:
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen>
       case 8:
         return '/goals';
       case 9:
-        return '/accounts';
+        return '/budget/list';
       default:
         return '';
     }
@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen>
   String _getLabelForIndex(int index) {
     switch (index) {
       case 0:
-        return 'Orçamentos';
+        return 'Contas';
       case 1:
         return 'Despesas';
       case 2:
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen>
       case 8:
         return 'Metas';
       case 9:
-        return 'Contas';
+        return 'Orçamentos';
       default:
         return '';
     }
@@ -262,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen>
   // NOVO: Timer periódico (backup)
   void _setupPeriodicUpdates() {
     _periodicTimer = Timer.periodic(
-      const Duration(minutes: 10), // Atualiza a cada 5minutos
+      const Duration(minutes: 2), // Atualiza a cada 5minutos
       (timer) {
         if (mounted && !isLoadingFinancialData) {
           // ✅ ADICIONAR !isLoadingFinancialData
@@ -384,6 +384,8 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  bool _hasRealPreviousBalance = false;
+
   // Método para carregar o saldo anterior (mês passado ou período anterior)
   Future<void> loadPreviousBalance() async {
     try {
@@ -408,12 +410,12 @@ class _HomeScreenState extends State<HomeScreen>
 
       setState(() {
         _previousBalance = lastMonthTotalRevenues - lastMonthTotalCosts;
+        _hasRealPreviousBalance = true; // <-- só aqui!
       });
     } catch (e) {
       debugPrint('Erro ao carregar saldo anterior: $e');
-      // Em caso de erro, usar saldo ligeiramente diferente do atual para demonstração
-      _previousBalance =
-          _currentBalance * 0.95; // 5% menor que o atual por padrão
+      _previousBalance = _currentBalance * 0.95;
+      _hasRealPreviousBalance = false; // <-- aqui!
     }
   }
 
@@ -977,7 +979,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   size: 16,
                                 ),
                                 // Só mostra a porcentagem se houver saldo anterior diferente de zero
-                                if (_previousBalance != 0) ...[
+                                if (_hasRealPreviousBalance &&
+                                    _previousBalance != 0) ...[
                                   const SizedBox(width: 4),
                                   Text(
                                     _balanceVariationPercent >= 0
@@ -1217,7 +1220,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // Abas de categorias
-  // Abas de categorias
   Widget _buildCategoryTabs(ThemeData theme, ThemeManager themeManager) {
     final bool isDark = themeManager.currentThemeType != ThemeType.light;
 
@@ -1302,10 +1304,10 @@ class _HomeScreenState extends State<HomeScreen>
       // Se for "Principais", mostrar todos os itens
       filteredIndices = List.generate(10, (index) => index);
     } else if (selectedCategoryTab == 1) {
-      filteredIndices = [0, 1, 2, 3, 9]; // <-- ADICIONE O 9 AQUI
+      filteredIndices = [0, 1, 2, 9]; // <-- ADICIONE O 9 AQUI
     } else if (selectedCategoryTab == 2) {
       // Gestão
-      filteredIndices = [4, 5];
+      filteredIndices = [3, 4, 5, 8];
     } else if (selectedCategoryTab == 3) {
       // Relatórios
       filteredIndices = [6, 7];
@@ -1453,11 +1455,10 @@ class _HomeScreenState extends State<HomeScreen>
             itemBuilder: (context, index) {
               // Filtrar por categoria selecionada
               if (selectedCategoryTab != 0) {
-                if (selectedCategoryTab == 1 &&
-                    ![0, 1, 2, 3, 9].contains(index)) {
+                if (selectedCategoryTab == 1 && ![0, 1, 2, 9].contains(index)) {
                   return const SizedBox.shrink();
                 } else if (selectedCategoryTab == 2 &&
-                    ![4, 5].contains(index)) {
+                    ![3, 4, 5, 8].contains(index)) {
                   return const SizedBox.shrink();
                 } else if (selectedCategoryTab == 3 &&
                     ![6, 7].contains(index)) {
@@ -1574,7 +1575,7 @@ class _HomeScreenState extends State<HomeScreen>
   String _getDescriptionForIndex(int index) {
     switch (index) {
       case 0:
-        return 'Gerencie seus orçamentos mensais de forma eficiente.';
+        return 'Gerencie suas contas bancárias e cartões de crédito.';
       case 1:
         return 'Registre e acompanhe todas as suas despesas.';
       case 2:
@@ -1592,7 +1593,7 @@ class _HomeScreenState extends State<HomeScreen>
       case 8:
         return 'Cadastre suas metas e objetivos financeiros.';
       case 9:
-        return 'Gerencie suas contas bancárias e cartões de crédito.';
+        return 'Gerencie seus orçamentos mensais de forma eficiente.';
       default:
         return '';
     }
@@ -2898,7 +2899,7 @@ class _HomeScreenState extends State<HomeScreen>
   IconData _getIconForIndex(int index) {
     switch (index) {
       case 0:
-        return Icons.account_balance_wallet; // Orçamento
+        return Icons.account_balance_wallet_outlined; //contas
       case 1:
         return Icons.money_off; // Despesas
       case 2:
@@ -2916,7 +2917,7 @@ class _HomeScreenState extends State<HomeScreen>
       case 8:
         return Icons.flag; // Metas
       case 9: // <-- NOVO ITEM
-        return Icons.account_balance_wallet_outlined;
+        return Icons.account_balance_wallet; // Orçamento
       default:
         return Icons.apps;
     }
@@ -2959,6 +2960,8 @@ class AppSearchDelegate extends SearchDelegate<String> {
     'Gerenciar Produtos',
     'Dicas Importantes',
     'Tendências',
+    'Metas Financeiras',
+    'Contas', // <-- NOVO ITEM
   ];
 
   @override
@@ -3094,8 +3097,8 @@ class AppSearchDelegate extends SearchDelegate<String> {
   String _getRouteFromSearchResult(String result) {
     // Mapeia os resultados de busca para rotas
     switch (result.toLowerCase()) {
-      case 'orçamentos':
-        return '/budget/list';
+      case 'contas': // <-- NOVO CASE
+        return '/accounts';
       case 'despesas':
         return '/costs';
       case 'receitas':
@@ -3112,8 +3115,8 @@ class AppSearchDelegate extends SearchDelegate<String> {
         return '/trend';
       case 'metas financeiras':
         return '/goals';
-      case 'contas': // <-- NOVO CASE
-        return '/accounts';
+      case 'orçamentos':
+        return '/budget/list';
       default:
         return '/home'; // Rota padrão
     }
