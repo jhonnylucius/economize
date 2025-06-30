@@ -52,19 +52,28 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     {'icon': Icons.credit_card, 'name': 'Salário'},
     {'icon': Icons.attach_money, 'name': '13º Salário'},
     {'icon': Icons.money, 'name': 'Rendimentos'},
-    {'icon': Icons.account_balance, 'name': 'Conta Poupança'},
-    {'icon': Icons.account_balance, 'name': 'Conta Corrente'},
-    {'icon': Icons.account_balance, 'name': 'Conta Digital'},
-    {'icon': Icons.account_balance, 'name': 'Conta Salário'},
-    {'icon': Icons.account_balance, 'name': 'Conta Investimento'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Pagamento'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Criptomoedas'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Ações'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Fundos Imobiliários'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Previdência Privada'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Tesouro Direto'},
-    {'icon': Icons.account_balance, 'name': 'Conta de CDB/LCI/LCA'},
-    {'icon': Icons.account_balance, 'name': 'Conta de Poupança Digital'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta Poupança'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta Corrente'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta Digital'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta Salário'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta Investimento'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Pagamento'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Criptomoedas'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Ações'},
+    {
+      'icon': Icons.account_balance,
+      'name': 'Deposito Conta de Fundos Imobiliários'
+    },
+    {
+      'icon': Icons.account_balance,
+      'name': 'Deposito Conta de Previdência Privada'
+    },
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Tesouro Direto'},
+    {'icon': Icons.account_balance, 'name': 'Deposito Conta de CDB/LCI/LCA'},
+    {
+      'icon': Icons.account_balance,
+      'name': 'Deposito Conta de Poupança Digital'
+    },
     {'icon': Icons.account_balance_wallet, 'name': 'Carteira'},
     {'icon': Icons.receipt, 'name': 'Reembolsos'},
     {'icon': Icons.business_center, 'name': 'Emprego'},
@@ -1041,7 +1050,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     final filteredRevenues = _getFilteredRevenues();
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), // Espaço para os FABs
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 140), // Espaço para os FABs
       itemCount: filteredRevenues.length,
       itemBuilder: (context, index) {
         final revenue = filteredRevenues[index];
@@ -1437,7 +1446,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
     );
     String selectedTipo = model?.tipoReceita ?? _categoriasReceita[0]['name'];
 
-    int? _selectedAccountId = model?.accountId;
+    int? selectedAccountId = model?.accountId;
 
     final dateFormatter = MaskTextInputFormatter(
       mask: '##/##/####',
@@ -1464,11 +1473,11 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                   ),
                 ],
               ),
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                left: 20,
-                right: 20,
-                top: 20,
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                math.max(MediaQuery.of(context).viewInsets.bottom, 24),
               ),
               child: SingleChildScrollView(
                 child: Form(
@@ -1489,77 +1498,6 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // --- NOVO WIDGET: SELETOR DE CONTA ---
-                      Text('Conta',
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 8),
-                      FutureBuilder<List<Account>>(
-                        future: _accountService.getAllAccounts(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Text(
-                                'Nenhuma conta encontrada. Crie uma primeiro.');
-                          }
-                          final accounts = snapshot.data!;
-                          if (_selectedAccountId != null &&
-                              !accounts
-                                  .any((acc) => acc.id == _selectedAccountId)) {
-                            _selectedAccountId = null;
-                          }
-
-                          return DropdownButtonFormField<int>(
-                            value: _selectedAccountId,
-                            isExpanded: true,
-                            hint: const Text('Selecione uma conta'),
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(Icons.account_balance),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300)),
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300)),
-                            ),
-                            items: accounts.map((account) {
-                              return DropdownMenuItem<int>(
-                                value: account.id,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                        IconData(account.icon,
-                                            fontFamily: 'MaterialIcons'),
-                                        size: 20),
-                                    const SizedBox(width: 8),
-                                    Text(account.name),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedAccountId = value;
-                              });
-                            },
-                            validator: (value) => value == null
-                                ? 'Por favor, selecione uma conta.'
-                                : null,
-                          );
-                        },
-                      ),
-                      // --- FIM DO NOVO WIDGET ---
-
-                      const SizedBox(height: 24),
 
                       // Cabeçalho
                       Row(
@@ -1708,7 +1646,73 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                         },
                       ),
                       const SizedBox(height: 20),
+// --- NOVO WIDGET: SELETOR DE CONTA ---
+                      Text('Conta',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 8),
+                      FutureBuilder<List<Account>>(
+                        future: _accountService.getAllAccounts(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text(
+                                'Nenhuma conta encontrada. Crie uma primeiro.');
+                          }
+                          final accounts = snapshot.data!;
+                          if (selectedAccountId != null &&
+                              !accounts
+                                  .any((acc) => acc.id == selectedAccountId)) {
+                            selectedAccountId = null;
+                          }
 
+                          return DropdownButtonFormField<int>(
+                            value: selectedAccountId,
+                            isExpanded: true,
+                            hint: const Text('Selecione uma conta'),
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.account_balance),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                            ),
+                            items: accounts.map((account) {
+                              return DropdownMenuItem<int>(
+                                value: account.id,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                        IconData(account.icon,
+                                            fontFamily: 'MaterialIcons'),
+                                        size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(account.name),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedAccountId = value;
+                              });
+                            },
+                            validator: (value) => value == null
+                                ? 'Por favor, selecione uma conta.'
+                                : null,
+                          );
+                        },
+                      ),
                       // Campo de valor
                       Text(
                         'Valor da Receita',
@@ -1910,7 +1914,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                                     descricaoDaReceita: selectedTipo,
                                     tipoReceita: selectedTipo,
                                     accountId:
-                                        _selectedAccountId, // <-- PASSANDO O ID DA CONTA
+                                        selectedAccountId, // <-- PASSANDO O ID DA CONTA
                                   );
 
                                   try {
