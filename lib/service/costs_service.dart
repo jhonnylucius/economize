@@ -1,3 +1,4 @@
+import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/data/costs_dao.dart';
 import 'package:economize/model/costs.dart';
 import 'package:economize/service/push_notification_service.dart';
@@ -5,6 +6,8 @@ import 'package:flutter/material.dart';
 
 class CostsService {
   final CostsDAO _costsDAO = CostsDAO();
+  final AccountService _accountService =
+      AccountService(); // <-- CRIAR INSTÂNCIA
 
   List<Costs> _cachedCosts = [];
 
@@ -29,15 +32,24 @@ class CostsService {
   }
 
   Future<void> saveCost(Costs cost) async {
+    // 1. Sua lógica existente (perfeita, não vamos mexer)
     await _costsDAO.insert(cost);
     _cachedCosts.add(cost);
-
-    // ADICIONADO: Verificar se precisa de notificação IMEDIATA (APENAS ESTA LINHA)
     if (!cost.pago) {
       await _checkImmediateNotification(cost);
     }
 
-    debugPrint('✅ Despesa salva: ${cost.tipoDespesa}');
+    // 2. ADIÇÃO: Chamar o AccountService para atualizar o saldo
+    if (cost.accountId != null) {
+      await _accountService.handleNewTransaction(
+        accountId: cost.accountId!,
+        amount: cost.preco,
+        isRevenue: false, // É uma despesa
+      );
+    }
+
+    debugPrint(
+        '✅ Despesa salva e saldo da conta atualizado: ${cost.tipoDespesa}');
   }
 
   // NOVO MÉTODO ADICIONADO (NÃO MEXE EM NADA EXISTENTE)
@@ -85,19 +97,43 @@ class CostsService {
     }
   }
 
+  /// Deleta uma despesa e reverte o valor no saldo da conta.
+  /// Deleta uma despesa e reverte o valor no saldo da conta.
   Future<void> deleteCost(String id) async {
-    // APENAS ALTERAR ESTA PARTE: Cancelar notificações antes de deletar
+    Costs? costToDelete;
+
+    // --- CORREÇÃO APLICADA AQUI ---
+    // 1. Tenta encontrar no cache primeiro.
     try {
-      final notificationService = PushNotificationService(); // TROCAR AQUI
-      await notificationService
-          .cancelNotification(id.hashCode); // E TROCAR AQUI
-      debugPrint('✅ Notificações canceladas para despesa: $id');
+      costToDelete = _cachedCosts.firstWhere((c) => c.id == id);
+    } on StateError {
+      // 2. Se não encontrar no cache (StateError), busca no banco.
+      costToDelete = await _costsDAO.findById(id);
+    }
+    // --- FIM DA CORREÇÃO ---
+
+    if (costToDelete == null) {
+      debugPrint('❌ Custo com id $id não encontrado para deletar.');
+      return;
+    }
+
+    try {
+      final notificationService = PushNotificationService();
+      await notificationService.cancelNotification(id.hashCode);
     } catch (e) {
       debugPrint('❌ Erro ao cancelar notificações: $e');
     }
 
     await _costsDAO.delete(id);
-    // Atualizar cache
     _cachedCosts.removeWhere((cost) => cost.id == id);
+
+    if (costToDelete.accountId != null) {
+      await _accountService.handleDeletedTransaction(
+        accountId: costToDelete.accountId!,
+        amount: costToDelete.preco,
+        isRevenue: false,
+      );
+    }
+    debugPrint('✅ Despesa deletada e saldo da conta revertido.');
   }
 }
