@@ -1,4 +1,5 @@
 import 'package:economize/accounts/model/account_model.dart';
+import 'package:economize/accounts/screen/account_form_screen.dart';
 import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/accounts/widgets/account_card.dart';
 import 'package:economize/animations/celebration_animations.dart';
@@ -236,11 +237,47 @@ class _BalanceScreenState extends State<BalanceScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: AccountCard(
                 account: account,
-                onTap: () {
-                  // Navegar para uma tela de detalhes da conta, se desejar
+                onTap: () async {
+                  // Abre o formulário de edição e recarrega ao voltar
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AccountFormScreen(account: account),
+                    ),
+                  );
+                  if (result == true) {
+                    _loadBalanceData();
+                  }
                 },
-                onDelete: () {
-                  // A deleção deve ser feita na tela de gerenciamento de contas
+                onDelete: () async {
+                  // Confirmação antes de excluir
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Excluir Conta'),
+                      content: const Text(
+                          'Tem certeza que deseja excluir esta conta?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancelar'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Excluir'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await _accountService.deleteAccount(account.id!);
+                    _loadBalanceData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Conta excluída!')),
+                      );
+                    }
+                  }
                 },
               ),
             ),
