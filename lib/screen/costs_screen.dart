@@ -2312,6 +2312,8 @@ class _CostsScreenState extends State<CostsScreen>
                           ),
                         ],
                       ),
+                      const SizedBox(
+                          height: 44), // <-- Adicione esta linha aqui!
                     ],
                   ),
                 ),
