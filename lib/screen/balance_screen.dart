@@ -230,60 +230,64 @@ class _BalanceScreenState extends State<BalanceScreen>
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          final account = _accounts[index];
-          return SlideAnimation.fromBottom(
-            delay: Duration(milliseconds: 100 * index),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: AccountCard(
-                account: account,
-                onTap: () async {
-                  // Abre o formulário de edição e recarrega ao voltar
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AccountFormScreen(account: account),
-                    ),
-                  );
-                  if (result == true) {
-                    _loadBalanceData();
-                  }
-                },
-                onDelete: () async {
-                  // Confirmação antes de excluir
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Excluir Conta'),
-                      content: const Text(
-                          'Tem certeza que deseja excluir esta conta?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Cancelar'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Excluir'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    await _accountService.deleteAccount(account.id!);
-                    _loadBalanceData();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Conta excluída!')),
-                      );
+          if (index < _accounts.length) {
+            final account = _accounts[index];
+            return SlideAnimation.fromBottom(
+              delay: Duration(milliseconds: 100 * index),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: AccountCard(
+                  account: account,
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AccountFormScreen(account: account),
+                      ),
+                    );
+                    if (result == true) {
+                      _loadBalanceData();
                     }
-                  }
-                },
+                  },
+                  onDelete: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Excluir Conta'),
+                        content: const Text(
+                            'Tem certeza que deseja excluir esta conta?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Excluir'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await _accountService.deleteAccount(account.id!);
+                      _loadBalanceData();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Conta excluída!')),
+                        );
+                      }
+                    }
+                  },
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            // Espaço extra no final da lista
+            return const SizedBox(height: 100);
+          }
         },
-        childCount: _accounts.length,
+        childCount: _accounts.length + 1, // +1 para o espaço extra
       ),
     );
   }
