@@ -57,30 +57,29 @@ class ThemeSelector extends StatelessWidget {
               ),
               // O filho do Theme é a coluna com os RadioListTiles
               child: Column(
-                children:
-                    ThemeType.values.map((themeType) {
-                      return RadioListTile<ThemeType>(
-                        title: Text(
-                          themeType.displayName,
-                          style: TextStyle(
-                            color: currentTheme.colorScheme.onSurface,
-                          ),
-                        ),
-                        value: themeType,
-                        groupValue: themeManager.currentThemeType,
-                        // activeColor: currentTheme.colorScheme.primary, // Removido: Agora controlado pelo fillColor no Theme override
-                        onChanged: (ThemeType? value) async {
-                          if (value != null &&
-                              value != themeManager.currentThemeType) {
-                            await themeManager.setTheme(value);
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                          }
-                        },
-                        secondary: _buildThemePreview(themeType, currentTheme),
-                      );
-                    }).toList(),
+                children: ThemeType.values.map((themeType) {
+                  return RadioListTile<ThemeType>(
+                    title: Text(
+                      themeType.displayName,
+                      style: TextStyle(
+                        color: currentTheme.colorScheme.onSurface,
+                      ),
+                    ),
+                    value: themeType,
+                    groupValue: themeManager.currentThemeType,
+                    // activeColor: currentTheme.colorScheme.primary, // Removido: Agora controlado pelo fillColor no Theme override
+                    onChanged: (ThemeType? value) async {
+                      if (value != null &&
+                          value != themeManager.currentThemeType) {
+                        await themeManager.setTheme(value);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    secondary: _buildThemePreview(themeType, currentTheme),
+                  );
+                }).toList(),
               ),
             ),
             // *** FIM DA MODIFICAÇÃO LOCAL DO TEMA ***
@@ -94,19 +93,18 @@ class ThemeSelector extends StatelessWidget {
   Widget _buildThemePreview(ThemeType themeType, ThemeData currentTheme) {
     Color previewColor = _getPreviewColor(themeType);
     Color borderColor;
-    final isPreviewSimilarToSurface =
-        (previewColor.computeLuminance() -
+    final isPreviewSimilarToSurface = (previewColor.computeLuminance() -
                 currentTheme.colorScheme.surface.computeLuminance())
             .abs() <
         0.2;
 
     if (isPreviewSimilarToSurface) {
-      borderColor = currentTheme.colorScheme.onSurface.withOpacity(0.5);
-    } else {
       borderColor =
-          previewColor.computeLuminance() > 0.5
-              ? Colors.grey[600]!
-              : Colors.grey[300]!;
+          currentTheme.colorScheme.onSurface.withAlpha((0.5 * 255).toInt());
+    } else {
+      borderColor = previewColor.computeLuminance() > 0.5
+          ? Colors.grey[600]!
+          : Colors.grey[300]!;
     }
 
     return Container(
