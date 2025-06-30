@@ -49,24 +49,23 @@ class PdfService {
     final sortedItems = _getSortedItems(budget);
 
     // Gerar linhas
-    final rows =
-        sortedItems.asMap().entries.map((entry) {
-          final index = entry.key + 1;
-          final item = entry.value;
-          final bestLocation = budget.locations.firstWhere(
-            (loc) => loc.id == item.bestPriceLocation,
-          );
+    final rows = sortedItems.asMap().entries.map((entry) {
+      final index = entry.key + 1;
+      final item = entry.value;
+      final bestLocation = budget.locations.firstWhere(
+        (loc) => loc.id == item.bestPriceLocation,
+      );
 
-          return [
-            index.toString(),
-            item.name,
-            ...budget.locations.map(
-              (loc) => currencyFormat.format(item.prices[loc.id] ?? 0),
-            ),
-            bestLocation.name,
-            currencyFormat.format(item.bestPrice),
-          ];
-        }).toList();
+      return [
+        index.toString(),
+        item.name,
+        ...budget.locations.map(
+          (loc) => currencyFormat.format(item.prices[loc.id] ?? 0),
+        ),
+        bestLocation.name,
+        currencyFormat.format(item.bestPrice),
+      ];
+    }).toList();
 
     // Adicionar linha de totais
     final locationTotals = <String, double>{};
@@ -97,14 +96,13 @@ class PdfService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.all(20),
-        build:
-            (context) => [
-              _buildHeader(budget),
-              pw.SizedBox(height: 10),
-              _buildSummaryCard(budget),
-              pw.SizedBox(height: 16),
-              _buildTable(headers, rows),
-            ],
+        build: (context) => [
+          _buildHeader(budget),
+          pw.SizedBox(height: 10),
+          _buildSummaryCard(budget),
+          pw.SizedBox(height: 16),
+          _buildTable(headers, rows),
+        ],
       ),
     );
 
@@ -196,40 +194,37 @@ class PdfService {
         // Cabeçalho
         pw.TableRow(
           decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          children:
-              headers
-                  .map(
-                    (header) => pw.Container(
-                      padding: const pw.EdgeInsets.all(8),
-                      child: pw.Text(
-                        header,
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        textAlign: pw.TextAlign.center,
-                      ),
-                    ),
-                  )
-                  .toList(),
+          children: headers
+              .map(
+                (header) => pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  child: pw.Text(
+                    header,
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ),
+              )
+              .toList(),
         ),
         // Linhas de dados
         ...rows.asMap().entries.map((entry) {
           final isLastRow = entry.key == rows.length - 1;
           return pw.TableRow(
-            decoration:
-                isLastRow
-                    ? const pw.BoxDecoration(color: PdfColors.grey200)
-                    : null,
-            children:
-                entry.value
-                    .map(
-                      (cell) => pw.Container(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(
-                          cell.toString(),
-                          textAlign: pw.TextAlign.center,
-                        ),
-                      ),
-                    )
-                    .toList(),
+            decoration: isLastRow
+                ? const pw.BoxDecoration(color: PdfColors.grey200)
+                : null,
+            children: entry.value
+                .map(
+                  (cell) => pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                      cell.toString(),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ),
+                )
+                .toList(),
           );
         }),
       ],
