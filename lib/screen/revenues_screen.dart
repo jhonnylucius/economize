@@ -1965,6 +1965,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           ),
                         ],
                       ),
+                      const SizedBox(
+                          height: 44), // <-- Adicione esta linha aqui!
                     ],
                   ),
                 ),
