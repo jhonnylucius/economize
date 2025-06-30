@@ -1,3 +1,4 @@
+import 'package:economize/accounts/screen/accounts_list_screen.dart';
 import 'package:economize/features/financial_education/screens/goal_calculator_screen.dart';
 import 'package:economize/features/financial_education/screens/tips_screen.dart';
 import 'package:economize/model/budget/budget.dart';
@@ -40,7 +41,6 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.initialize();
 
-  // ADICIONAR ESTAS 2 LINHAS:
   final scheduler = NotificationScheduler();
   await scheduler.initialize();
 
@@ -87,32 +87,13 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Economize',
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: themeManager.currentTheme.colorScheme,
-            appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            cardTheme: CardTheme(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            scaffoldBackgroundColor:
-                themeManager.currentTheme.scaffoldBackgroundColor,
-            brightness: themeManager.currentTheme.brightness,
-          ),
+          theme: themeManager.currentTheme,
           initialRoute: '/',
           routes: {
             '/': (context) => const SplashScreen(),
             '/home': (context) => const HomeScreen(),
+            '/accounts': (context) =>
+                const AccountsListScreen(), // <-- NOVA ROTA AQUI
             '/dashboard': (context) => const DashBoardScreen(),
             '/costs': (context) => const CostsScreen(),
             '/revenues': (context) => const RevenuesScreen(),
