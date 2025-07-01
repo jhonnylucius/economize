@@ -969,7 +969,7 @@ class _ReportScreenState extends State<ReportScreen>
                 crossAxisCount: 2,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 0.85,
+                childAspectRatio: 0.7,
               ),
               itemCount: _reportData.length,
               itemBuilder: (context, index) {
@@ -1010,53 +1010,38 @@ class _ReportScreenState extends State<ReportScreen>
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Ícone e Valor
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: (_selectedType == 'receitas'
-                              ? Colors.green
-                              : Colors.red)
+              // Ícone centralizado
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      (_selectedType == 'receitas' ? Colors.green : Colors.red)
                           .withAlpha((0.2 * 255).toInt()),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      _selectedType == 'receitas'
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      color: _selectedType == 'receitas'
-                          ? Colors.green
-                          : Colors.red,
-                      size: 20,
-                    ),
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 216, 78, 196)
-                          .withAlpha((0.15 * 255).toInt()),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      _currencyFormat.format(amount),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Color.fromARGB(255, 216, 78, 196),
-                      ),
-                    ),
-                  ),
-                ],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  _selectedType == 'receitas'
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
+                  color:
+                      _selectedType == 'receitas' ? Colors.green : Colors.red,
+                  size: 28,
+                ),
               ),
-
-              const SizedBox(height: 12),
-
+              const SizedBox(height: 8),
+              // Valor logo abaixo do ícone
+              Text(
+                _currencyFormat.format(amount),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color.fromARGB(255, 216, 78, 196),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
               // Título
               Text(
                 titleText,
@@ -1067,10 +1052,9 @@ class _ReportScreenState extends State<ReportScreen>
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 6),
-
               // Subtítulo
               Text(
                 subtitleText,
@@ -1080,10 +1064,9 @@ class _ReportScreenState extends State<ReportScreen>
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
-
               const Spacer(),
-
               // Tipo
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1452,6 +1435,7 @@ class _ReportScreenState extends State<ReportScreen>
   }
 }
 
+// ignore: unused_element
 class _PatternPainter extends CustomPainter {
   final Color color;
   final math.Random random = math.Random(42); // Seed fixo para padrão estático
