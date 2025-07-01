@@ -1918,7 +1918,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                                   );
 
                                   try {
-                                    await _revenuesService.saveRevenue(revenue);
+                                    await _revenuesService.saveRevenue(
+                                        revenue, _accountService);
 
                                     final newAchievements =
                                         await AchievementService
@@ -1980,7 +1981,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
 
   Future<void> _removeRevenue(Revenues revenue) async {
     try {
-      await _revenuesService.deleteRevenue(revenue.id);
+      await _revenuesService.deleteRevenue(revenue.id, _accountService);
       await Future.delayed(const Duration(milliseconds: 300));
       final updatedRevenues = await _revenuesService.getAllRevenues();
       updatedRevenues.sort((a, b) => b.data.compareTo(a.data));
