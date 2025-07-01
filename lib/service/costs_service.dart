@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 
 class CostsService {
   final CostsDAO _costsDAO = CostsDAO();
-  final AccountService _accountService =
-      AccountService(); // <-- CRIAR INSTÂNCIA
 
   List<Costs> _cachedCosts = [];
 
@@ -31,20 +29,19 @@ class CostsService {
     }
   }
 
-  Future<void> saveCost(Costs cost) async {
-    // 1. Sua lógica existente (perfeita, não vamos mexer)
+  Future<void> saveCost(Costs cost, AccountService accountService) async {
     await _costsDAO.insert(cost);
     _cachedCosts.add(cost);
     if (!cost.pago) {
       await _checkImmediateNotification(cost);
     }
 
-    // 2. ADIÇÃO: Chamar o AccountService para atualizar o saldo
     if (cost.accountId != null) {
-      await _accountService.handleNewTransaction(
+      await accountService.handleNewTransaction(
         accountId: cost.accountId!,
         amount: cost.preco,
-        isRevenue: false, // É uma despesa
+        isRevenue: false,
+        date: cost.data,
       );
     }
 
@@ -98,19 +95,13 @@ class CostsService {
   }
 
   /// Deleta uma despesa e reverte o valor no saldo da conta.
-  /// Deleta uma despesa e reverte o valor no saldo da conta.
-  Future<void> deleteCost(String id) async {
+  Future<void> deleteCost(String id, AccountService accountService) async {
     Costs? costToDelete;
-
-    // --- CORREÇÃO APLICADA AQUI ---
-    // 1. Tenta encontrar no cache primeiro.
     try {
       costToDelete = _cachedCosts.firstWhere((c) => c.id == id);
     } on StateError {
-      // 2. Se não encontrar no cache (StateError), busca no banco.
       costToDelete = await _costsDAO.findById(id);
     }
-    // --- FIM DA CORREÇÃO ---
 
     if (costToDelete == null) {
       debugPrint('❌ Custo com id $id não encontrado para deletar.');
@@ -128,7 +119,7 @@ class CostsService {
     _cachedCosts.removeWhere((cost) => cost.id == id);
 
     if (costToDelete.accountId != null) {
-      await _accountService.handleDeletedTransaction(
+      await accountService.handleDeletedTransaction(
         accountId: costToDelete.accountId!,
         amount: costToDelete.preco,
         isRevenue: false,
