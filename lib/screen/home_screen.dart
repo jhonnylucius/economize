@@ -688,9 +688,9 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             BottomNavigationBarItem(
               icon: ScaleAnimation.bounceIn(
-                child: Icon(Icons.flag, color: theme.colorScheme.primary),
+                child: Icon(Icons.swap_horiz, color: theme.colorScheme.primary),
               ),
-              label: 'Metas',
+              label: 'Transferir',
             ),
             // BOTÃO CENTRAL ÉPICO! 🎯
             BottomNavigationBarItem(
@@ -746,7 +746,7 @@ class _HomeScreenState extends State<HomeScreen>
                 _showThemeSelector(context);
                 break;
               case 1:
-                Navigator.pushNamed(context, '/goals');
+                Navigator.pushNamed(context, '/transfers');
                 break;
               case 2:
                 // 🎭 MENU ÉPICO!
@@ -1568,77 +1568,82 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  // Painel flutuante com dica
   Widget _buildFloatingTipPanel(ThemeData theme, ThemeManager themeManager) {
     final isDark = themeManager.currentThemeType != ThemeType.light;
 
     return ValueListenableBuilder<bool>(
       valueListenable: _showFloatingPanel,
       builder: (context, show, child) {
-        return AnimatedPositioned(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-          bottom: show ? 85 : -100,
-          right: 16,
-          left: 16,
-          child: GlassContainer(
-            frostedEffect: true,
-            borderRadius: 16,
-            opacity: isDark ? 0.15 : 0.1, // Ajustado para melhor visibilidade
-            borderColor:
-                isDark ? Colors.white.withAlpha((0.2 * 255).round()) : null,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: themeManager
-                          .getCurrentPrimaryColor()
-                          .withAlpha((0.2 * 255).round()),
-                      shape: BoxShape.circle,
-                    ),
-                    child: PulseAnimation(
-                      minScale: 0.9,
-                      maxScale: 1.1,
-                      child: Icon(
-                        Icons.lightbulb_outline,
-                        color: themeManager.getCurrentPrimaryColor(),
-                        size: 20,
-                      ),
+        if (!show) return const SizedBox.shrink();
+
+        return SafeArea(
+          bottom: true,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                16, 0, 16, 80), // 80 para não sobrepor o BottomNavBar
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 400),
+                offset: show ? Offset.zero : const Offset(0, 1.2),
+                curve: Curves.easeInOut,
+                child: GlassContainer(
+                  frostedEffect: true,
+                  borderRadius: 16,
+                  opacity: isDark ? 0.15 : 0.1,
+                  borderColor: Colors.transparent, // Borda transparente
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: themeManager
+                                .getCurrentPrimaryColor()
+                                .withAlpha((0.2 * 255).round()),
+                            shape: BoxShape.circle,
+                          ),
+                          child: PulseAnimation(
+                            minScale: 0.9,
+                            maxScale: 1.1,
+                            child: Icon(
+                              Icons.lightbulb_outline,
+                              color: themeManager.getCurrentPrimaryColor(),
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Se precisar de ajuda, toque no símbolo de interrogação (?) no canto superior direito de cada tela.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark
+                                  ? themeManager.getCurrentPrimaryColor()
+                                  : theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            color: isDark
+                                ? themeManager.getCurrentPrimaryColor()
+                                : theme.colorScheme.onSurface
+                                    .withAlpha((0.7 * 255).round()),
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            _showFloatingPanel.value = false;
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Se precisar de ajuda, toque no simbolo de interrogação(?) no canto superior direito de cada tela.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        // Usar a cor primária para texto no modo escuro
-                        color: isDark
-                            ? themeManager.getCurrentPrimaryColor()
-                            : theme.colorScheme.onSurface,
-                        fontWeight: FontWeight
-                            .w500, // Aumentado para melhor legibilidade
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      // Usar a cor primária para o ícone de fechar no modo escuro
-                      color: isDark
-                          ? themeManager.getCurrentPrimaryColor()
-                          : theme.colorScheme.onSurface
-                              .withAlpha((0.7 * 255).round()),
-                      size: 18,
-                    ),
-                    onPressed: () {
-                      _showFloatingPanel.value = false;
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -3648,7 +3653,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.105'),
+            const Text('Versão: 1.0.106'),
             const SizedBox(height: 8),
             const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
             const SizedBox(height: 8),
