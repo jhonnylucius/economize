@@ -2247,7 +2247,8 @@ class _CostsScreenState extends State<CostsScreen>
                                           selectedAccountId // <-- PASSANDO O ID DA CONTA
                                       );
                                   try {
-                                    await _costsService.saveCost(cost);
+                                    await _costsService.saveCost(
+                                        cost, _accountService);
 
                                     final newAchievements =
                                         await AchievementService
@@ -2327,7 +2328,7 @@ class _CostsScreenState extends State<CostsScreen>
 
   Future<void> _removeCost(Costs cost) async {
     try {
-      await _costsService.deleteCost((cost.id));
+      await _costsService.deleteCost(cost.id, _accountService);
       await Future.delayed(const Duration(milliseconds: 300));
       final updatedCosts = await _costsService.getAllCosts();
       updatedCosts.sort((a, b) => b.data.compareTo(a.data));
