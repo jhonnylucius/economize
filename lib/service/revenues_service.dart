@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 class RevenuesService {
   final RevenuesDAO _revenuesDAO = RevenuesDAO();
-  final AccountService _accountService = AccountService();
 
   List<Revenues> _cachedRevenues = [];
 
@@ -29,17 +28,17 @@ class RevenuesService {
   }
 
   /// Salva uma nova receita e atualiza o saldo da conta.
-  Future<void> saveRevenue(Revenues revenue) async {
-    // 1. Sua lógica existente
+  Future<void> saveRevenue(
+      Revenues revenue, AccountService accountService) async {
     await _revenuesDAO.insert(revenue);
     _cachedRevenues.add(revenue);
 
-    // 2. Integração com o AccountService
     if (revenue.accountId != null) {
-      await _accountService.handleNewTransaction(
+      await accountService.handleNewTransaction(
         accountId: revenue.accountId!,
         amount: revenue.preco,
-        isRevenue: true, // É uma receita
+        isRevenue: true,
+        date: revenue.data,
       );
     }
 
@@ -47,18 +46,13 @@ class RevenuesService {
   }
 
   /// Deleta uma receita e reverte o valor no saldo da conta.
-  Future<void> deleteRevenue(String id) async {
+  Future<void> deleteRevenue(String id, AccountService accountService) async {
     Revenues? revenueToDelete;
-
-    // --- CORREÇÃO APLICADA AQUI ---
-    // 1. Tenta encontrar no cache primeiro.
     try {
       revenueToDelete = _cachedRevenues.firstWhere((r) => r.id == id);
     } on StateError {
-      // 2. Se não encontrar no cache (StateError), busca no banco.
       revenueToDelete = await _revenuesDAO.findById(id);
     }
-    // --- FIM DA CORREÇÃO ---
 
     if (revenueToDelete == null) {
       debugPrint('❌ Receita com id $id não encontrada para deletar.');
@@ -69,7 +63,7 @@ class RevenuesService {
     _cachedRevenues.removeWhere((revenue) => revenue.id == id);
 
     if (revenueToDelete.accountId != null) {
-      await _accountService.handleDeletedTransaction(
+      await accountService.handleDeletedTransaction(
         accountId: revenueToDelete.accountId!,
         amount: revenueToDelete.preco,
         isRevenue: true,
