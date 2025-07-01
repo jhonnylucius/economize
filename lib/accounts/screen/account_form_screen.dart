@@ -92,7 +92,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
           descricaoDaReceita: 'Saldo Inicial',
           tipoReceita: 'Saldo Inicial',
         );
-        await _revenuesService.saveRevenue(revenue);
+        await _revenuesService.saveRevenue(revenue, _service);
       }
 
       if (mounted) {
