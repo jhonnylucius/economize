@@ -1,4 +1,6 @@
 import 'package:economize/accounts/screen/accounts_list_screen.dart';
+import 'package:economize/accounts/screen/transfer_screen.dart';
+import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/features/financial_education/screens/goal_calculator_screen.dart';
 import 'package:economize/features/financial_education/screens/tips_screen.dart';
 import 'package:economize/model/budget/budget.dart';
@@ -94,6 +96,23 @@ class MyApp extends StatelessWidget {
             '/home': (context) => const HomeScreen(),
             '/accounts': (context) =>
                 const AccountsListScreen(), // <-- NOVA ROTA AQUI
+            '/transfers': (context) {
+              final accountService = AccountService();
+              return FutureBuilder(
+                future: accountService.getAllAccounts(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  return TransferScreen(
+                    accounts: snapshot.data!,
+                    accountService: accountService,
+                  );
+                },
+              );
+            },
             '/dashboard': (context) => const DashBoardScreen(),
             '/costs': (context) => const CostsScreen(),
             '/revenues': (context) => const RevenuesScreen(),
