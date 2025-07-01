@@ -6,8 +6,8 @@ class ThemeManager with ChangeNotifier {
   static const String _themeKey = 'app_theme';
 
   // Alteração do tema padrão para roxoEscuro
-  ThemeType _currentThemeType = ThemeType.roxoEscuro;
-  ThemeData _currentTheme = AppThemes.roxoEscuro;
+  ThemeType _currentThemeType = ThemeType.light;
+  ThemeData _currentTheme = AppThemes.light;
 
   ThemeType get currentThemeType => _currentThemeType;
   ThemeData get currentTheme => _currentTheme;
