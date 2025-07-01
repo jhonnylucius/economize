@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/push_notification_service.dart';
 import 'package:economize/model/costs.dart'; // ADICIONAR ESTE IMPORT
@@ -16,6 +17,12 @@ class NotificationScheduler {
 
   Timer? _dailyTimer;
   bool _isInitialized = false;
+
+  late AccountService _accountService;
+
+  void setAccountService(AccountService service) {
+    _accountService = service;
+  }
 
   /// Inicializa o scheduler que roda diariamente às 9h
   Future<void> initialize() async {
@@ -191,7 +198,7 @@ class NotificationScheduler {
           );
 
           // Salvar a nova despesa
-          await _costsService.saveCost(newRecurrentCost);
+          await _costsService.saveCost(newRecurrentCost, _accountService);
 
           debugPrint(
               '✅ Nova despesa recorrente criada: ${newRecurrentCost.tipoDespesa} para $nextMonthDate');
