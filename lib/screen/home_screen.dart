@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen>
       debugPrint('🔄 Atualizando dados financeiros...');
 
       // Obter receitas e despesas
-      final costs = await _costsService.getAllCosts();
+      final costs = await _costsService.getCostsForCalculations();
       final revenues = await _revenuesService.getAllRevenues();
 
       debugPrint('💰 Receitas encontradas: ${revenues.length}');
@@ -1617,7 +1617,7 @@ class _HomeScreenState extends State<HomeScreen>
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Se precisar de ajuda, toque no símbolo de interrogação (?) no canto superior direito de cada tela.',
+                            '🏦 Primeiro passo: cadastre suas contas (bancos, carteira, poupança, etc.). Depois, ao registrar receitas e despesas, vincule-as às contas correspondentes. Assim você terá controle total de onde está cada centavo! 💡 Precisa de ajuda? Toque no ícone (?) em qualquer tela.',
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark
@@ -3653,7 +3653,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.106'),
+            const Text('Versão: 1.0.108'),
             const SizedBox(height: 8),
             const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
             const SizedBox(height: 8),
