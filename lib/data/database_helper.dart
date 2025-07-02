@@ -10,8 +10,8 @@ class DatabaseHelper {
   static Database? _database;
   static final logger = Logger();
 
-  // Versão ATUALIZADA do banco. A próxima será 17.
-  static const int _currentVersion = 16;
+  // ✅ VERSÃO ATUALIZADA - INCREMENTEI PARA 17
+  static const int _currentVersion = 17;
 
   // --- SEÇÃO DE CRIAÇÃO DE TABELAS (QUERIES COMO STRING) ---
   // Centralizamos aqui todas as queries que são strings estáticas.
@@ -68,6 +68,7 @@ class DatabaseHelper {
         FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE
       )
     ''',
+    // ✅ TABELA COSTS ATUALIZADA COM OS NOVOS CAMPOS
     'costs': '''
     CREATE TABLE costs(
       id TEXT PRIMARY KEY,
@@ -78,7 +79,9 @@ class DatabaseHelper {
       tipoDespesa TEXT NOT NULL,
       recorrente INTEGER DEFAULT 0,
       pago INTEGER DEFAULT 0,
-      category TEXT
+      category TEXT,
+      isLancamentoFuturo INTEGER DEFAULT 0,
+      recorrenciaOrigemId TEXT
     )
   ''',
     'revenues': '''
@@ -171,6 +174,13 @@ class DatabaseHelper {
         'CREATE INDEX IF NOT EXISTS idx_revenues_data ON revenues(data)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_price_history ON price_history(item_id, location_id, date)');
+    // ✅ NOVOS ÍNDICES PARA RECORRÊNCIA
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_costs_recorrente ON costs(recorrente)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_costs_futuro ON costs(isLancamentoFuturo)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_costs_origem ON costs(recorrenciaOrigemId)');
 
     // 4. Popula com dados iniciais
     logger.d("Populando com dados iniciais...");
@@ -220,6 +230,28 @@ class DatabaseHelper {
         await db.execute('ALTER TABLE revenues ADD COLUMN accountId INTEGER');
       } catch (e) {
         logger.e('[V16] Erro durante a migração para a V16: $e');
+      }
+    }
+
+    // ✅ NOVA MIGRAÇÃO PARA V17 - CAMPOS DE RECORRÊNCIA
+    if (oldVersion < 17) {
+      logger.i("🔄 [Migrando para V17] Adicionando campos de recorrência...");
+      try {
+        // Adiciona os novos campos para despesas recorrentes
+        await db.execute(
+            'ALTER TABLE costs ADD COLUMN isLancamentoFuturo INTEGER DEFAULT 0');
+        await db
+            .execute('ALTER TABLE costs ADD COLUMN recorrenciaOrigemId TEXT');
+
+        // Cria índices para melhor performance
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_costs_futuro ON costs(isLancamentoFuturo)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_costs_origem ON costs(recorrenciaOrigemId)');
+
+        logger.i("✅ [V17] Campos de recorrência adicionados com sucesso!");
+      } catch (e) {
+        logger.e('[V17] Erro durante a migração para a V17: $e');
       }
     }
 
