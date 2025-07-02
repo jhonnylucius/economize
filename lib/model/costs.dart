@@ -10,8 +10,10 @@ class Costs {
   final bool pago; // Campo adicionado
   final String?
       category; // Campo adicionado para compatibilidade com notificações
+  bool isLancamentoFuturo; // ✅ NOVO CAMPO
+  String? recorrenciaOrigemId; // ✅ Para vincular à despesa original
 
-  const Costs({
+  Costs({
     required this.id,
     this.accountId,
     required this.data,
@@ -21,6 +23,8 @@ class Costs {
     this.recorrente = false,
     this.pago = false,
     this.category, // Pode ser nulo, usará tipoDespesa se necessário
+    this.isLancamentoFuturo = false, // Inicializado como falso
+    this.recorrenciaOrigemId, // Inicializado como nulo
   });
 
   factory Costs.fromMap(Map<String, dynamic> map) {
@@ -34,6 +38,8 @@ class Costs {
       recorrente: (map['recorrente'] as int? ?? 0) == 1,
       pago: (map['pago'] as int? ?? 0) == 1,
       category: map['category'] as String?,
+      isLancamentoFuturo: (map['isLancamentoFuturo'] as int? ?? 0) == 1,
+      recorrenciaOrigemId: map['recorrenciaOrigemId'] as String?,
     );
   }
 
@@ -48,6 +54,8 @@ class Costs {
       'recorrente': recorrente ? 1 : 0,
       'pago': pago ? 1 : 0,
       'category': category ?? tipoDespesa,
+      'isLancamentoFuturo': isLancamentoFuturo ? 1 : 0,
+      'recorrenciaOrigemId': recorrenciaOrigemId,
     };
   }
 
@@ -60,6 +68,8 @@ class Costs {
     bool? recorrente,
     bool? pago,
     String? category,
+    bool? isLancamentoFuturo,
+    String? recorrenciaOrigemId,
   }) {
     return Costs(
       id: id ?? this.id,
@@ -70,6 +80,8 @@ class Costs {
       recorrente: recorrente ?? this.recorrente,
       pago: pago ?? this.pago,
       category: category ?? this.category,
+      isLancamentoFuturo: isLancamentoFuturo ?? this.isLancamentoFuturo,
+      recorrenciaOrigemId: recorrenciaOrigemId ?? this.recorrenciaOrigemId,
     );
   }
 
@@ -78,6 +90,12 @@ class Costs {
   String get categoryValue => category ?? tipoDespesa;
   DateTime? get dueDate =>
       data; // Para compatibilidade com o serviço de notificações
+  String get notificationId =>
+      id; // Para compatibilidade com o serviço de notificações
+  String get notificationTitle =>
+      descricaoDaDespesa; // Para compatibilidade com o serviço de notificações
+  String get notificationBody =>
+      'Despesa: $descricaoDaDespesa, Valor: R\$ $preco, Data: ${data.toLocal()}'; // Para compatibilidade com o serviço de notificações
 
   @override
   bool operator ==(Object other) =>
@@ -104,5 +122,5 @@ class Costs {
 
   @override
   String toString() =>
-      'Costs(id: $id, data: $data, preco: $preco, descricao: $descricaoDaDespesa, tipo: $tipoDespesa, recorrente: $recorrente, pago: $pago)';
+      'Costs(id: $id, data: $data, preco: $preco, descricao: $descricaoDaDespesa, tipo: $tipoDespesa, recorrente: $recorrente, pago: $pago, isLancamentoFuturo: $isLancamentoFuturo, recorrenciaOrigemId: $recorrenciaOrigemId)';
 }
