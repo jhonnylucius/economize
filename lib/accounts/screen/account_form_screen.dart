@@ -4,7 +4,9 @@ import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/accounts/widgets/icon_picker.dart';
 import 'package:economize/animations/glass_container.dart';
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
+import 'package:economize/model/costs.dart';
 import 'package:economize/model/revenues.dart';
+import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +57,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
   }
 
   final RevenuesService _revenuesService = RevenuesService();
+  final CostsService _costsService = CostsService();
 
   Future<void> _saveAccount() async {
     if (_formKey.currentState!.validate()) {
@@ -69,19 +72,20 @@ class AccountFormScreenState extends State<AccountFormScreen> {
       final balance = double.tryParse(valorTexto) ?? 0.0;
 
       final isNewAccount = widget.account == null;
+      final oldBalance = widget.account?.balance ?? 0.0;
 
       final account = Account(
         id: widget.account?.id,
         name: name,
-        balance: 0.0, // <-- Sempre criar conta com saldo 0.0
+        balance: isNewAccount ? 0.0 : oldBalance,
         type: _selectedType,
         icon: _selectedIcon,
       );
 
-// Salva a conta e obtém a conta salva com id
+      // Salva a conta e obtém a conta salva com id
       final savedAccount = await _service.saveAccount(account);
 
-// Se for nova conta e saldo > 0, cria receita de saldo inicial
+      // Se for nova conta e saldo > 0, cria receita de saldo inicial
       if (isNewAccount && balance > 0) {
         final now = DateTime.now();
         final revenue = Revenues(
@@ -93,6 +97,38 @@ class AccountFormScreenState extends State<AccountFormScreen> {
           tipoReceita: 'Saldo Inicial',
         );
         await _revenuesService.saveRevenue(revenue, _service);
+      }
+
+      // Se for edição e o saldo mudou, lança receita ou despesa da diferença
+      if (!isNewAccount && balance != oldBalance) {
+        final now = DateTime.now();
+        final diff = balance - oldBalance;
+        if (diff > 0) {
+          // Lançar receita da diferença
+          final revenue = Revenues(
+            id: const Uuid().v4(),
+            accountId: savedAccount.id,
+            data: now,
+            preco: diff,
+            descricaoDaReceita: 'Ajuste de saldo manual',
+            tipoReceita: 'Ajuste Manual',
+          );
+          await _revenuesService.saveRevenue(revenue, _service);
+        } else if (diff < 0) {
+          // Lançar despesa da diferença (valor positivo)
+          final cost = Costs(
+            id: const Uuid().v4(),
+            accountId: savedAccount.id,
+            data: now,
+            preco: diff.abs(),
+            descricaoDaDespesa: 'Ajuste de saldo manual',
+            tipoDespesa: 'Ajuste Manual',
+            recorrente: false,
+            pago: true,
+            category: 'Ajuste Manual',
+          );
+          await _costsService.saveCost(cost, _service);
+        }
       }
 
       if (mounted) {
