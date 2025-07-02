@@ -1,6 +1,6 @@
+import 'package:economize/accounts/enum/account_type.dart';
 import 'package:economize/accounts/model/account_model.dart';
 import 'package:economize/accounts/service/account_service.dart';
-import 'package:economize/accounts/widgets/account_selector.dart';
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/glass_container.dart';
@@ -120,37 +120,50 @@ class DashBoardScreenState extends State<DashBoardScreen>
     });
   }
 
+  // ✅ TAMBÉM CORRIGIR O MÉTODO _loadFilteredData para garantir que carregue dados:
   Future<void> _loadFilteredData() async {
     setState(() => _isLoadingCard = true);
 
-    if (_selectedTipo == 'receitas') {
-      final revenues = await RevenuesService().getAllRevenues();
-      _filteredRevenues = revenues.where((r) {
-        final matchAccount = _selectedAccountId == null ||
-            r.accountId?.toString() == _selectedAccountId;
-        final matchCategoria =
-            _selectedCategoria == null || r.tipoReceita == _selectedCategoria;
-        final matchPeriodo = _selectedPeriod == null ||
-            (r.data.isAfter(
-                    _selectedPeriod!.start.subtract(const Duration(days: 1))) &&
-                r.data.isBefore(
-                    _selectedPeriod!.end.add(const Duration(days: 1))));
-        return matchAccount && matchCategoria && matchPeriodo;
-      }).toList();
-    } else {
-      final costs = await CostsService().getAllCosts();
-      _filteredCosts = costs.where((c) {
-        final matchAccount = _selectedAccountId == null ||
-            c.accountId?.toString() == _selectedAccountId;
-        final matchCategoria =
-            _selectedCategoria == null || c.tipoDespesa == _selectedCategoria;
-        final matchPeriodo = _selectedPeriod == null ||
-            (c.data.isAfter(
-                    _selectedPeriod!.start.subtract(const Duration(days: 1))) &&
-                c.data.isBefore(
-                    _selectedPeriod!.end.add(const Duration(days: 1))));
-        return matchAccount && matchCategoria && matchPeriodo;
-      }).toList();
+    try {
+      if (_selectedTipo == 'receitas') {
+        final revenues = await RevenuesService().getAllRevenues();
+        _filteredRevenues = revenues.where((r) {
+          // ✅ COMPARAR INTEIROS COM INTEIROS
+          final matchAccount = _selectedAccountId == null ||
+              r.accountId?.toString() == _selectedAccountId;
+          final matchCategoria =
+              _selectedCategoria == null || r.tipoReceita == _selectedCategoria;
+          final matchPeriodo = _selectedPeriod == null ||
+              (r.data.isAfter(_selectedPeriod!.start
+                      .subtract(const Duration(days: 1))) &&
+                  r.data.isBefore(
+                      _selectedPeriod!.end.add(const Duration(days: 1))));
+          return matchAccount && matchCategoria && matchPeriodo;
+        }).toList();
+      } else {
+        final costs = await CostsService().getCostsForCalculations();
+        _filteredCosts = costs.where((c) {
+          // ✅ COMPARAR INTEIROS COM INTEIROS
+          final matchAccount = _selectedAccountId == null ||
+              c.accountId?.toString() == _selectedAccountId;
+          final matchCategoria =
+              _selectedCategoria == null || c.tipoDespesa == _selectedCategoria;
+          final matchPeriodo = _selectedPeriod == null ||
+              (c.data.isAfter(_selectedPeriod!.start
+                      .subtract(const Duration(days: 1))) &&
+                  c.data.isBefore(
+                      _selectedPeriod!.end.add(const Duration(days: 1))));
+          return matchAccount && matchCategoria && matchPeriodo;
+        }).toList();
+      }
+    } catch (e) {
+      Logger().e('Erro ao carregar dados filtrados: $e');
+      // Garantir que as listas não sejam nulas
+      if (_selectedTipo == 'receitas') {
+        _filteredRevenues = [];
+      } else {
+        _filteredCosts = [];
+      }
     }
 
     setState(() => _isLoadingCard = false);
@@ -165,7 +178,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
       final costsService = CostsService();
       final revenuesService = RevenuesService();
 
-      final costs = await costsService.getAllCosts();
+      final costs = await costsService.getCostsForCalculations();
       final revenues = await revenuesService.getAllRevenues();
 
       if (mounted) {
@@ -1169,265 +1182,776 @@ class DashBoardScreenState extends State<DashBoardScreen>
     final currencyFormat =
         NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     final isReceita = _selectedTipo == 'receitas';
+    final theme = Theme.of(context);
 
     // Monta lista de categorias conforme tipo selecionado
     final categorias = isReceita
         ? _filteredRevenues.map((r) => r.tipoReceita).toSet().toList()
         : _filteredCosts.map((c) => c.tipoDespesa).toSet().toList();
 
+    // Calcula dados para o gráfico
+    Map<String, double> dataByType = isReceita
+        ? _calculateRevenuesByType(_filteredRevenues)
+        : _calculateCostsByType(_filteredCosts);
+
+    // Cores para o gráfico
+    List<Color> colors = [
+      Colors.blue.shade600,
+      Colors.green.shade600,
+      Colors.red.shade600,
+      Colors.orange.shade600,
+      Colors.purple.shade600,
+      Colors.teal.shade600,
+      Colors.lime.shade600,
+      Colors.pink.shade600,
+      Colors.amber.shade600,
+      Colors.cyan.shade600,
+      Colors.indigo.shade600,
+      Colors.brown.shade600,
+      Colors.grey.shade600,
+      Colors.deepOrange.shade600,
+      Colors.deepPurple.shade600,
+      Colors.lightBlue.shade600,
+      Colors.lightGreen.shade600,
+    ];
+
     // Calcula total
     final total = isReceita
         ? _filteredRevenues.fold(0.0, (sum, r) => sum + r.preco)
         : _filteredCosts.fold(0.0, (sum, c) => sum + c.preco);
 
-    return GlassContainer(
-      frostedEffect: true,
-      borderRadius: 20,
-      opacity: 0.08,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(Icons.account_balance_wallet,
-                    color: themeManager.getCurrentPrimaryColor()),
-                const SizedBox(width: 8),
-                Text(
-                  'Resumo por Conta',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: themeManager.getCurrentPrimaryColor(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Filtros em coluna para evitar overflow
-            AccountSelector(
-              accounts: _accounts,
-              selectedId: _selectedAccountId,
-              onChanged: (id) {
-                setState(() => _selectedAccountId = id);
-                _loadFilteredData();
-              },
-            ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<String>(
-              value: _selectedTipo,
-              decoration: const InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8))),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'receitas', child: Text('Receitas')),
-                DropdownMenuItem(value: 'despesas', child: Text('Despesas')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedTipo = value!;
-                  _selectedCategoria = null;
-                });
-                _loadFilteredData();
-              },
-            ),
-            const SizedBox(height: 8),
-
-            OutlinedButton.icon(
-              icon: Icon(Icons.date_range, color: Color(0xFF2B038A), size: 18),
-              label: Text(
-                _selectedPeriod == null
-                    ? 'Período'
-                    : '${DateFormat('dd/MM/yyyy').format(_selectedPeriod!.start)} - ${DateFormat('dd/MM/yyyy').format(_selectedPeriod!.end)}',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Color(0xFF2B038A), fontSize: 13),
-              ),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF2B038A),
-                side: const BorderSide(color: Color(0xFF2B038A)),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                minimumSize: const Size(0, 36),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () async {
-                final picked = await showDateRangePicker(
-                  context: context,
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2027),
-                  initialDateRange: _selectedPeriod,
-                  builder: (context, child) => Theme(
-                    data: ThemeData(
-                      colorScheme: const ColorScheme.light(
-                        primary: Color(0xFF2B038A),
-                        onPrimary: Colors.white,
-                        onSurface: Color(0xFF2B038A),
-                        surface: Colors.white,
-                      ),
-                      dialogBackgroundColor: Colors.white,
-                      textTheme: const TextTheme(
-                        bodyMedium: TextStyle(color: Color(0xFF2B038A)),
-                        titleMedium: TextStyle(color: Color(0xFF2B038A)),
-                        labelLarge: TextStyle(color: Color(0xFF2B038A)),
-                      ),
-                      iconTheme: const IconThemeData(color: Color(0xFF2B038A)),
-                      buttonTheme: const ButtonThemeData(
-                        textTheme: ButtonTextTheme.primary,
-                        buttonColor: Color(0xFF2B038A),
-                      ),
-                    ),
-                    child: child!,
-                  ),
-                );
-                if (picked != null) {
-                  setState(() => _selectedPeriod = picked);
-                  _loadFilteredData();
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<String>(
-              value: _selectedCategoria,
-              hint: const Text('Tipo'),
-              decoration: const InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8))),
-              ),
-              items: categorias
-                  .map((cat) => DropdownMenuItem(
-                        value: cat,
-                        child: Text(cat),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() => _selectedCategoria = value);
-                _loadFilteredData();
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Lista de lançamentos filtrados
-            if (_isLoadingCard)
-              const Center(child: CircularProgressIndicator())
-            else
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: isReceita
-                      ? _filteredRevenues.length
-                      : _filteredCosts.length,
-                  itemBuilder: (context, index) {
-                    if (isReceita) {
-                      final r = _filteredRevenues[index];
-                      return _buildMiniCard(
-                        title: r.tipoReceita,
-                        desc: r.descricaoDaReceita,
-                        value: r.preco,
-                        date: r.data,
-                        color: Colors.green.shade600,
-                        currencyFormat: currencyFormat,
-                      );
-                    } else {
-                      final c = _filteredCosts[index];
-                      return _buildMiniCard(
-                        title: c.tipoDespesa,
-                        desc: c.descricaoDaDespesa,
-                        value: c.preco,
-                        date: c.data,
-                        color: Colors.red.shade600,
-                        currencyFormat: currencyFormat,
-                      );
-                    }
-                  },
-                ),
-              ),
-            const SizedBox(height: 12),
-
-            // Total
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  'Total: ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: themeManager.getCurrentPrimaryColor(),
-                  ),
-                ),
-                Text(
-                  currencyFormat.format(total),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color:
-                        isReceita ? Colors.green.shade700 : Colors.red.shade700,
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () => _showAccountFilterDetailDialog(context, dataByType, colors,
+          isReceita ? 'Receitas por Conta' : 'Despesas por Conta'),
+      child: PressableCard(
+        onPress: () => _showAccountFilterDetailDialog(context, dataByType,
+            colors, isReceita ? 'Receitas por Conta' : 'Despesas por Conta'),
+        pressedScale: 0.98,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black
+                  .withAlpha((0.35 * 255).round()), // ✅ SOMBRA MAIS ESCURA
+              blurRadius: 20, // ✅ MAIS BLUR
+              spreadRadius: 3, // ✅ MAIS SPREAD
+              offset: const Offset(0, 12), // ✅ MUITO MAIS ELEVADO
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16), // ✅ MAIS PADDING
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header (igual aos outros)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Resumo por Conta',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Icon(
+                    Icons.account_balance_wallet,
+                    color: isReceita ? Colors.green : Colors.red,
+                  ),
+                ],
+              ),
+              const Divider(),
+
+              // ✅ FILTROS CORRIGIDOS COM DADOS REAIS
+              Column(
+                children: [
+                  // Primeira linha: Conta e Tipo
+                  Row(
+                    children: [
+                      // ✅ Selector de conta CORRIGIDO
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Conta',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            FutureBuilder<List<Account>>(
+                              future: AccountService().getAllAccounts(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container(
+                                    height: 48,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return Container(
+                                    height: 48,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: Text('Nenhuma conta',
+                                          style: TextStyle(fontSize: 14)),
+                                    ),
+                                  );
+                                }
+
+                                final accounts = snapshot.data!;
+                                // ✅ Ajustar selectedAccountId se necessário
+                                if (_selectedAccountId != null &&
+                                    !accounts.any((a) =>
+                                        a.id.toString() ==
+                                        _selectedAccountId)) {
+                                  _selectedAccountId = null;
+                                }
+
+                                return DropdownButtonFormField<String>(
+                                  value: _selectedAccountId,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8)),
+                                    ),
+                                    isDense: true,
+                                  ),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: theme.colorScheme.onSurface),
+                                  items: [
+                                    const DropdownMenuItem(
+                                        value: null,
+                                        child: Text('Todas as contas',
+                                            style: TextStyle(fontSize: 14))),
+                                    // ✅ USAR CAMPOS CORRETOS: name e id
+                                    ...accounts
+                                        .map((account) => DropdownMenuItem(
+                                              value: account.id?.toString(),
+                                              child: Text(
+                                                account.name, // ✅ CAMPO CORRETO
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            )),
+                                  ],
+                                  onChanged: (id) {
+                                    setState(() => _selectedAccountId = id);
+                                    _loadFilteredData();
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // ✅ Selector de tipo CORRIGIDO
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tipo',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            DropdownButtonFormField<String>(
+                              value: _selectedTipo,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
+                                ),
+                                isDense: true,
+                              ),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 'receitas',
+                                    child: Text('Receitas',
+                                        style: TextStyle(fontSize: 14))),
+                                DropdownMenuItem(
+                                    value: 'despesas',
+                                    child: Text('Despesas',
+                                        style: TextStyle(fontSize: 14))),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedTipo = value!;
+                                  _selectedCategoria = null;
+                                });
+                                _loadFilteredData();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20), // ✅ MAIS ESPAÇO
+
+                  // Segunda linha: Período e Categoria
+                  Row(
+                    children: [
+                      // Período
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Período',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.date_range, size: 18),
+                              label: Text(
+                                _selectedPeriod == null
+                                    ? 'Selecionar período'
+                                    : '${DateFormat('dd/MM').format(_selectedPeriod!.start)} - ${DateFormat('dd/MM').format(_selectedPeriod!.end)}',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.colorScheme.onSurface),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                minimumSize:
+                                    const Size(0, 44), // ✅ ALTURA MÍNIMA
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final picked = await showDateRangePicker(
+                                  context: context,
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2027),
+                                  initialDateRange: _selectedPeriod,
+                                );
+                                if (picked != null) {
+                                  setState(() => _selectedPeriod = picked);
+                                  _loadFilteredData();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // ✅ Categoria CORRIGIDA
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Categoria',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            DropdownButtonFormField<String>(
+                              value: _selectedCategoria,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
+                                ),
+                                isDense: true,
+                              ),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface),
+                              items: [
+                                const DropdownMenuItem(
+                                    value: null,
+                                    child: Text('Todas',
+                                        style: TextStyle(fontSize: 14))),
+                                // ✅ USAR categorias CALCULADAS CORRETAMENTE
+                                ...categorias.map((cat) => DropdownMenuItem(
+                                      value: cat,
+                                      child: Text(
+                                        cat,
+                                        style: const TextStyle(fontSize: 14),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _selectedCategoria = value);
+                                _loadFilteredData();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24), // ✅ MAIS ESPAÇO
+
+              // Gráfico (igual aos outros) ✅ ALTURA AUMENTADA
+              if (_isLoadingCard)
+                const SizedBox(
+                  height: 290, // ✅ MUITO MAIS ALTO
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (dataByType.isNotEmpty)
+                SizedBox(
+                  height: 290, // ✅ MUITO MAIS ALTO
+                  child: _buildChartContentPie(dataByType, colors),
+                )
+              else
+                Container(
+                  height: 290, // ✅ MUITO MAIS ALTO
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.multiline_chart,
+                          size: 48,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Nenhum dado encontrado\ncom os filtros aplicados',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // ✅ MAIS ESPAÇO ANTES DO BOTÃO
+              const SizedBox(height: 20),
+
+              // Botão "Toque para detalhes" (igual aos outros)
+              if (dataByType.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.touch_app,
+                        size: 16, color: theme.colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Toque para detalhes',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+
+              const SizedBox(height: 20), // ✅ MAIS ESPAÇO
+
+              // Total
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Total: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: themeManager.getCurrentPrimaryColor(),
+                    ),
+                  ),
+                  Text(
+                    currencyFormat.format(total),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: isReceita
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMiniCard({
-    required String title,
-    required String desc,
-    required double value,
-    required DateTime date,
-    required Color color,
-    required NumberFormat currencyFormat,
-  }) {
-    return Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withAlpha((0.2 * 255).round())),
-        boxShadow: [
-          BoxShadow(
-            color: color.withAlpha((0.8 * 255).round()),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: TextStyle(fontWeight: FontWeight.bold, color: color)),
-          if (desc.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 2, bottom: 2),
-              child: Text(desc,
-                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+// Corrigir o diálogo detalhado (problema de constraints):
+  void _showAccountFilterDetailDialog(
+    BuildContext context,
+    Map<String, double> dataByType,
+    List<Color> colors,
+    String title,
+  ) {
+    final theme = Theme.of(context);
+    final isRevenue = title.contains('Receitas');
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ScaleAnimation.bounceIn(
+            duration: const Duration(milliseconds: 400),
+            child: Container(
+              width: MediaQuery.of(context).size.width *
+                  0.92, // ✅ LARGURA ESPECÍFICA
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+                maxWidth: 600,
+              ),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha((0.3 * 255).round()),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Cabeçalho
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 20),
+                      color: isRevenue ? Colors.green : Colors.red,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Informações dos filtros aplicados
+                    if (_selectedAccountId != null ||
+                        _selectedPeriod != null ||
+                        _selectedCategoria != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        color: Colors.grey.shade100,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Filtros aplicados:',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                if (_selectedAccountId != null)
+                                  FutureBuilder<List<Account>>(
+                                    future: AccountService().getAllAccounts(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        final account =
+                                            snapshot.data!.firstWhere(
+                                          (a) =>
+                                              a.id.toString() ==
+                                              _selectedAccountId,
+                                          orElse: () => Account(
+                                              name: 'Conta desconhecida',
+                                              type: AccountType.other,
+                                              balance: 0,
+                                              icon: Icons
+                                                  .account_balance.codePoint),
+                                        );
+                                        return Chip(
+                                          label: Text(
+                                            'Conta: ${account.name}', // ✅ CAMPO CORRETO
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                          ),
+                                          backgroundColor: Colors.blue.shade100,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                Chip(
+                                  label: Text(
+                                    'Tipo: ${_selectedTipo == 'receitas' ? 'Receitas' : 'Despesas'}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  backgroundColor: isRevenue
+                                      ? Colors.green.shade100
+                                      : Colors.red.shade100,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                if (_selectedPeriod != null)
+                                  Chip(
+                                    label: Text(
+                                      'Período: ${DateFormat('dd/MM/yy').format(_selectedPeriod!.start)} - ${DateFormat('dd/MM/yy').format(_selectedPeriod!.end)}',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    backgroundColor: Colors.orange.shade100,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                if (_selectedCategoria != null)
+                                  Chip(
+                                    label: Text(
+                                      'Categoria: $_selectedCategoria',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    backgroundColor: Colors.purple.shade100,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Conteúdo do gráfico
+                    Flexible(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child:
+                              _buildChartContentPieDetailed(dataByType, colors),
+                        ),
+                      ),
+                    ),
+
+                    // Lista de transações filtradas
+                    if ((isRevenue ? _filteredRevenues : _filteredCosts)
+                        .isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Últimas Transações:',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 80,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: isRevenue
+                                    ? _filteredRevenues.take(5).length
+                                    : _filteredCosts.take(5).length,
+                                itemBuilder: (context, index) {
+                                  if (isRevenue) {
+                                    final r = _filteredRevenues[index];
+                                    return Container(
+                                      width: 140,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: Colors.green.shade200),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            r.tipoReceita,
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            currencyFormat.format(r.preco),
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            DateFormat('dd/MM/yyyy')
+                                                .format(r.data),
+                                            style: const TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } else {
+                                    final c = _filteredCosts[index];
+                                    return Container(
+                                      width: 140,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: Colors.red.shade200),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            c.tipoDespesa,
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            currencyFormat.format(c.preco),
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            DateFormat('dd/MM/yyyy')
+                                                .format(c.data),
+                                            style: const TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Botão de fechar
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isRevenue ? Colors.green : Colors.red,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 45),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Fechar'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          const Spacer(),
-          Text(currencyFormat.format(value),
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: color, fontSize: 16)),
-          Text(DateFormat('dd/MM/yyyy').format(date),
-              style: const TextStyle(fontSize: 12, color: Colors.black38)),
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 
