@@ -35,7 +35,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
   void _navigateAndRefresh(BuildContext context, {Account? account}) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => AccountFormScreen()),
+      MaterialPageRoute(builder: (_) => AccountFormScreen(account: account)),
     );
     if (result == true) {
       _loadAccounts(); // recarrega as contas
