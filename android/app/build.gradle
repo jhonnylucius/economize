@@ -29,8 +29,8 @@ android {
         applicationId "com.lucianoribeiro.economize"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
-        versionCode 122
-        versionName "1.0.106"
+        versionCode 124
+        versionName "1.0.108"
     }
 
     signingConfigs {
