@@ -122,7 +122,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final costs = await _costsService.getAllCosts();
+      final costs = await _costsService.getCostsForCalculations();
       final revenues = await _revenuesService.getAllRevenues();
 
       // Identificar anos disponíveis
