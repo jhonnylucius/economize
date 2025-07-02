@@ -175,7 +175,39 @@ class _CostsScreenState extends State<CostsScreen>
     setState(() => _isLoading = true);
     try {
       final costs = await _costsService.getAllCosts();
-      costs.sort((a, b) => b.data.compareTo(a.data));
+
+      // ✅ NOVA ORDENAÇÃO: Não pagas por vencimento + Pagas por data
+      costs.sort((a, b) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // Categorizar as despesas
+        bool aVencida = !a.pago && a.data.isBefore(today);
+        bool bVencida = !b.pago && b.data.isBefore(today);
+        bool aProxima =
+            !a.pago && !aVencida && a.data.difference(today).inDays <= 5;
+        bool bProxima =
+            !b.pago && !bVencida && b.data.difference(today).inDays <= 5;
+
+        // 1. Vencidas primeiro (ordenadas por vencimento - mais atrasadas primeiro)
+        if (aVencida && bVencida) return a.data.compareTo(b.data);
+        if (aVencida && !bVencida) return -1;
+        if (!aVencida && bVencida) return 1;
+
+        // 2. Próximas ao vencimento (ordenadas por vencimento)
+        if (aProxima && bProxima) return a.data.compareTo(b.data);
+        if (aProxima && !bProxima) return -1;
+        if (!aProxima && bProxima) return 1;
+
+        // 3. Outras não pagas (ordenadas por vencimento)
+        if (!a.pago && !b.pago) return a.data.compareTo(b.data);
+        if (!a.pago && b.pago) return -1;
+        if (a.pago && !b.pago) return 1;
+
+        // 4. Pagas por último (mais recentes primeiro)
+        return b.data.compareTo(a.data);
+      });
+
       if (mounted) {
         setState(() => listCosts = costs);
       }
