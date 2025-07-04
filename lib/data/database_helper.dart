@@ -10,8 +10,8 @@ class DatabaseHelper {
   static Database? _database;
   static final logger = Logger();
 
-  // ✅ VERSÃO ATUALIZADA - INCREMENTEI PARA 17
-  static const int _currentVersion = 17;
+  // ✅ VERSÃO ATUALIZADA - INCREMENTEI PARA 18
+  static const int _currentVersion = 18;
 
   // --- SEÇÃO DE CRIAÇÃO DE TABELAS (QUERIES COMO STRING) ---
   // Centralizamos aqui todas as queries que são strings estáticas.
@@ -81,7 +81,8 @@ class DatabaseHelper {
       pago INTEGER DEFAULT 0,
       category TEXT,
       isLancamentoFuturo INTEGER DEFAULT 0,
-      recorrenciaOrigemId TEXT
+      recorrenciaOrigemId TEXT,
+      quantidadeMesesRecorrentes INTEGER DEFAULT 6
     )
   ''',
     'revenues': '''
@@ -252,6 +253,19 @@ class DatabaseHelper {
         logger.i("✅ [V17] Campos de recorrência adicionados com sucesso!");
       } catch (e) {
         logger.e('[V17] Erro durante a migração para a V17: $e');
+      }
+    }
+
+    // ✅ NOVA MIGRAÇÃO PARA V18 - quantidadeMesesRecorrentes
+    if (oldVersion < 18) {
+      logger.i(
+          "📊 [Migrando para V18] Adicionando campo quantidadeMesesRecorrentes...");
+      try {
+        await db.execute(
+            'ALTER TABLE costs ADD COLUMN quantidadeMesesRecorrentes INTEGER DEFAULT 6');
+        logger.i("✅ [V18] Campo quantidadeMesesRecorrentes adicionado!");
+      } catch (e) {
+        logger.e('[V18] Erro durante a migração para a V18: $e');
       }
     }
 
