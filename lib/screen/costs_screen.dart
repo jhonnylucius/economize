@@ -1668,6 +1668,9 @@ class _CostsScreenState extends State<CostsScreen>
     // Data da despesa
     final dataEscolhida = model?.data ?? DateTime.now();
 
+    // ✅ NOVA VARIÁVEL PARA QUANTIDADE DE MESES
+    int quantidadeMesesRecorrentes = model?.quantidadeMesesRecorrentes ?? 6;
+
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
     bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
     int? selectedAccountId = model?.accountId;
@@ -2106,10 +2109,7 @@ class _CostsScreenState extends State<CostsScreen>
                         decoration: BoxDecoration(
                           color: fieldBackgroundColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: borderColor,
-                            width: 1,
-                          ),
+                          border: Border.all(color: borderColor, width: 1),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2129,18 +2129,18 @@ class _CostsScreenState extends State<CostsScreen>
                               children: [
                                 Checkbox(
                                   value: recorrente,
-                                  activeColor:
-                                      const Color.fromARGB(255, 216, 78, 196),
                                   onChanged: (value) {
                                     setState(() {
                                       recorrente = value ?? false;
                                     });
                                   },
+                                  activeColor:
+                                      const Color.fromARGB(255, 216, 78, 196),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Despesa recorrente (mensal)',
+                                    'Despesa recorrente',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: textColor,
@@ -2149,36 +2149,164 @@ class _CostsScreenState extends State<CostsScreen>
                                 ),
                                 Tooltip(
                                   message:
-                                      'Marque para despesas que se repetem todo mês',
+                                      'Cria automaticamente esta despesa para os próximos meses',
                                   child: Icon(
-                                    Icons.help_outline,
-                                    size: 18,
+                                    Icons.info_outline,
+                                    size: 16,
                                     color: textColor
-                                        .withAlpha((0.6 * 255).toInt()),
+                                        .withAlpha((0.5 * 255).toInt()),
                                   ),
                                 ),
                               ],
                             ),
 
+                            // ✅ NOVO: CONTADOR DE MESES (SÓ APARECE QUANDO RECORRENTE)
+                            if (recorrente) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(255, 216, 78, 196)
+                                      .withAlpha((0.1 * 255).toInt()),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color:
+                                        const Color.fromARGB(255, 216, 78, 196)
+                                            .withAlpha((0.3 * 255).toInt()),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Lançar para quantos meses?',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        // Botão diminuir
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromARGB(
+                                                    255, 216, 78, 196)
+                                                .withAlpha((0.2 * 255).toInt()),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.remove,
+                                                size: 18),
+                                            color: const Color.fromARGB(
+                                                255, 216, 78, 196),
+                                            onPressed: () {
+                                              if (quantidadeMesesRecorrentes >
+                                                  1) {
+                                                setState(() {
+                                                  quantidadeMesesRecorrentes--;
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ),
+
+                                        // Display do número
+                                        Container(
+                                          width: 80,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: const Color.fromARGB(
+                                                      255, 216, 78, 196)
+                                                  .withAlpha(
+                                                      (0.3 * 255).toInt()),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$quantidadeMesesRecorrentes',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: textColor,
+                                            ),
+                                          ),
+                                        ),
+
+                                        // Botão aumentar
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromARGB(
+                                                    255, 216, 78, 196)
+                                                .withAlpha((0.2 * 255).toInt()),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: IconButton(
+                                            icon:
+                                                const Icon(Icons.add, size: 18),
+                                            color: const Color.fromARGB(
+                                                255, 216, 78, 196),
+                                            onPressed: () {
+                                              if (quantidadeMesesRecorrentes <
+                                                  24) {
+                                                setState(() {
+                                                  quantidadeMesesRecorrentes++;
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      quantidadeMesesRecorrentes == 1
+                                          ? 'Apenas 1 mês adicional'
+                                          : '$quantidadeMesesRecorrentes meses adicionais',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: textColor
+                                            .withAlpha((0.7 * 255).toInt()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
                             const SizedBox(height: 4),
 
-                            // Campo pago
+                            // Campo pago (sem alteração)
                             Row(
                               children: [
                                 Checkbox(
                                   value: pago,
-                                  activeColor:
-                                      const Color.fromARGB(255, 216, 78, 196),
                                   onChanged: (value) {
                                     setState(() {
                                       pago = value ?? false;
                                     });
                                   },
+                                  activeColor:
+                                      const Color.fromARGB(255, 216, 78, 196),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Pagamento já realizado',
+                                    'Já foi pago',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: textColor,
@@ -2186,13 +2314,12 @@ class _CostsScreenState extends State<CostsScreen>
                                   ),
                                 ),
                                 Tooltip(
-                                  message:
-                                      'Desmarque para despesas pendentes de pagamento',
+                                  message: 'Marque se a despesa já foi paga',
                                   child: Icon(
-                                    Icons.help_outline,
-                                    size: 18,
+                                    Icons.info_outline,
+                                    size: 16,
                                     color: textColor
-                                        .withAlpha((0.6 * 255).toInt()),
+                                        .withAlpha((0.5 * 255).toInt()),
                                   ),
                                 ),
                               ],
@@ -2263,21 +2390,28 @@ class _CostsScreenState extends State<CostsScreen>
                                   }
 
                                   final cost = Costs(
-                                      id: model?.id ?? const Uuid().v4(),
-                                      data: dataFormatada,
-                                      preco:
-                                          valorNumerico, // ✅ VALOR CORRETO GARANTIDO
-                                      descricaoDaDespesa:
-                                          descricaoController.text.isEmpty
-                                              ? selectedTipo
-                                              : descricaoController.text,
-                                      tipoDespesa: selectedTipo,
-                                      recorrente: recorrente,
-                                      pago: pago,
-                                      category: selectedTipo,
-                                      accountId:
-                                          selectedAccountId // <-- PASSANDO O ID DA CONTA
-                                      );
+                                    id: model?.id ?? const Uuid().v4(),
+                                    data: dataFormatada,
+                                    preco:
+                                        valorNumerico, // ✅ VALOR CORRETO GARANTIDO
+                                    descricaoDaDespesa:
+                                        descricaoController.text.isEmpty
+                                            ? selectedTipo
+                                            : descricaoController.text,
+                                    tipoDespesa: selectedTipo,
+                                    recorrente: recorrente,
+                                    pago: pago,
+                                    category: selectedTipo,
+                                    accountId:
+                                        selectedAccountId, // <-- PASSANDO O ID DA CONTA
+                                    isLancamentoFuturo:
+                                        model?.isLancamentoFuturo ??
+                                            false, // ✅ ADICIONAR ESTA LINHA
+                                    recorrenciaOrigemId: model
+                                        ?.recorrenciaOrigemId, // ✅ ADICIONAR ESTA LINHA
+                                    quantidadeMesesRecorrentes:
+                                        quantidadeMesesRecorrentes, // ✅ ADICIONAR ESTA LINHA
+                                  );
                                   try {
                                     await _costsService.saveCost(
                                         cost, _accountService);
