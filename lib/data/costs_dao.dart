@@ -257,7 +257,7 @@ class CostsDAO {
     );
   }
 
-  // ✅ ATUALIZADO: Criar tabela com os novos campos
+  // ATUALIZAR O MÉTODO createTable:
   Future<void> createTable(Database db) async {
     await db.execute('''
     CREATE TABLE IF NOT EXISTS $tableName (
@@ -271,7 +271,8 @@ class CostsDAO {
       pago INTEGER DEFAULT 0,
       category TEXT,
       isLancamentoFuturo INTEGER DEFAULT 0,
-      recorrenciaOrigemId TEXT
+      recorrenciaOrigemId TEXT,
+      quantidadeMesesRecorrentes INTEGER DEFAULT 6,
     )
   ''');
   }
