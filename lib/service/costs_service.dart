@@ -60,7 +60,8 @@ class CostsService {
   }
 
   Future<void> _createRecurringCosts(Costs originalCost) async {
-    for (int i = 1; i <= 12; i++) {
+    // ✅ USAR A QUANTIDADE DEFINIDA PELO USUÁRIO
+    for (int i = 1; i <= originalCost.quantidadeMesesRecorrentes; i++) {
       final nextDate = DateTime(
         originalCost.data.year,
         originalCost.data.month + i,
@@ -68,21 +69,25 @@ class CostsService {
       );
 
       final futureCost = Costs(
-        id: '${originalCost.id}_future_${nextDate.year}_${nextDate.month}',
+        id: '${originalCost.id}_rec_${nextDate.year}${nextDate.month.toString().padLeft(2, '0')}',
         preco: originalCost.preco,
         descricaoDaDespesa: originalCost.descricaoDaDespesa,
         tipoDespesa: originalCost.tipoDespesa,
         data: nextDate,
-        isLancamentoFuturo: true, // ✅ Marca como futuro
-        recorrenciaOrigemId: originalCost.id, // ✅ Vincula ao original
+        isLancamentoFuturo: true,
+        recorrenciaOrigemId: originalCost.id,
         recorrente: originalCost.recorrente,
-        pago: false, // Inicialmente não pago
-        accountId: originalCost.accountId, // Mantém a mesma conta
-        // Adicione outros campos obrigatórios se necessário, copiando de originalCost
+        pago: false,
+        accountId: originalCost.accountId,
+        quantidadeMesesRecorrentes:
+            originalCost.quantidadeMesesRecorrentes, // ✅ MANTER O VALOR
       );
 
       await _costsDAO.insert(futureCost);
     }
+
+    debugPrint(
+        '✅ ${originalCost.quantidadeMesesRecorrentes} despesas futuras criadas para ${originalCost.tipoDespesa}');
   }
 
   Future<List<Costs>> getCostsForCalculations() async {
