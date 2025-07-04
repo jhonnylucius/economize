@@ -1276,10 +1276,10 @@ class _HomeScreenState extends State<HomeScreen>
       filteredIndices = [0, 1, 2, 9]; // <-- ADICIONE O 9 AQUI
     } else if (selectedCategoryTab == 2) {
       // Gestão
-      filteredIndices = [3, 4, 5, 8];
+      filteredIndices = [5, 6, 8];
     } else if (selectedCategoryTab == 3) {
       // Relatórios
-      filteredIndices = [6, 7];
+      filteredIndices = [3, 4, 7];
     }
 
     return Column(
@@ -1427,10 +1427,10 @@ class _HomeScreenState extends State<HomeScreen>
                 if (selectedCategoryTab == 1 && ![0, 1, 2, 9].contains(index)) {
                   return const SizedBox.shrink();
                 } else if (selectedCategoryTab == 2 &&
-                    ![3, 4, 5, 8].contains(index)) {
+                    ![6, 5, 8].contains(index)) {
                   return const SizedBox.shrink();
                 } else if (selectedCategoryTab == 3 &&
-                    ![6, 7].contains(index)) {
+                    ![3, 4, 7].contains(index)) {
                   return const SizedBox.shrink();
                 }
               }
@@ -3653,7 +3653,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.108'),
+            const Text('Versão: 1.0.109'),
             const SizedBox(height: 8),
             const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
             const SizedBox(height: 8),
