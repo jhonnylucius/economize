@@ -12,6 +12,7 @@ class Costs {
       category; // Campo adicionado para compatibilidade com notificações
   bool isLancamentoFuturo; // ✅ NOVO CAMPO
   String? recorrenciaOrigemId; // ✅ Para vincular à despesa original
+  int quantidadeMesesRecorrentes; // ✅ NOVO CAMPO
 
   Costs({
     required this.id,
@@ -25,6 +26,7 @@ class Costs {
     this.category, // Pode ser nulo, usará tipoDespesa se necessário
     this.isLancamentoFuturo = false, // Inicializado como falso
     this.recorrenciaOrigemId, // Inicializado como nulo
+    this.quantidadeMesesRecorrentes = 6,
   });
 
   factory Costs.fromMap(Map<String, dynamic> map) {
@@ -40,6 +42,8 @@ class Costs {
       category: map['category'] as String?,
       isLancamentoFuturo: (map['isLancamentoFuturo'] as int? ?? 0) == 1,
       recorrenciaOrigemId: map['recorrenciaOrigemId'] as String?,
+      quantidadeMesesRecorrentes:
+          map['quantidadeMesesRecorrentes'] as int? ?? 6, // ✅ NOVO
     );
   }
 
@@ -56,6 +60,7 @@ class Costs {
       'category': category ?? tipoDespesa,
       'isLancamentoFuturo': isLancamentoFuturo ? 1 : 0,
       'recorrenciaOrigemId': recorrenciaOrigemId,
+      'quantidadeMesesRecorrentes': quantidadeMesesRecorrentes, // ✅ NOVO
     };
   }
 
@@ -70,6 +75,7 @@ class Costs {
     String? category,
     bool? isLancamentoFuturo,
     String? recorrenciaOrigemId,
+    int? quantidadeMesesRecorrentes, // ✅ NOVO
   }) {
     return Costs(
       id: id ?? this.id,
@@ -82,6 +88,8 @@ class Costs {
       category: category ?? this.category,
       isLancamentoFuturo: isLancamentoFuturo ?? this.isLancamentoFuturo,
       recorrenciaOrigemId: recorrenciaOrigemId ?? this.recorrenciaOrigemId,
+      quantidadeMesesRecorrentes: quantidadeMesesRecorrentes ??
+          this.quantidadeMesesRecorrentes, // ✅ NOVO
     );
   }
 
