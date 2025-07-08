@@ -1,11 +1,12 @@
 import 'package:economize/model/budget/budget.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/utils/budget_calculator.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class LocationComparisonCard extends StatelessWidget {
   final Budget budget;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
 
   LocationComparisonCard({super.key, required this.budget});
 
@@ -45,62 +46,60 @@ class LocationComparisonCard extends StatelessWidget {
     Map<String, double> savings,
   ) {
     final theme = Theme.of(context);
-    final sortedLocations =
-        budget.locations.toList()
-          ..sort((a, b) => (totals[a.id] ?? 0).compareTo(totals[b.id] ?? 0));
+    final sortedLocations = budget.locations.toList()
+      ..sort((a, b) => (totals[a.id] ?? 0).compareTo(totals[b.id] ?? 0));
 
     return Column(
-      children:
-          sortedLocations.map((location) {
-            final total = totals[location.id] ?? 0;
-            final saving = savings[location.id] ?? 0;
+      children: sortedLocations.map((location) {
+        final total = totals[location.id] ?? 0;
+        final saving = savings[location.id] ?? 0;
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Column(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              location.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(total),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withAlpha(
-                                  (0.7 * 255).toInt(),
-                                ),
-                              ),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          location.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
                         ),
-                      ),
-                      _buildSavingsBadge(context, saving),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  LinearProgressIndicator(
-                    value: _calculateProgress(total, totals),
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation(
-                      _getSavingsColor(context, saving),
+                        Text(
+                          _currencyService.formatCurrency(total),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                            color: theme.colorScheme.onSurface.withAlpha(
+                              (0.7 * 255).toInt(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  _buildSavingsBadge(context, saving),
                 ],
               ),
-            );
-          }).toList(),
+              const SizedBox(height: 4),
+              LinearProgressIndicator(
+                value: _calculateProgress(total, totals),
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(
+                  _getSavingsColor(context, saving),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
