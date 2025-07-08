@@ -200,9 +200,6 @@ class _HomeScreenState extends State<HomeScreen>
 
     _setupUpdateListeners();
 
-    // NOVO: Timer periódico para atualizações automáticas (opcional)
-    _setupPeriodicUpdates();
-
     _currencyService.addListener(_onCurrencyChanged);
   }
 
@@ -270,20 +267,6 @@ class _HomeScreenState extends State<HomeScreen>
         debugPrint('Erro ao verificar atualizações: $e');
       }
     }
-  }
-
-  // NOVO: Timer periódico (backup)
-  void _setupPeriodicUpdates() {
-    _periodicTimer = Timer.periodic(
-      const Duration(minutes: 2), // Atualiza a cada 5minutos
-      (timer) {
-        if (mounted && !isLoadingFinancialData) {
-          // ✅ ADICIONAR !isLoadingFinancialData
-          debugPrint('⏰ Atualização periódica automática');
-          _loadFinancialData();
-        }
-      },
-    );
   }
 
   void scrollToTop() {
@@ -426,7 +409,6 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _updateSubscription?.cancel();
-    _periodicTimer?.cancel();
     _pageController.dispose();
     _scrollProgress.dispose();
     _showFloatingPanel.dispose();
@@ -3679,9 +3661,10 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.109'),
+            const Text('Versão: 1.0.110'),
             const SizedBox(height: 8),
-            const Text('Desenvolvido com ❤️ para ajudar você a economizar!'),
+            const Text(
+                'Desenvolvido com ❤️ para ajudar você a economizar! Suporte: contato@union.dev.br'),
             const SizedBox(height: 8),
             const Text(
                 'Agradecimentos especiais aos Testers e usuários que contribuíram com feedback!'),
