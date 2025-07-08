@@ -6,9 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:economize/animations/celebration_animations.dart';
-import 'package:economize/animations/fade_animation.dart';
-import 'package:economize/animations/glass_container.dart';
-import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'dart:math' as math;
@@ -179,7 +176,6 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     // ✅ CORES LIMPAS E MODERNAS
     final bool isDarkTheme = theme.brightness == Brightness.dark;
     final headerColor = isDarkTheme ? Colors.purple : theme.primaryColor;
-    final headerTextColor = Colors.white;
     final backgroundColor = Colors.white;
     final surfaceColor = Colors.grey.shade50;
     final textColor = Colors.grey.shade800;
