@@ -2,6 +2,7 @@ import 'package:economize/model/budget/budget_location.dart';
 import 'package:economize/model/notification_type.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/goals_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/push_notification_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/service/budget_service.dart';
@@ -18,6 +19,7 @@ class NotificationService {
   final BudgetService _budgetService = BudgetService();
   final GoalsService _goalsService = GoalsService();
   final PushNotificationService _pushService = PushNotificationService();
+  final CurrencyService _currencyService = CurrencyService();
 
   // Singleton pattern
   static final NotificationService _instance = NotificationService._internal();
@@ -130,15 +132,16 @@ class NotificationService {
 
           if (daysAhead == 0) {
             title = '🚨 Pagamento hoje!';
-            body = '$paymentName de R\$${amount.toStringAsFixed(2)} vence hoje';
+            body =
+                '$paymentName de ${_currencyService.formatCurrency(amount)} vence hoje';
           } else if (daysAhead == 1) {
             title = '⚠️ Pagamento amanhã!';
             body =
-                '$paymentName de R\$${amount.toStringAsFixed(2)} vence amanhã';
+                '$paymentName de ${_currencyService.formatCurrency(amount)} vence amanhã';
           } else {
             title = '📅 Pagamento em $daysAhead dias';
             body =
-                '$paymentName de R\$${amount.toStringAsFixed(2)} vence em $daysAhead dias';
+                '$paymentName de ${_currencyService.formatCurrency(amount)} vence em $daysAhead dias';
           }
 
           await _pushService.scheduleNotification(
@@ -578,7 +581,7 @@ await NotificationService().addNotification(
               id: categoryAlertId,
               title: 'Gastos elevados em ${entry.key}',
               description:
-                  'Você já gastou R\$ ${entry.value.toStringAsFixed(2)} em ${entry.key} este mês',
+                  'Você já gastou ${_currencyService.formatCurrency(entry.value)} em ${entry.key} este mês',
               type: NotificationType.info,
               timestamp: DateTime.now(),
               isRead: false,
@@ -899,9 +902,10 @@ await NotificationService().addNotification(
         final notification = NotificationItem(
           id: 'monthly_report_${lastMonth.year}_${lastMonth.month}',
           title: 'Relatório de $monthName está pronto',
-          description: 'Receitas: R\$${totalRevenues.toStringAsFixed(2)}, '
-              'Despesas: R\$${totalCosts.toStringAsFixed(2)}, '
-              'Saldo: R\$${balance.toStringAsFixed(2)}',
+          description:
+              'Receitas: ${_currencyService.formatCurrency(totalRevenues)}, '
+              'Despesas: ${_currencyService.formatCurrency(totalCosts)}, '
+              'Saldo: ${_currencyService.formatCurrency(balance)}',
           type: NotificationType.report,
           timestamp: DateTime.now(),
           isRead: false,
@@ -1050,7 +1054,7 @@ await NotificationService().addNotification(
             id: notificationId, // ✅ ID único por dia
             title: '$urgencyIcon Pagamento vence $daysText',
             description:
-                '${payment.tipoDespesa} de R\$${payment.preco.toStringAsFixed(2)}${payment.recorrente ? ' (Recorrente)' : ''}',
+                '${payment.tipoDespesa} de ${_currencyService.formatCurrency(payment.preco)}${payment.recorrente ? ' (Recorrente)' : ''}',
             type: NotificationType.reminder,
             timestamp: DateTime.now(),
             isRead: false,
