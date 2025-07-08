@@ -8,6 +8,7 @@ import 'package:economize/data/goal_dao.dart'; // Importante usar o correto
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/gamification/achievement_checker.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'dart:math' as math;
 import 'package:economize/theme/theme_manager.dart';
+import 'package:provider/provider.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -28,6 +30,7 @@ class GoalsScreen extends StatefulWidget {
 class _GoalsScreenState extends State<GoalsScreen>
     with TickerProviderStateMixin {
   final GoalsDAO _goalsDAO = GoalsDAO();
+  late CurrencyService _currencyService;
   List<Goal> _goals = [];
   bool _isLoading = true;
   late AnimationController _backgroundController;
@@ -41,6 +44,7 @@ class _GoalsScreenState extends State<GoalsScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
     _backgroundController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
@@ -949,11 +953,7 @@ class _GoalsScreenState extends State<GoalsScreen>
     required Color color,
   }) {
     // ADICIONAR: Formatador brasileiro
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-      decimalDigits: 2,
-    );
+    _currencyService;
 
     return Row(
       children: [
@@ -972,7 +972,7 @@ class _GoalsScreenState extends State<GoalsScreen>
         ),
         const SizedBox(width: 4),
         Text(
-          currencyFormat.format(value),
+          _currencyService.formatCurrency(value),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
@@ -1000,11 +1000,6 @@ class _GoalsScreenState extends State<GoalsScreen>
   void _showGoalDetails(Goal goal) {
     final theme = Theme.of(context);
     final percentComplete = goal.percentComplete.clamp(0.0, 1.0);
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-      decimalDigits: 2,
-    );
 
     showModalBottomSheet(
       context: context,
@@ -1083,7 +1078,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                                 ),
                               ),
                               Text(
-                                '${currencyFormat.format(goal.currentValue)} / ${currencyFormat.format(goal.targetValue)}',
+                                '${_currencyService.formatCurrency(goal.currentValue)} / ${_currencyService.formatCurrency(goal.targetValue)}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -1112,7 +1107,8 @@ class _GoalsScreenState extends State<GoalsScreen>
                       delay: const Duration(milliseconds: 400),
                       child: _buildDetailCard(
                         title: 'Faltam',
-                        value: currencyFormat.format(goal.remainingValue),
+                        value: _currencyService
+                            .formatCurrency(goal.remainingValue),
                         icon: Icons.timeline,
                         color: Colors.orange,
                         theme: theme,
@@ -2360,13 +2356,6 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
     final theme = Theme.of(context);
     final newPercent = (_sliderValue / widget.targetValue).clamp(0.0, 1.0);
 
-    // ADICIONAR: Formatador brasileiro
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-      decimalDigits: 2,
-    );
-
     return AlertDialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -2427,7 +2416,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  currencyFormat.format(0),
+                  CurrencyService().formatCurrency(0),
                   style: TextStyle(
                     color: theme.colorScheme.onSurface
                         .withAlpha((0.7 * 255).toInt()),
@@ -2435,7 +2424,7 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
                   ),
                 ),
                 Text(
-                  currencyFormat.format(widget.targetValue),
+                  CurrencyService().formatCurrency(widget.targetValue),
                   style: TextStyle(
                     color: theme.colorScheme.onSurface
                         .withAlpha((0.7 * 255).toInt()),
@@ -2622,12 +2611,7 @@ class CurrencyParser {
   }
 
   static String format(double value) {
-    // NOVO: Usar formatador brasileiro completo
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-      decimalDigits: 2,
-    );
-    return currencyFormat.format(value);
+    // ✅ USAR INSTÂNCIA DO CURRENCYSERVICE
+    return CurrencyService().formatCurrency(value);
   }
 }
