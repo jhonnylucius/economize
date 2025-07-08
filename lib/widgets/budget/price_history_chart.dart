@@ -1,4 +1,5 @@
 import 'package:economize/model/budget/price_history.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,7 +29,7 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
   static const _backgroundColor = Colors.white;
   static const _gridColor = Color(0xFFEEEEEE);
 
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
   int selectedIndex = -1;
 
   @override
@@ -57,12 +58,10 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
       );
     }
 
-    final minPrice = widget.history
-        .map((e) => e.price)
-        .reduce((a, b) => a < b ? a : b);
-    final maxPrice = widget.history
-        .map((e) => e.price)
-        .reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        widget.history.map((e) => e.price).reduce((a, b) => a < b ? a : b);
+    final maxPrice =
+        widget.history.map((e) => e.price).reduce((a, b) => a > b ? a : b);
 
     return Card(
       color: _backgroundColor,
@@ -119,12 +118,12 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
       children: [
         _buildStatItem(
           'Menor Preço',
-          currencyFormat.format(minPrice),
+          _currencyService.formatCurrency(minPrice),
           _positiveGreen,
         ),
         _buildStatItem(
           'Maior Preço',
-          currencyFormat.format(maxPrice),
+          _currencyService.formatCurrency(maxPrice),
           _negativeRed,
         ),
         _buildStatItem(
@@ -187,12 +186,11 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
       maxY: maxPrice * 1.1,
       lineBarsData: [
         LineChartBarData(
-          spots:
-              widget.history
-                  .asMap()
-                  .entries
-                  .map((e) => FlSpot(e.key.toDouble(), e.value.price))
-                  .toList(),
+          spots: widget.history
+              .asMap()
+              .entries
+              .map((e) => FlSpot(e.key.toDouble(), e.value.price))
+              .toList(),
           isCurved: true,
           color: _primaryBlue,
           barWidth: 3,
@@ -224,7 +222,7 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
             return touchedBarSpots.map((barSpot) {
               final date = widget.history[barSpot.x.toInt()].date;
               return LineTooltipItem(
-                '${DateFormat('dd/MM').format(date)}\n${currencyFormat.format(barSpot.y)}',
+                '${DateFormat('dd/MM').format(date)}\n${_currencyService.formatCurrency(barSpot.y)}',
                 const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -281,7 +279,7 @@ class _PriceHistoryChartState extends State<PriceHistoryChart> {
           interval: null,
           getTitlesWidget: (value, meta) {
             return Text(
-              currencyFormat.format(value),
+              _currencyService.formatCurrency(value),
               style: TextStyle(
                 color: _textColor.withAlpha((0.6 * 255).toInt()),
                 fontSize: 10,
