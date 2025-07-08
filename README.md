@@ -14,6 +14,51 @@ Vou ajudar a melhorar seu README para torná-lo detalhado e adequado para um pro
 **O Economize** é um aplicativo completo de gestão financeira pessoal desenvolvido em Flutter, que combina funcionalidades avançadas de controle de gastos, educação financeira e gamificação para criar uma experiência única e engajante para o usuário.
 
 ---
+## NOVIDADES
+### 🎨 **INTERFACE INTELIGENTE**
+
+- 💱 Troca de moeda com **1 toque**
+- 🔄 Conversão **automática** de todos os valores
+- 🎯 **Exemplos localizados** em educação financeira
+
+### 💰 **EXPERIÊNCIA PERSONALIZADA**
+
+- 📊 **Gráficos e relatórios** na sua moeda
+- 🎯 **Metas financeiras** com valores realistas
+- 💳 **Controle de contas** multi-moeda
+- 📱 **Formulários inteligentes** com formatação local
+
+🎉 **NOVIDADES ÉPICAS DO ECONOMIZE!** 🚀
+
+## **🌍 AGORA GLOBAL! 6 PAÍSES, 1 APP!**
+
+### **🎯 NOVA ATUALIZAÇÃO - SUPORTE INTERNACIONAL**
+
+🇧🇷 **BRASIL** - Real (R$)
+
+💰 *A base sólida que você já conhece e ama!*
+
+🇵🇹 **PORTUGAL** - Euro (€)
+
+🌟 *Controle financeiro europeu na palma da mão!*
+
+🇦🇴 **ANGOLA** - Kwanza (Kz)
+
+🚀 *Educação financeira para o crescimento africano!*
+
+🇲🇿 **MOÇAMBIQUE** - Metical (MT)
+
+📈 *Gestão inteligente para economia em desenvolvimento!*
+
+🇨🇻 **CABO VERDE** - Escudo (CVE)
+
+🏝️ *Planejamento financeiro para o paraíso atlântico!*
+
+🇬🇼 **GUINÉ-BISSAU** - Franco CFA (XOF)
+
+🌱 *Controle de gastos para o futuro próspero!*
+
+---
 
 ## **🎯 OBJETIVO PRINCIPAL**
 
