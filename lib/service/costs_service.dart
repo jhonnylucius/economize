@@ -1,11 +1,13 @@
 import 'package:economize/accounts/service/account_service.dart';
 import 'package:economize/data/costs_dao.dart';
 import 'package:economize/model/costs.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/push_notification_service.dart';
 import 'package:flutter/material.dart';
 
 class CostsService {
   final CostsDAO _costsDAO = CostsDAO();
+  final CurrencyService _currencyService = CurrencyService();
 
   List<Costs> _cachedCosts = [];
 
@@ -123,15 +125,15 @@ class CostsService {
         if (daysUntilDue == 0) {
           title = '🚨 VENCIMENTO HOJE!';
           body =
-              '${cost.tipoDespesa} vence hoje - R\$ ${cost.preco.toStringAsFixed(2)}';
+              '${cost.tipoDespesa} vence hoje - ${_currencyService.formatCurrency(cost.preco)}';
         } else if (daysUntilDue == 1) {
           title = '⚠️ Vence amanhã!';
           body =
-              '${cost.tipoDespesa} vence amanhã - R\$ ${cost.preco.toStringAsFixed(2)}';
+              '${cost.tipoDespesa} vence amanhã - ${_currencyService.formatCurrency(cost.preco)}';
         } else {
           title = '📅 Vencimento em $daysUntilDue dias';
           body =
-              '${cost.tipoDespesa} vence em $daysUntilDue dias - R\$ ${cost.preco.toStringAsFixed(2)}';
+              '${cost.tipoDespesa} vence em $daysUntilDue dias - ${_currencyService.formatCurrency(cost.preco)}';
         }
 
         // ✅ Notificação IMEDIATA só para despesas que realmente vencem em breve
