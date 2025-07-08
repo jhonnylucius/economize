@@ -10,6 +10,7 @@ import 'package:economize/model/revenues.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -37,6 +38,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final RevenuesService _revenuesService = RevenuesService();
   final AccountService _accountService = AccountService(); // Adicionado
+  late CurrencyService _currencyService;
   bool _isLoading = false;
   bool _isFiltering = false;
   String _searchQuery = '';
@@ -45,35 +47,11 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   late AnimationController _animationController;
   final GlobalKey _helpKey = GlobalKey();
 
-  final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-
   // ... (sua lista de categorias de receita permanece a mesma) ...
   static const List<Map<String, dynamic>> _categoriasReceita = [
     {'icon': Icons.credit_card, 'name': 'Salário'},
     {'icon': Icons.attach_money, 'name': '13º Salário'},
     {'icon': Icons.money, 'name': 'Rendimentos'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta Poupança'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta Corrente'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta Digital'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta Salário'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta Investimento'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Pagamento'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Criptomoedas'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Ações'},
-    {
-      'icon': Icons.account_balance,
-      'name': 'Deposito Conta de Fundos Imobiliários'
-    },
-    {
-      'icon': Icons.account_balance,
-      'name': 'Deposito Conta de Previdência Privada'
-    },
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta de Tesouro Direto'},
-    {'icon': Icons.account_balance, 'name': 'Deposito Conta de CDB/LCI/LCA'},
-    {
-      'icon': Icons.account_balance,
-      'name': 'Deposito Conta de Poupança Digital'
-    },
     {'icon': Icons.account_balance_wallet, 'name': 'Carteira'},
     {'icon': Icons.receipt, 'name': 'Reembolsos'},
     {'icon': Icons.business_center, 'name': 'Emprego'},
@@ -96,6 +74,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
     _loadRevenues();
     _animationController = AnimationController(
       vsync: this,
@@ -986,7 +965,7 @@ class _RevenuesScreenState extends State<RevenuesScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                _currencyFormat.format(totalValue), // ✅ DEPOIS
+                _currencyService.formatCurrency(totalValue), // ✅ DEPOIS
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -1255,7 +1234,8 @@ class _RevenuesScreenState extends State<RevenuesScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          _currencyFormat.format(revenue.preco), // ✅ DEPOIS
+                          _currencyService
+                              .formatCurrency(revenue.preco), // ✅ DEPOIS
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
