@@ -15,12 +15,14 @@ import 'package:economize/screen/gamification/achievements_screen.dart';
 import 'package:economize/screen/goals_screen.dart';
 import 'package:economize/screen/home_screen.dart';
 import 'package:economize/screen/item_management_screen.dart';
+import 'package:economize/screen/moedas/country_selection_screen.dart';
 import 'package:economize/screen/report_screen.dart';
 import 'package:economize/screen/revenues_screen.dart';
 import 'package:economize/screen/splash_screen.dart';
 import 'package:economize/screen/trend_chart_screen.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +42,11 @@ void main() async {
     Logger().e('❌ Erro ao inicializar conquistas: $e');
   }
 
+  // ✅ INICIALIZAR SERVIÇO DE MOEDA
+  final currencyService = CurrencyService();
+  await currencyService.initialize();
+  Logger().i('🌍 Serviço de moeda inicializado!');
+
   final notificationService = NotificationService();
   await notificationService.initialize();
 
@@ -49,7 +56,14 @@ void main() async {
   await _rescheduleAllNotifications();
 
   runApp(
-    ChangeNotifierProvider(create: (_) => ThemeManager(), child: const MyApp()),
+    MultiProvider(
+      // ✅ TROCAR ChangeNotifierProvider por MultiProvider
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeManager()),
+        ChangeNotifierProvider.value(value: currencyService), // ✅ ADICIONAR
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -94,6 +108,8 @@ class MyApp extends StatelessWidget {
           routes: {
             '/': (context) => const SplashScreen(),
             '/home': (context) => const HomeScreen(),
+            '/country-selection': (context) =>
+                const CountrySelectionScreen(), // ✅ NOVA ROTA
             '/accounts': (context) =>
                 const AccountsListScreen(), // <-- NOVA ROTA AQUI
             '/transfers': (context) {
@@ -141,7 +157,14 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [Locale('pt', 'BR')],
+          supportedLocales: const [
+            Locale('pt', 'BR'),
+            Locale('pt', 'PT'),
+            Locale('pt', 'AO'),
+            Locale('pt', 'MZ'),
+            Locale('pt', 'CV'),
+            Locale('pt', 'GW'),
+          ],
         );
       },
     );
