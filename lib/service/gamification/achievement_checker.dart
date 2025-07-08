@@ -3,11 +3,13 @@ import 'package:economize/data/goal_dao.dart';
 import 'package:economize/data/revenues_dao.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:logger/logger.dart';
 
 class AchievementChecker {
   static final Logger _logger = Logger();
+  static final CurrencyService _currencyService = CurrencyService();
   static DateTime? _lastCheck; // ✅ CONTROLE DE TEMPO
   static const Duration _cooldownPeriod =
       Duration(seconds: 30); // ✅ 30 segundos entre verificações
@@ -175,7 +177,7 @@ class AchievementChecker {
           type: AchievementType.firstSaving,
           title: '💰 Primeiras Economias',
           description:
-              'Você economizou seus primeiros R\$ 2000! Cada centavo conta!',
+              'Você economizou seus primeiros ${_currencyService.formatCurrency(2000)}! Cada centavo conta!',
           rarity: AchievementRarity.bronze,
         );
       }
@@ -185,8 +187,9 @@ class AchievementChecker {
         await _unlockAchievementIfNotExists(
           id: 'savings_1000',
           type: AchievementType.fiveThousand,
-          title: '💎 Qautro mil Reais',
-          description: 'R\$ 4.000 economizados! Você está no caminho certo!',
+          title: '💎 Quatro Mil!',
+          description:
+              '${_currencyService.formatCurrency(4000)} economizados! Você está no caminho certo!',
           rarity: AchievementRarity.silver,
         );
       }
@@ -197,7 +200,8 @@ class AchievementChecker {
           id: 'savings_5000',
           type: AchievementType.fiveThousand,
           title: '🏦 Cinco Mil!',
-          description: 'R\$ 5.000 economizados! Você é um poupador nato!',
+          description:
+              '${_currencyService.formatCurrency(5000)} economizados! Você é um poupador nato!',
           rarity: AchievementRarity.gold,
         );
       }
@@ -207,8 +211,9 @@ class AchievementChecker {
         await _unlockAchievementIfNotExists(
           id: 'savings_20000',
           type: AchievementType.masterSaver,
-          title: '👑 Vinte Mil Reais!',
-          description: 'R\$ 20.000 economizados! Você é LENDÁRIO!',
+          title: '👑 Vinte Mil!',
+          description:
+              '${_currencyService.formatCurrency(20000)} economizados! Você é LENDÁRIO!',
           rarity: AchievementRarity.legendary,
         );
       }
@@ -369,9 +374,9 @@ class AchievementChecker {
         if (i < 12) {
           _logger.d(
               '📊 ${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}: '
-              'Receitas: R\$ ${totalRevenues.toStringAsFixed(2)}, '
-              'Despesas: R\$ ${totalCosts.toStringAsFixed(2)}, '
-              'Saldo: R\$ ${monthBalance.toStringAsFixed(2)}');
+              'Receitas: ${_currencyService.formatCurrency(totalRevenues)}, '
+              'Despesas: ${_currencyService.formatCurrency(totalCosts)}, '
+              'Saldo: ${_currencyService.formatCurrency(monthBalance)}');
         }
 
         if (monthBalance > 0) {
@@ -382,7 +387,7 @@ class AchievementChecker {
         } else {
           if (i < 12) {
             _logger.d(
-                '❌ Mês não positivo (${monthBalance.toStringAsFixed(2)}), quebrando sequência');
+                '❌ Mês não positivo (${_currencyService.formatCurrency(monthBalance)}), quebrando sequência');
           }
           break;
         }
