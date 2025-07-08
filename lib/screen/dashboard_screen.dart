@@ -757,7 +757,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                             : const SizedBox(height: 228), // Placeholder
 
                         // Espaço no final
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
