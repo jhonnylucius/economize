@@ -1,4 +1,5 @@
 import 'package:economize/model/budget/price_history.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -6,7 +7,7 @@ class PriceHistoryDialog extends StatelessWidget {
   final List<PriceHistory> history;
   final String itemName;
   final String locationName;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
 
   PriceHistoryDialog({
     super.key,
@@ -31,13 +32,12 @@ class PriceHistoryDialog extends StatelessWidget {
           leading: Icon(
             isPositive ? Icons.arrow_upward : Icons.arrow_downward,
             // Substituindo cores fixas por cores do tema
-            color:
-                isPositive
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.tertiary,
+            color: isPositive
+                ? theme.colorScheme.error
+                : theme.colorScheme.tertiary,
           ),
           title: Text(
-            currencyFormat.format(record.price),
+            _currencyService.formatCurrency(record.price),
             style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           subtitle: Text(
@@ -50,10 +50,9 @@ class PriceHistoryDialog extends StatelessWidget {
             '${record.variation.abs().toStringAsFixed(1)}%',
             style: TextStyle(
               // Substituindo cores fixas por cores do tema
-              color:
-                  isPositive
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.tertiary,
+              color: isPositive
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.tertiary,
               fontWeight: FontWeight.bold,
             ),
           ),
