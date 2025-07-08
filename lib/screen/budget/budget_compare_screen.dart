@@ -5,6 +5,7 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_location.dart';
 import 'package:economize/screen/responsive_screen.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/utils/budget_utils.dart';
 import 'package:economize/widgets/budget/budget_summary_card.dart';
@@ -19,13 +20,14 @@ class BudgetCompareScreen extends StatelessWidget {
   final GlobalKey _backButtonKey = GlobalKey();
   final GlobalKey _helpButtonKey = GlobalKey();
   final Budget budget;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   BudgetCompareScreen({super.key, required this.budget});
 
   @override
   Widget build(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
+    // ✅ OBTER CURRENCYSERVICE AQUI NO BUILD:
+    final currencyService = context.watch<CurrencyService>();
     // Obtém o tema atual para usar as cores do esquema
     Theme.of(context);
 
@@ -490,6 +492,8 @@ class BudgetCompareScreen extends StatelessWidget {
     List<MapEntry<String, double>> savings,
   ) {
     final themeManager = context.watch<ThemeManager>();
+    final currencyService =
+        context.watch<CurrencyService>(); // ✅ ADICIONAR AQUI
     // Obtém o esquema de cores do tema atual
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -517,7 +521,7 @@ class BudgetCompareScreen extends StatelessWidget {
             style: TextStyle(color: themeManager.getCompareCardTextColor()),
           ),
           subtitle: Text(
-            'Economia: ${currencyFormat.format(item.value)}',
+            'Economia:  ${currencyService.formatCurrency(item.value)}',
             style: TextStyle(
               color: themeManager.getCompareSavingsTextColor(),
             ),
@@ -530,6 +534,7 @@ class BudgetCompareScreen extends StatelessWidget {
   // Método _buildBestPricesComparison com cores do tema atual
   Widget _buildBestPricesComparison(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
+    final currencyService = context.watch<CurrencyService>();
     // Obtém o esquema de cores do tema atual
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -585,7 +590,7 @@ class BudgetCompareScreen extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  'Melhor preço: ${currencyFormat.format(item.bestPrice)}',
+                  'Melhor preço: ${currencyService.formatCurrency(item.bestPrice)}',
                   style: TextStyle(
                     color: themeManager.getCompareSavingsTextColor(),
                   ),
@@ -609,6 +614,8 @@ class BudgetCompareScreen extends StatelessWidget {
   Widget _buildLocationComparison(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
     final totals = BudgetUtils.calculateTotalsByLocation(budget);
+    final currencyService =
+        context.watch<CurrencyService>(); // ✅ ADICIONAR AQUI
     // Obtém o esquema de cores do tema atual
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -661,7 +668,7 @@ class BudgetCompareScreen extends StatelessWidget {
                   ),
                 ),
                 trailing: Text(
-                  currencyFormat.format(total),
+                  currencyService.formatCurrency(total),
                   style: TextStyle(
                     color: themeManager.getCompareCardTextColor(),
                     fontWeight: FontWeight.bold,
