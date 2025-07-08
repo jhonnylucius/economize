@@ -1,6 +1,7 @@
 import 'package:economize/accounts/enum/account_type.dart';
 import 'package:economize/accounts/model/account_model.dart';
 import 'package:economize/animations/interactive_animations.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,8 +22,7 @@ class AccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
-    final currencyFormat =
-        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final CurrencyService currencyService = CurrencyService();
     final isNegative = account.balance < 0;
 
     return PressableCard(
@@ -88,7 +88,7 @@ class AccountCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                currencyFormat.format(account.balance),
+                currencyService.formatCurrency(account.balance),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
