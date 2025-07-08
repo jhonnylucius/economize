@@ -1,9 +1,9 @@
 import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/fade_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'dart:math' as math;
 
 class SplashScreen extends StatefulWidget {
@@ -15,7 +15,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  final Logger _logger = Logger();
   late AnimationController _controller;
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoRotationAnimation;
@@ -122,24 +121,30 @@ class _SplashScreenState extends State<SplashScreen>
     return colors[_random.nextInt(colors.length)];
   }
 
+  // SUBSTITUIR O MÉTODO _initializeApp:
   Future<void> _initializeApp() async {
     try {
-      _logger.d('Inicializando aplicativo e carregando banco de dados...');
-
-      // Aumentado para 5 segundos totais (se incluir o delay da animação)
-      // O app só navegará quando ambos terminarem (animação e carregamento)
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      _logger.d('Carregamento concluído, navegando para a tela principal');
+      // Simula carregamento
+      await Future.delayed(const Duration(seconds: 3));
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+
+      // ✅ VERIFICAR SE PRECISA CONFIGURAR MOEDA
+      final needsCurrencySelection = await CurrencyService.isFirstRun();
+
+      if (!mounted) return;
+      if (needsCurrencySelection) {
+        // Primeira execução - vai para seleção de país
+        Navigator.pushReplacementNamed(context, '/country-selection');
+      } else {
+        // Já configurado - vai direto para home
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
-      _logger.e('Erro ao inicializar o aplicativo: $e');
+      debugPrint('Erro na inicialização: $e');
+      // Em caso de erro, vai para home mesmo assim
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao inicializar: $e')),
-        );
+        Navigator.pushReplacementNamed(context, '/home');
       }
     }
   }
