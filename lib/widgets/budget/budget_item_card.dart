@@ -2,6 +2,7 @@ import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
 import 'package:economize/model/budget/price_history.dart';
 import 'package:economize/service/budget_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/price_history_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -44,7 +45,7 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
   bool _hasChanges = false;
   late TextEditingController _quantityController;
   late String _selectedUnit;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
   bool _isExpanded = false;
 
   @override
@@ -223,7 +224,7 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
         enabled: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: InputDecoration(
-          prefixText: 'R\$ ',
+          prefixText: '${_currencyService.currencySymbol} ',
           prefixStyle: TextStyle(color: appThemes.getInputTextColor()),
           isDense: true,
           filled: true,
@@ -269,8 +270,8 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
         ),
         child: Text(
           currentPrice != null
-              ? currencyFormat.format(currentPrice)
-              : 'R\$ 0,00',
+              ? _currencyService.formatCurrency(currentPrice)
+              : _currencyService.formatCurrency(0),
           style: TextStyle(
             color: appThemes.getCardTextColor(),
             fontWeight: FontWeight.w500,
@@ -362,8 +363,7 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
                               ...widget.locationNames.entries.map((entry) {
                                 final price = budgetItem.prices[entry.key] ?? 0;
                                 return _buildTableCell(
-                                  currencyFormat.format(price),
-                                  isGreen: price == budgetItem.bestPrice,
+                                  _currencyService.formatCurrency(price),
                                 );
                               }),
                               _buildTableCell(
@@ -373,7 +373,8 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
                                 isGreen: true,
                               ),
                               _buildTableCell(
-                                currencyFormat.format(budgetItem.bestPrice),
+                                _currencyService
+                                    .formatCurrency(budgetItem.bestPrice),
                                 isGreen: true,
                               ),
                             ],
@@ -513,12 +514,12 @@ class _BudgetItemCardState extends State<BudgetItemCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Melhor preço: ${currencyFormat.format(widget.item.bestPrice)}',
+          'Melhor preço: ${_currencyService.formatCurrency(widget.item.bestPrice)}',
           style: TextStyle(color: theme.colorScheme.primary),
         ),
         if (widget.item.unit != 'un')
           Text(
-            'Preço por unidade: ${currencyFormat.format(BudgetUtils.calculatePricePerUnit(widget.item.bestPrice, widget.item.quantity, widget.item.unit))} / ${widget.item.unit}',
+            'Preço por unidade: ${_currencyService.formatCurrency(BudgetUtils.calculatePricePerUnit(widget.item.bestPrice, widget.item.quantity, widget.item.unit))} / ${widget.item.unit}',
             style: TextStyle(
               color: theme.colorScheme.onSurface.withValues(
                 alpha: (0.7 * 255).toDouble(),
