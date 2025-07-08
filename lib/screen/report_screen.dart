@@ -3,6 +3,7 @@ import 'package:economize/animations/glass_container.dart';
 import 'package:economize/animations/scale_animation.dart';
 import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/screen/responsive_screen.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/report_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -21,7 +22,7 @@ class ReportScreen extends StatefulWidget {
 class _ReportScreenState extends State<ReportScreen>
     with SingleTickerProviderStateMixin {
   final ReportService _reportService = ReportService();
-  final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  late CurrencyService _currencyService;
   List<dynamic> _reportData = [];
   String _selectedType = 'receitas';
   String _selectedSpecificType = 'Todas';
@@ -38,6 +39,7 @@ class _ReportScreenState extends State<ReportScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
     _fetchAvailableTypesAndGenerateReport();
     _filterAnimationController = AnimationController(
       vsync: this,
@@ -1033,7 +1035,7 @@ class _ReportScreenState extends State<ReportScreen>
               const SizedBox(height: 8),
               // Valor logo abaixo do ícone
               Text(
-                _currencyFormat.format(amount),
+                _currencyService.formatCurrency(amount),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1179,7 +1181,7 @@ class _ReportScreenState extends State<ReportScreen>
                             ),
                             const SizedBox(width: 16),
                             Text(
-                              _currencyFormat.format(entry.value),
+                              _currencyService.formatCurrency(entry.value),
                               style: TextStyle(
                                 color: _selectedType == 'receitas'
                                     ? Colors.green
@@ -1307,7 +1309,7 @@ class _ReportScreenState extends State<ReportScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                _currencyFormat.format(amount),
+                _currencyService.formatCurrency(amount),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1376,7 +1378,7 @@ class _ReportScreenState extends State<ReportScreen>
                 ],
               ),
               Text(
-                _currencyFormat.format(_total),
+                _currencyService.formatCurrency(_total),
                 style: TextStyle(
                   color: themeManager.getTextosRelatorios(),
                   fontSize: 22,
