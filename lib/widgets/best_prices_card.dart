@@ -1,12 +1,13 @@
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/utils/budget_calculator.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class BestPricesCard extends StatelessWidget {
   final Budget budget;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
 
   BestPricesCard({super.key, required this.budget});
 
@@ -76,51 +77,50 @@ class BestPricesCard extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children:
-            items.take(5).map((item) {
-              final savings = item.calculateSavings();
-              final savingsPercentage = savings / item.bestPrice * 100;
+        children: items.take(5).map((item) {
+          final savings = item.calculateSavings();
+          final savingsPercentage = savings / item.bestPrice * 100;
 
-              return Card(
-                margin: const EdgeInsets.all(4),
-                color: theme.colorScheme.surface,
-                child: Container(
-                  width: 150,
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        currencyFormat.format(item.bestPrice),
-                        style: TextStyle(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      if (savings > 0)
-                        Text(
-                          'Economia: ${savingsPercentage.toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
+          return Card(
+            margin: const EdgeInsets.all(4),
+            color: theme.colorScheme.surface,
+            child: Container(
+              width: 150,
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              );
-            }).toList(),
+                  const SizedBox(height: 4),
+                  Text(
+                    _currencyService.formatCurrency(item.bestPrice),
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (savings > 0)
+                    Text(
+                      'Economia: ${savingsPercentage.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
