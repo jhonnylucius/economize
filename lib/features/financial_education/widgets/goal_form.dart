@@ -6,6 +6,7 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/features/financial_education/models/savings_goal.dart';
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
 import 'package:economize/features/financial_education/utils/goal_calculator.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -26,6 +27,8 @@ class _GoalFormState extends State<GoalForm>
   final _monthlyValueController = TextEditingController();
   final _monthsController = TextEditingController();
   final _discountController = TextEditingController();
+
+  final CurrencyService _currencyService = CurrencyService();
 
   // Cores fixas em roxo independente do tema
   final Color _primaryPurple = const Color(0xFF6200EE);
@@ -123,7 +126,7 @@ class _GoalFormState extends State<GoalForm>
             child: _buildFormField(
               controller: _targetValueController,
               label: 'Valor Total',
-              hint: 'Ex: 2.000,00',
+              hint: 'Ex: ${_currencyService.formatCurrency(2000)}',
               icon: Icons.attach_money,
               keyboardType: TextInputType.number,
               inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
@@ -475,7 +478,7 @@ class _GoalFormState extends State<GoalForm>
     return _buildFormField(
       controller: _monthlyValueController,
       label: 'Valor Mensal',
-      hint: 'Ex: 200,00',
+      hint: 'Ex: ${_currencyService.formatCurrency(200)}',
       icon: Icons.savings_outlined,
       keyboardType: TextInputType.number,
       inputFormatters: [CurrencyInputFormatter()], // NOVA FORMATAÇÃO
