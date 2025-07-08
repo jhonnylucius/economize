@@ -1,5 +1,6 @@
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/pdf_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,7 +17,7 @@ class PriceComparisonTable extends StatefulWidget {
 
 class _PriceComparisonTableState extends State<PriceComparisonTable> {
   final GlobalKey _screenShotKey = GlobalKey();
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
   final ScrollController _horizontalController = ScrollController();
   final ScrollController _verticalController = ScrollController();
   final PdfService _pdfService = PdfService();
@@ -199,14 +200,15 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
                             _buildCell(item.name),
                             ...widget.budget.locations.map(
                               (loc) => _buildCell(
-                                currencyFormat.format(item.prices[loc.id] ?? 0),
+                                _currencyService
+                                    .formatCurrency(item.prices[loc.id] ?? 0),
                                 isHighlighted:
                                     item.prices[loc.id] == item.bestPrice,
                               ),
                             ),
                             _buildCell(bestLocation.name, isGreen: true),
                             _buildCell(
-                              currencyFormat.format(item.bestPrice),
+                              _currencyService.formatCurrency(item.bestPrice),
                               isGreen: true,
                             ),
                           ],
@@ -225,7 +227,7 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
                           ),
                           ...widget.budget.locations.map(
                             (loc) => _buildCell(
-                              currencyFormat.format(
+                              _currencyService.formatCurrency(
                                 locationTotals[loc.id] ?? 0,
                               ),
                               isHighlighted: true,
@@ -234,7 +236,7 @@ class _PriceComparisonTableState extends State<PriceComparisonTable> {
                           ),
                           _buildCell('-', isHighlighted: true),
                           _buildCell(
-                            currencyFormat.format(bestPriceTotal),
+                            _currencyService.formatCurrency(bestPriceTotal),
                             isGreen: true,
                           ),
                         ],
