@@ -12,6 +12,7 @@ import 'package:economize/model/costs.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_colors.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -42,6 +43,9 @@ class DashBoardScreenState extends State<DashBoardScreen>
   bool _showSuccessMessage = false;
   bool _showCharts = false;
   bool _pulseInfo = false;
+
+  late CurrencyService _currencyService;
+
   // chaves para tutorial
 
   final GlobalKey _helpKey = GlobalKey();
@@ -79,6 +83,9 @@ class DashBoardScreenState extends State<DashBoardScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
+    _loadAccounts();
+    _loadFilteredData();
     _loadAccounts();
     _loadFilteredData();
 
@@ -1179,8 +1186,6 @@ class DashBoardScreenState extends State<DashBoardScreen>
   }
 
   Widget _buildAccountFilterCard(ThemeManager themeManager) {
-    final currencyFormat =
-        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     final isReceita = _selectedTipo == 'receitas';
     final theme = Theme.of(context);
 
@@ -1613,7 +1618,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                     ),
                   ),
                   Text(
-                    currencyFormat.format(total),
+                    _currencyService.formatCurrency(total),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -1640,8 +1645,6 @@ class DashBoardScreenState extends State<DashBoardScreen>
   ) {
     final theme = Theme.of(context);
     final isRevenue = title.contains('Receitas');
-    final currencyFormat =
-        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
     showDialog(
       context: context,
@@ -1800,8 +1803,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                         physics: const BouncingScrollPhysics(),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child:
-                              _buildChartContentPieDetailed(dataByType, colors),
+                          child: _buildChartContentPieDetailed(
+                              dataByType, colors, _currencyService),
                         ),
                       ),
                     ),
@@ -1859,7 +1862,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           Text(
-                                            currencyFormat.format(r.preco),
+                                            _currencyService
+                                                .formatCurrency(r.preco),
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
@@ -1903,7 +1907,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           Text(
-                                            currencyFormat.format(c.preco),
+                                            _currencyService
+                                                .formatCurrency(c.preco),
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
@@ -2008,7 +2013,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                     Icons.arrow_upward_rounded,
                     Colors.green,
                     'Receitas',
-                    'R\$${totalRevenues.toStringAsFixed(2)}',
+                    _currencyService.formatCurrency(totalRevenues),
                   ),
                 ),
 
@@ -2027,7 +2032,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                     Icons.arrow_downward_rounded,
                     Colors.red,
                     'Despesas',
-                    'R\$${totalCosts.toStringAsFixed(2)}',
+                    _currencyService.formatCurrency(totalCosts),
                   ),
                 ),
               ],
@@ -2045,7 +2050,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                     Icons.trending_up,
                     Colors.green.withAlpha((0.7 * 255).round()),
                     'Média Receitas',
-                    'R\$${averageRevenues.toStringAsFixed(2)}',
+                    _currencyService.formatCurrency(averageRevenues),
                     fontSize: 13,
                   ),
                 ),
@@ -2065,7 +2070,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
                     Icons.trending_down,
                     Colors.red.withAlpha((0.7 * 255).round()),
                     'Média Despesas',
-                    'R\$${averageCosts.toStringAsFixed(2)}',
+                    _currencyService.formatCurrency(averageCosts),
                     fontSize: 13,
                   ),
                 ),
@@ -2107,7 +2112,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                       end: saldo.round(),
                       duration: const Duration(seconds: 2),
                       curve: Curves.easeOutCubic,
-                      formatter: (value) => 'R\$${value.toStringAsFixed(2)}',
+                      formatter: (value) =>
+                          _currencyService.formatCurrency(saldo),
                       textStyle: theme.textTheme.titleMedium?.copyWith(
                         color: saldoColor,
                         fontWeight: FontWeight.bold,
@@ -2345,8 +2351,8 @@ class DashBoardScreenState extends State<DashBoardScreen>
                         physics: const BouncingScrollPhysics(),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child:
-                              _buildChartContentPieDetailed(dataByType, colors),
+                          child: _buildChartContentPieDetailed(
+                              dataByType, colors, _currencyService),
                         ),
                       ),
                     ),
@@ -2541,6 +2547,7 @@ Widget _buildBadge(String title, Color color) {
 Widget _buildChartContentPieDetailed(
   Map<String, double> dataByType,
   List<Color> colors,
+  CurrencyService currencyService,
 ) {
   List<PieChartSectionData> pieChartSections = [];
   int colorIndex = 0;
@@ -2626,7 +2633,7 @@ Widget _buildChartContentPieDetailed(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'R\$${value.toStringAsFixed(2)}',
+                      '${currencyService.formatCurrency(value)} ',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
