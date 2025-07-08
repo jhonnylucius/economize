@@ -7,6 +7,7 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/data/goal_dao.dart';
 import 'package:economize/features/financial_education/models/savings_goal.dart';
 import 'package:economize/features/financial_education/utils/goal_calculator.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
@@ -24,7 +25,7 @@ class GoalResultCard extends StatefulWidget {
 
 class _GoalResultCardState extends State<GoalResultCard>
     with SingleTickerProviderStateMixin {
-  final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
   late AnimationController _controller;
   bool _showConfetti = true;
 
@@ -331,7 +332,7 @@ class _GoalResultCardState extends State<GoalResultCard>
               SlideAnimation.fromRight(
                 delay: const Duration(milliseconds: 100),
                 child: Text(
-                  'Meta: ${_currencyFormat.format(widget.goal.targetValue)}',
+                  'Meta: ${_currencyService.formatCurrency(widget.goal.targetValue)}',
                   style: TextStyle(
                     color: theme.colorScheme.onSurface
                         .withAlpha((0.7 * 255).toInt()),
@@ -368,7 +369,7 @@ class _GoalResultCardState extends State<GoalResultCard>
       content = _buildInfoRow(
         theme,
         'Valor mensal necessário:',
-        _currencyFormat.format(monthlyValue),
+        _currencyService.formatCurrency(monthlyValue),
         icon: Icons.savings,
         iconAnimation: PulseAnimation(
           minScale: 0.8,
@@ -409,7 +410,7 @@ class _GoalResultCardState extends State<GoalResultCard>
             _buildInfoRow(
               theme,
               'Economia à vista:',
-              _currencyFormat.format(savings),
+              _currencyService.formatCurrency(savings),
               icon: Icons.discount,
               valueColor: theme.colorScheme.primary,
               animate: true,
@@ -421,7 +422,7 @@ class _GoalResultCardState extends State<GoalResultCard>
             _buildInfoRow(
               theme,
               'Valor final:',
-              _currencyFormat.format(finalValue),
+              _currencyService.formatCurrency(finalValue),
               icon: Icons.attach_money,
               valueColor: theme.colorScheme.primary,
               animate: true,
@@ -484,7 +485,7 @@ class _GoalResultCardState extends State<GoalResultCard>
             ),
             const SizedBox(height: 12),
             Text(
-              'Para alcançar sua meta em até 2 anos, considere economizar ${_currencyFormat.format(suggestedValue)} por mês.',
+              'Para alcançar sua meta em até 2 anos, considere economizar ${_currencyService.formatCurrency(suggestedValue)} por mês.',
               style:
                   TextStyle(color: theme.colorScheme.onSurface, fontSize: 15),
             ),
