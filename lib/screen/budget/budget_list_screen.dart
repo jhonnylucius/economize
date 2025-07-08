@@ -6,6 +6,7 @@ import 'package:economize/data/default_items.dart';
 import 'package:economize/icons/my_flutter_app_icons.dart';
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/service/budget_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/utils/budget_utils.dart';
@@ -22,7 +23,7 @@ class BudgetListScreen extends StatefulWidget {
 
 class _BudgetListScreenState extends State<BudgetListScreen> {
   final BudgetService _budgetService = BudgetService();
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  late CurrencyService _currencyService;
   final _searchController = TextEditingController();
   String? _selectedCategory;
   bool _isLoading = false;
@@ -35,6 +36,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>(); // ✅ CORRIGIR ESTA LINHA
     _loadBudgets();
   }
 
@@ -619,7 +621,7 @@ class _BudgetListScreenState extends State<BudgetListScreen> {
           budget: budget,
           onTap: () => _navigateToBudgetDetail(budget),
           onDelete: () => _deleteBudget(budget),
-          currencyFormat: currencyFormat,
+          currencyService: _currencyService,
           themeManager: themeManager,
         );
       },
@@ -797,14 +799,14 @@ class _BudgetCard extends StatelessWidget {
   final Budget budget;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-  final NumberFormat currencyFormat;
+  final CurrencyService currencyService;
   final ThemeManager themeManager;
 
   const _BudgetCard({
     required this.budget,
     required this.onTap,
     required this.onDelete,
-    required this.currencyFormat,
+    required this.currencyService,
     required this.themeManager,
   });
 
@@ -863,17 +865,20 @@ class _BudgetCard extends StatelessWidget {
                 children: [
                   _InfoColumn(
                     label: 'Total Original',
-                    value: currencyFormat.format(budget.summary.totalOriginal),
+                    value: currencyService
+                        .formatCurrency(budget.summary.totalOriginal),
                     appThemes: appThemes,
                   ),
                   _InfoColumn(
                     label: 'Melhor Preço',
-                    value: currencyFormat.format(budget.summary.totalOptimized),
+                    value: currencyService
+                        .formatCurrency(budget.summary.totalOptimized),
                     appThemes: appThemes,
                   ),
                   _InfoColumn(
                     label: 'Economia',
-                    value: currencyFormat.format(budget.summary.savings),
+                    value:
+                        currencyService.formatCurrency(budget.summary.savings),
                     appThemes: appThemes,
                   ),
                 ],
