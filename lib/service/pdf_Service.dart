@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:economize/model/budget/budget.dart';
 import 'package:economize/model/budget/budget_item.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class PdfService {
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
 
   List<BudgetItem> _getSortedItems(Budget budget) {
     final groupedItems = <String, List<BudgetItem>>{};
@@ -60,10 +61,10 @@ class PdfService {
         index.toString(),
         item.name,
         ...budget.locations.map(
-          (loc) => currencyFormat.format(item.prices[loc.id] ?? 0),
+          (loc) => _currencyService.formatCurrency(item.prices[loc.id] ?? 0),
         ),
         bestLocation.name,
-        currencyFormat.format(item.bestPrice),
+        _currencyService.formatCurrency(item.bestPrice),
       ];
     }).toList();
 
@@ -85,10 +86,10 @@ class PdfService {
       '-',
       'Totais',
       ...budget.locations.map(
-        (loc) => currencyFormat.format(locationTotals[loc.id] ?? 0),
+        (loc) => _currencyService.formatCurrency(locationTotals[loc.id] ?? 0),
       ),
       '-',
-      currencyFormat.format(bestPriceTotal),
+      _currencyService.formatCurrency(bestPriceTotal),
     ]);
 
     // Gerar PDF
@@ -145,17 +146,18 @@ class PdfService {
               children: [
                 _buildSummaryItem(
                   'Total Original',
-                  currencyFormat.format(budget.summary.totalOriginal),
+                  _currencyService.formatCurrency(budget.summary.totalOriginal),
                   PdfColors.grey700,
                 ),
                 _buildSummaryItem(
                   'Melhor Preço',
-                  currencyFormat.format(budget.summary.totalOptimized),
+                  _currencyService
+                      .formatCurrency(budget.summary.totalOptimized),
                   PdfColors.green700,
                 ),
                 _buildSummaryItem(
                   'Economia',
-                  currencyFormat.format(budget.summary.savings),
+                  _currencyService.formatCurrency(budget.summary.savings),
                   PdfColors.blue700,
                 ),
               ],
