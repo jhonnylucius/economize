@@ -7,6 +7,7 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/costs.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_themes.dart';
 import 'package:economize/theme/theme_manager.dart';
@@ -28,7 +29,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
     with TickerProviderStateMixin {
   final CostsService _costsService = CostsService();
   final RevenuesService _revenuesService = RevenuesService();
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  late CurrencyService _currencyService;
 
   bool _isLoading = true;
   bool _showLegend = true;
@@ -75,6 +76,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
 
     // Definir orientação paisagem quando a tela é aberta (Adicionado/Modificado)
     SystemChrome.setPreferredOrientations([
@@ -1207,7 +1209,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
         ),
         const SizedBox(height: 2),
         Text(
-          currencyFormat.format(value),
+          _currencyService.formatCurrency(value),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
@@ -1651,7 +1653,7 @@ class _TrendChartScreenState extends State<TrendChartScreen>
 
               children.add(
                 TextSpan(
-                  text: '$label: ${currencyFormat.format(spot.y)}\n',
+                  text: '$label: ${_currencyService.formatCurrency(spot.y)}\n',
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.bold,
