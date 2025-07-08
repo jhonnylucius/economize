@@ -1,4 +1,5 @@
 import 'package:economize/features/financial_education/utils/currency_input_formatter.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:economize/accounts/model/account_model.dart';
 import 'package:economize/accounts/service/account_service.dart';
@@ -27,6 +28,7 @@ class _TransferScreenState extends State<TransferScreen> {
   DateTime _selectedDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
+  final CurrencyService _currencyService = CurrencyService();
 
   @override
   void initState() {
@@ -110,19 +112,19 @@ class _TransferScreenState extends State<TransferScreen> {
               TextFormField(
                 controller: _amountController,
                 style: const TextStyle(color: Colors.black),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Valor',
-                  labelStyle: TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black54),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
                   ),
                   prefixIcon:
-                      Icon(Icons.attach_money, color: Colors.black), // opcional
-                  hintText: 'R\$ 0,00',
-                  hintStyle: TextStyle(color: Colors.black26),
+                      const Icon(Icons.attach_money, color: Colors.black),
+                  hintText: _currencyService.formatCurrency(0),
+                  hintStyle: const TextStyle(color: Colors.black26),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
