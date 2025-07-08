@@ -7,6 +7,7 @@ import 'package:economize/features/financial_education/utils/currency_input_form
 import 'package:economize/model/costs.dart';
 import 'package:economize/model/revenues.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
   late int _selectedIcon;
 
   final AccountService _service = AccountService();
+  final CurrencyService _currencyService = CurrencyService();
 
   @override
   void initState() {
@@ -41,7 +43,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
     // Se for edição, mostra o saldo atual formatado; se for novo, campo vazio
     final balance = widget.account?.balance;
     final formattedBalance = (balance != null && balance > 0)
-        ? NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(balance)
+        ? _currencyService.formatCurrency(balance)
         : '';
     _balanceController = TextEditingController(text: formattedBalance);
 
@@ -63,13 +65,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text;
 
-      String valorTexto = _balanceController.text
-          .replaceAll('R\$', '')
-          .replaceAll('.', '')
-          .replaceAll(',', '.')
-          .replaceAll(' ', '')
-          .trim();
-      final balance = double.tryParse(valorTexto) ?? 0.0;
+      final balance = CurrencyParser.parse(_balanceController.text);
 
       final isNewAccount = widget.account == null;
       final oldBalance = widget.account?.balance ?? 0.0;
@@ -240,7 +236,7 @@ class AccountFormScreenState extends State<AccountFormScreen> {
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.attach_money,
                             color: textColor.withAlpha((0.6 * 255).toInt())),
-                        hintText: 'R\$ 0,00',
+                        hintText: _currencyService.formatCurrency(0),
                         hintStyle: TextStyle(
                           color: textColor.withAlpha((0.4 * 255).toInt()),
                         ),
