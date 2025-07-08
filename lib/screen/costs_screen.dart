@@ -10,6 +10,7 @@ import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
 import 'package:economize/service/gamification/achievement_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:economize/widgets/category_grid.dart';
@@ -42,6 +43,7 @@ class _CostsScreenState extends State<CostsScreen>
   DateTime? _endDate;
   late AnimationController _animationController;
   final GlobalKey _helpKey = GlobalKey();
+  late CurrencyService _currencyService;
 
   // Categorias (sem alteração)
   static const List<Map<String, dynamic>> _categoriasDespesa = [
@@ -158,6 +160,7 @@ class _CostsScreenState extends State<CostsScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
     _loadCosts();
     _animationController = AnimationController(
       vsync: this,
@@ -739,8 +742,11 @@ class _CostsScreenState extends State<CostsScreen>
                           initialDate: _startDate ?? DateTime.now(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
-                          locale: const Locale('pt', 'BR'),
-                          // CORRIGIR: Usar getCurrentPrimaryColor para TODOS os elementos:
+                          locale: Locale(
+                              _currencyService.selectedCountry.locale
+                                  .split('_')[0],
+                              _currencyService.selectedCountry.locale
+                                  .split('_')[1]),
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.light().copyWith(
@@ -860,8 +866,11 @@ class _CostsScreenState extends State<CostsScreen>
                           initialDate: _endDate ?? DateTime.now(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
-                          locale: const Locale('pt', 'BR'),
-                          // CORRIGIR: Usar getCurrentPrimaryColor para TODOS os elementos:
+                          locale: Locale(
+                              _currencyService.selectedCountry.locale
+                                  .split('_')[0],
+                              _currencyService.selectedCountry.locale
+                                  .split('_')[1]),
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.light().copyWith(
@@ -1143,8 +1152,7 @@ class _CostsScreenState extends State<CostsScreen>
               ),
               const SizedBox(height: 12),
               Text(
-                NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$')
-                    .format(totalValue),
+                _currencyService.formatCurrency(totalValue),
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -1456,9 +1464,7 @@ class _CostsScreenState extends State<CostsScreen>
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    NumberFormat.currency(
-                                            locale: 'pt_BR', symbol: 'R\$')
-                                        .format(totalValue),
+                                    _currencyService.formatCurrency(totalValue),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -1525,6 +1531,41 @@ class _CostsScreenState extends State<CostsScreen>
                                             : Colors.red,
                                         fontWeight: FontWeight.bold,
                                       ),
+                                    ),
+                                  )
+// ✅ NOVO: INDICADOR DE PAGO (O VERDINHO DA FELICIDADE!)
+                                else
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green
+                                          .withAlpha((0.15 * 255).toInt()),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.green
+                                            .withAlpha((0.3 * 255).toInt()),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.check_circle,
+                                          size: 12,
+                                          color: Colors.green.shade700,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'PAGO! 🎊💚',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.green.shade700,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                               ],
@@ -1639,7 +1680,10 @@ class _CostsScreenState extends State<CostsScreen>
   Future<void> _showFormModal({Costs? model}) async {
     context.read<ThemeManager>();
     final precoController = TextEditingController(
-      text: model?.preco.toString() ?? '', // ✅ AQUI É ONDE DEVE FICAR
+      text: model != null
+          ? _currencyService
+              .formatCurrency(model.preco) // ✅ FORMATAÇÃO DINÂMICA
+          : '',
     );
 
     // Sempre usar o tema claro no modal
@@ -1806,8 +1850,11 @@ class _CostsScreenState extends State<CostsScreen>
                             initialDate: model?.data ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime(2030),
-                            locale: const Locale('pt', 'BR'),
-                            // CORRIGIR: Acessar themeManager via Provider
+                            locale: Locale(
+                                _currencyService.selectedCountry.locale
+                                    .split('_')[0],
+                                _currencyService.selectedCountry.locale
+                                    .split('_')[1]),
                             builder: (context, child) {
                               final themeManager = Provider.of<ThemeManager>(
                                   context,
@@ -1989,7 +2036,6 @@ class _CostsScreenState extends State<CostsScreen>
                           if (value == null || value.isEmpty) {
                             return 'Por favor, informe um valor';
                           }
-                          // ✅ AJUSTAR validação para formato brasileiro
                           final cleanValue =
                               value.replaceAll(RegExp(r'[^\d]'), '');
                           if (cleanValue.isEmpty ||
@@ -1999,11 +2045,30 @@ class _CostsScreenState extends State<CostsScreen>
                           return null;
                         },
                         decoration: InputDecoration(
-                          prefixIcon: Icon(
-                            Icons.attach_money,
-                            color: textColor.withAlpha((0.6 * 255).toInt()),
+                          prefixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 12),
+                              Text(
+                                _currencyService
+                                    .countryFlag, // ✅ BANDEIRA DINÂMICA
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _currencyService
+                                    .currencySymbol, // ✅ SÍMBOLO DINÂMICO
+                                style: TextStyle(
+                                  color:
+                                      textColor.withAlpha((0.6 * 255).toInt()),
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
                           ),
-                          hintText: 'R\$ 0,00', // ✅ FORMATO BRASILEIRO
+                          hintText:
+                              '${_currencyService.currencySymbol} 0,00', // ✅ HINT DINÂMICO
                           hintStyle: TextStyle(
                             color: textColor.withAlpha((0.4 * 255).toInt()),
                           ),
