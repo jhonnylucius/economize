@@ -8,6 +8,7 @@ import 'package:economize/animations/slide_animation.dart';
 import 'package:economize/model/notification_type.dart';
 import 'package:economize/screen/responsive_screen.dart';
 import 'package:economize/service/costs_service.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:economize/service/revenues_service.dart';
 import 'package:economize/theme/app_themes.dart';
@@ -56,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen>
   // Adicionar estes novos elementos
   StreamSubscription<String>? _updateSubscription;
   Timer? _periodicTimer;
+
+  // ✅ ADICIONAR ESTA LINHA:
+  late CurrencyService _currencyService;
 
   // Returns the route for each functionality index
   String _getRouteForIndex(int index) {
@@ -129,8 +133,6 @@ class _HomeScreenState extends State<HomeScreen>
   // Adicione o serviço de notificações (Adicionado)
   final NotificationService _notificationService = NotificationService();
 
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-
   // Estados para interações
   int selectedCategoryTab = 0;
   bool expandedViewMode = false;
@@ -157,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
 
     // Garantir orientação portrait ao iniciar/inicializar
     SystemChrome.setPreferredOrientations([
@@ -199,6 +202,17 @@ class _HomeScreenState extends State<HomeScreen>
 
     // NOVO: Timer periódico para atualizações automáticas (opcional)
     _setupPeriodicUpdates();
+
+    _currencyService.addListener(_onCurrencyChanged);
+  }
+
+  void _onCurrencyChanged() {
+    if (mounted) {
+      setState(() {
+        // Força reconstrução com nova moeda
+      });
+      _loadFinancialData();
+    }
   }
 
   Future<void> _checkIfTipShouldBeShown() async {
@@ -418,6 +432,7 @@ class _HomeScreenState extends State<HomeScreen>
     _showFloatingPanel.dispose();
     _controller.dispose();
     _gridController.dispose();
+    _currencyService.removeListener(_onCurrencyChanged);
     super.dispose();
   }
 
@@ -732,12 +747,20 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               label: 'Saldo',
             ),
+            // ❌ TROCAR DE:
+            // BottomNavigationBarItem(
+            //   icon: ScaleAnimation.bounceIn(
+            //     child: Icon(Icons.emoji_events, color: theme.colorScheme.primary),
+            //   ),
+            //   label: 'Conquistas',
+            // ),
+
+            // ✅ PARA:
             BottomNavigationBarItem(
               icon: ScaleAnimation.bounceIn(
-                child:
-                    Icon(Icons.emoji_events, color: theme.colorScheme.primary),
+                child: Icon(Icons.language, color: theme.colorScheme.primary),
               ),
-              label: 'Conquistas',
+              label: 'Moeda',
             ),
           ],
           onTap: (index) {
@@ -756,8 +779,11 @@ class _HomeScreenState extends State<HomeScreen>
                 Navigator.pushNamed(context, '/balance');
                 break;
               case 4:
-                // 🏆 GALERIA DE CONQUISTAS!
-                Navigator.pushNamed(context, '/achievements');
+                // ❌ TROCAR DE:
+                // Navigator.pushNamed(context, '/achievements');
+
+                // ✅ PARA:
+                Navigator.pushNamed(context, '/country-selection');
                 break;
             }
           },
@@ -937,7 +963,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        currencyFormat.format(_currentBalance),
+                        _currencyService.formatCurrency(_currentBalance),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 28,
