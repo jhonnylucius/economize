@@ -6,9 +6,9 @@ import 'package:economize/animations/celebration_animations.dart';
 import 'package:economize/animations/interactive_animations.dart';
 import 'package:economize/animations/loading_animations.dart';
 import 'package:economize/animations/slide_animation.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class BalanceScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class BalanceScreen extends StatefulWidget {
 class _BalanceScreenState extends State<BalanceScreen>
     with TickerProviderStateMixin {
   final AccountService _accountService = AccountService();
-  final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  late CurrencyService _currencyService;
 
   late AnimationController _pulseController;
   late AnimationController _confettiController;
@@ -33,6 +33,7 @@ class _BalanceScreenState extends State<BalanceScreen>
   @override
   void initState() {
     super.initState();
+    _currencyService = context.read<CurrencyService>();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -180,7 +181,7 @@ class _BalanceScreenState extends State<BalanceScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _currencyFormat.format(_totalBalance),
+                      _currencyService.formatCurrency(_totalBalance),
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
