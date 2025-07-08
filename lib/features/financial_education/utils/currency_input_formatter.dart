@@ -1,12 +1,9 @@
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class CurrencyInputFormatter extends TextInputFormatter {
-  final NumberFormat _formatter = NumberFormat.currency(
-    locale: 'pt_BR',
-    symbol: '',
-    decimalDigits: 2,
-  );
+  final CurrencyService _currencyService = CurrencyService();
 
   @override
   TextEditingValue formatEditUpdate(
@@ -30,10 +27,11 @@ class CurrencyInputFormatter extends TextInputFormatter {
     double value = double.parse(numericString) / 100;
 
     // Formata o valor
-    String formatted = _formatter.format(value);
+    String formatted = _currencyService.formatCurrency(value);
 
     // Remove o símbolo da moeda que foi adicionado pelo formatter
-    formatted = formatted.replaceAll('R\$', '').trim();
+    String symbol = _currencyService.currencySymbol;
+    formatted = formatted.replaceAll(symbol, '').trim();
 
     return TextEditingValue(
       text: formatted,
@@ -43,24 +41,38 @@ class CurrencyInputFormatter extends TextInputFormatter {
 }
 
 class CurrencyParser {
+  static final CurrencyService _currencyService = CurrencyService();
+
   static double parse(String formattedValue) {
     if (formattedValue.isEmpty) return 0.0;
 
-    // Remove todos os caracteres exceto números e vírgula
-    String numericString = formattedValue.replaceAll(RegExp(r'[^\d,]'), '');
+    // Remove símbolo da moeda atual
+    String symbol = _currencyService.currencySymbol;
+    String cleanValue = formattedValue.replaceAll(symbol, '');
 
-    // Substitui vírgula por ponto para conversão
-    numericString = numericString.replaceAll(',', '.');
+    // Remove espaços e outros caracteres
+    cleanValue = cleanValue.replaceAll(RegExp(r'[^\d,.]'), '');
 
-    return double.tryParse(numericString) ?? 0.0;
+    // ✅ USAR O MÉTODO CORRETO:
+    String decimalSeparator = _currencyService.getDecimalSeparator();
+
+    // Se usar vírgula como decimal, converte para ponto
+    if (decimalSeparator == ',') {
+      // Remove separadores de milhares (pontos) primeiro
+      cleanValue = cleanValue.replaceAll('.', '');
+      // Converte vírgula decimal para ponto
+      cleanValue = cleanValue.replaceAll(',', '.');
+    } else {
+      // Se usar ponto como decimal, remove vírgulas de milhares
+      cleanValue = cleanValue.replaceAll(',', '');
+    }
+
+    return double.tryParse(cleanValue) ?? 0.0;
   }
 
   static String format(double value) {
-    final formatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: '',
-      decimalDigits: 2,
-    );
-    return formatter.format(value).trim();
+    String formatted = _currencyService.formatCurrency(value);
+    String symbol = _currencyService.currencySymbol;
+    return formatted.replaceAll(symbol, '').trim();
   }
 }
