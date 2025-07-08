@@ -1,4 +1,5 @@
 import 'package:economize/model/budget/budget_summary.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/theme/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,8 +10,9 @@ class BudgetSummaryCard extends StatelessWidget {
   final String title;
   final Map<String, String>? locationNames;
   final bool showDetails;
+  final CurrencyService _currencyService = CurrencyService();
 
-  const BudgetSummaryCard({
+  BudgetSummaryCard({
     super.key,
     required this.summary,
     this.title = 'Resumo',
@@ -36,8 +38,8 @@ class BudgetSummaryCard extends StatelessWidget {
               Divider(
                 height: 32,
                 color: themeManager.getSummaryCardTextColor().withValues(
-                  alpha: (0.2 * 255).toInt().toDouble(),
-                ),
+                      alpha: (0.2 * 255).toInt().toDouble(),
+                    ),
               ),
               _buildLocationDetails(context),
             ],
@@ -49,10 +51,9 @@ class BudgetSummaryCard extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
-    final savingsPercentage =
-        summary.totalOriginal > 0
-            ? (summary.savings / summary.totalOriginal * 100)
-            : 0.0;
+    final savingsPercentage = summary.totalOriginal > 0
+        ? (summary.savings / summary.totalOriginal * 100)
+        : 0.0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,10 +82,6 @@ class BudgetSummaryCard extends StatelessWidget {
 
   Widget _buildMainSummary(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -92,21 +89,21 @@ class BudgetSummaryCard extends StatelessWidget {
         _buildSummaryItem(
           context,
           'Total Original',
-          currencyFormat.format(summary.totalOriginal),
+          _currencyService.formatCurrency(summary.totalOriginal),
           themeManager.getSummaryCardTitleColor(),
           Icons.shopping_cart,
         ),
         _buildSummaryItem(
           context,
           'Melhor Preço',
-          currencyFormat.format(summary.totalOptimized),
+          _currencyService.formatCurrency(summary.totalOptimized),
           themeManager.getSummaryCardTitleColor(),
           Icons.verified,
         ),
         _buildSummaryItem(
           context,
           'Economia',
-          currencyFormat.format(summary.savings),
+          _currencyService.formatCurrency(summary.savings),
           themeManager.getSummaryCardTitleColor(),
           Icons.savings,
         ),
@@ -116,13 +113,9 @@ class BudgetSummaryCard extends StatelessWidget {
 
   Widget _buildLocationDetails(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
-    final currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-    );
-    final sortedLocations =
-        summary.totalByLocation.entries.toList()
-          ..sort((a, b) => a.value.compareTo(b.value));
+
+    final sortedLocations = summary.totalByLocation.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +152,7 @@ class BudgetSummaryCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      currencyFormat.format(total),
+                      _currencyService.formatCurrency(total),
                       style: TextStyle(
                         color: themeManager.getSummaryCardTextColor(),
                         fontWeight: FontWeight.w500,
@@ -202,8 +195,8 @@ class BudgetSummaryCard extends StatelessWidget {
           label,
           style: TextStyle(
             color: themeManager.getSummaryCardTextColor().withValues(
-              alpha: (0.7 * 255).toInt().toDouble(),
-            ),
+                  alpha: (0.7 * 255).toInt().toDouble(),
+                ),
             fontSize: 12,
           ),
         ),
