@@ -1,11 +1,12 @@
 import 'package:economize/model/budget/budget.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/utils/budget_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class SavingsAnalysisCard extends StatelessWidget {
   final Budget budget;
-  final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  final CurrencyService _currencyService = CurrencyService();
 
   SavingsAnalysisCard({super.key, required this.budget});
 
@@ -57,7 +58,8 @@ class SavingsAnalysisCard extends StatelessWidget {
             _buildSavingsStat(
               context,
               'Economia Total',
-              currencyFormat.format(analysis['totalSaving'] as double),
+              _currencyService
+                  .formatCurrency(analysis['totalSaving'] as double),
               Icons.savings,
               theme.colorScheme.primary,
             ),
@@ -162,7 +164,7 @@ class SavingsAnalysisCard extends StatelessWidget {
               ),
             ),
             trailing: Text(
-              currencyFormat.format(rec['bestPrice']),
+              _currencyService.formatCurrency(rec['bestPrice']),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.primary,
