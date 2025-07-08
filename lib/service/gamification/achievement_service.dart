@@ -1,6 +1,7 @@
 import 'package:economize/data/gamification/achievement_dao.dart';
 import 'package:economize/model/gamification/achievement.dart';
 import 'package:economize/service/gamification/achievement_checker.dart';
+import 'package:economize/service/moedas/currency_service.dart';
 import 'package:economize/service/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -10,6 +11,7 @@ class AchievementService {
   static final AchievementService _instance = AchievementService._internal();
   factory AchievementService() => _instance;
   AchievementService._internal();
+  static final CurrencyService _currencyService = CurrencyService();
 
   static AchievementService get instance => _instance;
 
@@ -120,8 +122,9 @@ class AchievementService {
         id: 'savings_2000',
         title: '💰 Primeiras Economias',
         description:
-            'Você economizou seus primeiros R\$ 2000! Cada centavo conta!',
-        secretDescription: 'Economize R\$ 2000 para desbloquear',
+            'Você economizou seus primeiros ${_currencyService.formatCurrency(2000)}! Cada centavo conta!',
+        secretDescription:
+            'Economize ${_currencyService.formatCurrency(2000)} para desbloquear',
         type: AchievementType.firstSaving,
         rarity: AchievementRarity.silver,
         imagePath: 'assets/conquistas/conquista5.png',
@@ -146,9 +149,11 @@ class AchievementService {
       // 🥇 OURO - Conquistas avançadas
       Achievement(
         id: 'savings_4000',
-        title: '💎 Mil Reais',
-        description: 'R\$ 4.000 economizados! Você está no caminho certo!',
-        secretDescription: 'Economize R\$ 4.000 para desbloquear',
+        title: '💎 Quatro Mil!',
+        description:
+            '${_currencyService.formatCurrency(4000)} economizados! Você está no caminho certo!',
+        secretDescription:
+            'Economize ${_currencyService.formatCurrency(4000)} para desbloquear',
         type: AchievementType.fiveThousand,
         rarity: AchievementRarity.gold,
         imagePath: 'assets/conquistas/conquista7.png',
@@ -186,9 +191,11 @@ class AchievementService {
       // 💎 LENDÁRIAS - Conquistas épicas
       Achievement(
         id: 'savings_20000',
-        title: '👑 Vinte Mil Reais!',
-        description: 'R\$ 20.000 economizados! Você é LENDÁRIO!',
-        secretDescription: 'Economize R\$ 20.000 para desbloquear',
+        title: '👑 Vinte Mil!',
+        description:
+            '${_currencyService.formatCurrency(20000)} economizados! Você é LENDÁRIO!',
+        secretDescription:
+            'Economize ${_currencyService.formatCurrency(20000)} para desbloquear',
         type: AchievementType.masterSaver,
         rarity: AchievementRarity.legendary,
         imagePath: 'assets/conquistas/conquista10.png',
@@ -228,8 +235,10 @@ class AchievementService {
       Achievement(
         id: 'savings_5000',
         title: '🏦 Cinco Mil!',
-        description: 'R\$ 5.000 economizados! Você é um poupador nato!',
-        secretDescription: 'Economize R\$ 5.000 para desbloquear',
+        description:
+            '${_currencyService.formatCurrency(5000)} economizados! Você é um poupador nato!',
+        secretDescription:
+            'Economize ${_currencyService.formatCurrency(5000)} para desbloquear',
         type: AchievementType.fiveThousand,
         rarity: AchievementRarity.gold,
         imagePath: 'assets/conquistas/conquista14.png',
