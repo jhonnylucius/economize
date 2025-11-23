@@ -593,7 +593,19 @@ flutter pub get
 
 # Execute o aplicativo
 flutter run
+ou
+flutter build apk --release --no-tree-shake-icons
+
+# Para verificar compatibilidade 16KB (após build)
+# Localize o zipalign no Android SDK:
+# C:\Users\[USER]\AppData\Local\Android\Sdk\build-tools\[VERSION]\zipalign.exe
+zipalign -c -p -v 16 build\app\outputs\flutter-apk\app-release.apk
+
+
+&"C:\Users\[USER]\AppData\Local\Android\Sdk\build-tools\30.0.3\zipalign.exe" -c -p -v 16 build\app\outputs\flutter-apk\app-release.apk
 ```
+
+C:\Users\[USER]\AppData\Local\Android\Sdk\build-tools\30.0.3\zipalign.exe -c -p -v 16 build\app\outputs\bundle\release\app-release.aab
 
 ## 📋 Fluxo do Aplicativo
 
