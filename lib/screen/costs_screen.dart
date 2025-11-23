@@ -1623,37 +1623,68 @@ class _CostsScreenState extends State<CostsScreen>
                     ),
                   ),
 
-                  // Opções rápidas
-                  Row(
+                  // Opções rápidas - WRAP para evitar overflow
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.end,
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 14,
-                        color: textColor.withAlpha((0.6 * 255).toInt()),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Toque para editar',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: textColor.withAlpha((0.6 * 255).toInt()),
+                      // ✅ NOVO: Botão "Pagar" (só aparece se não estiver pago)
+                      if (!cost.pago)
+                        InkWell(
+                          onTap: () => _markAsPaid(cost),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color:
+                                  Colors.green.withAlpha((0.1 * 255).toInt()),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:
+                                    Colors.green.withAlpha((0.3 * 255).toInt()),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  size: 16,
+                                  color: Colors.green.shade700,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Pagar',
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      const Spacer(),
+
+                      // Botão Editar
                       InkWell(
                         onTap: () => _showFormModal(model: cost),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 10, vertical: 6),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(
                                 Icons.edit_outlined,
                                 size: 16,
                                 color: Color.fromARGB(255, 216, 78, 196),
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               const Text(
                                 'Editar',
                                 style: TextStyle(
@@ -1666,21 +1697,23 @@ class _CostsScreenState extends State<CostsScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+
+                      // Botão Excluir
                       InkWell(
                         onTap: () => _removeCost(cost),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 10, vertical: 6),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.delete_outline,
                                 size: 16,
                                 color: Colors.red.shade700,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               Text(
                                 'Excluir',
                                 style: TextStyle(
@@ -1739,8 +1772,8 @@ class _CostsScreenState extends State<CostsScreen>
     // Data da despesa
     final dataEscolhida = model?.data ?? DateTime.now();
 
-    // ✅ NOVA VARIÁVEL PARA QUANTIDADE DE MESES
-    int quantidadeMesesRecorrentes = model?.quantidadeMesesRecorrentes ?? 6;
+    // ✅ NOVA VARIÁVEL PARA QUANTIDADE DE MESES (PADRÃO 0)
+    int quantidadeMesesRecorrentes = model?.quantidadeMesesRecorrentes ?? 0;
 
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
     bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
@@ -2582,6 +2615,36 @@ class _CostsScreenState extends State<CostsScreen>
         );
       },
     );
+  }
+
+  // ✅ NOVO: Marcar despesa como paga (SEM criar recorrências!)
+  Future<void> _markAsPaid(Costs cost) async {
+    try {
+      // ✅ CRIAR CÓPIA COM PAGO = TRUE
+      final paidCost = cost.copyWith(pago: true);
+
+      // ✅ ATUALIZAR NO BANCO (NÃO cria recorrências pois já existe!)
+      await _costsService.saveCost(paidCost, _accountService);
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // ✅ RECARREGAR LISTA
+      final updatedCosts = await _costsService.getAllCosts();
+      updatedCosts.sort((a, b) => b.data.compareTo(a.data));
+
+      if (mounted) {
+        setState(() {
+          listCosts = updatedCosts;
+        });
+
+        // ✅ ANIMAÇÃO DE SUCESSO DISCRETA
+        _showSuccessSnackBar('✅ Despesa paga com sucesso! 🎉');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('Erro ao marcar como pago: $e');
+      }
+    }
   }
 
   Future<void> _removeCost(Costs cost) async {
