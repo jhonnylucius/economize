@@ -28,9 +28,15 @@ android {
     defaultConfig {
         applicationId "com.lucianoribeiro.economize"
         minSdk flutter.minSdkVersion
-        targetSdk flutter.targetSdkVersion
-        versionCode 127
-        versionName "1.0.111"
+        targetSdk 35
+        versionCode 129
+        versionName "1.0.113"
+        
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
     }
 
     signingConfigs {
@@ -50,6 +56,12 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 flutter {
@@ -57,7 +69,7 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"  // ✅ Atualizado para match settings.gradle
     implementation "androidx.window:window:1.0.0"
     implementation "androidx.window:window-java:1.0.0"
     implementation 'androidx.core:core-ktx:1.12.0' 
