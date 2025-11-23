@@ -82,7 +82,7 @@ class DatabaseHelper {
       category TEXT,
       isLancamentoFuturo INTEGER DEFAULT 0,
       recorrenciaOrigemId TEXT,
-      quantidadeMesesRecorrentes INTEGER DEFAULT 6
+      quantidadeMesesRecorrentes INTEGER DEFAULT 0
     )
   ''',
     'revenues': '''
@@ -262,7 +262,7 @@ class DatabaseHelper {
           "📊 [Migrando para V18] Adicionando campo quantidadeMesesRecorrentes...");
       try {
         await db.execute(
-            'ALTER TABLE costs ADD COLUMN quantidadeMesesRecorrentes INTEGER DEFAULT 6');
+            'ALTER TABLE costs ADD COLUMN quantidadeMesesRecorrentes INTEGER DEFAULT 0');
         logger.i("✅ [V18] Campo quantidadeMesesRecorrentes adicionado!");
       } catch (e) {
         logger.e('[V18] Erro durante a migração para a V18: $e');
