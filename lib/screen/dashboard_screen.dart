@@ -135,9 +135,10 @@ class DashBoardScreenState extends State<DashBoardScreen>
       if (_selectedTipo == 'receitas') {
         final revenues = await RevenuesService().getAllRevenues();
         _filteredRevenues = revenues.where((r) {
-          // ✅ COMPARAR INTEIROS COM INTEIROS
+          // ✅ CORRIGIR: Converter accountId para String para comparação
           final matchAccount = _selectedAccountId == null ||
-              r.accountId?.toString() == _selectedAccountId;
+              (r.accountId != null &&
+                  r.accountId.toString() == _selectedAccountId);
           final matchCategoria =
               _selectedCategoria == null || r.tipoReceita == _selectedCategoria;
           final matchPeriodo = _selectedPeriod == null ||
@@ -150,9 +151,10 @@ class DashBoardScreenState extends State<DashBoardScreen>
       } else {
         final costs = await CostsService().getCostsForCalculations();
         _filteredCosts = costs.where((c) {
-          // ✅ COMPARAR INTEIROS COM INTEIROS
+          // ✅ CORRIGIR: Converter accountId para String para comparação
           final matchAccount = _selectedAccountId == null ||
-              c.accountId?.toString() == _selectedAccountId;
+              (c.accountId != null &&
+                  c.accountId.toString() == _selectedAccountId);
           final matchCategoria =
               _selectedCategoria == null || c.tipoDespesa == _selectedCategoria;
           final matchPeriodo = _selectedPeriod == null ||
@@ -317,8 +319,22 @@ class DashBoardScreenState extends State<DashBoardScreen>
 
   // Exibe a celebração conforme o saldo
   void _showCelebrationIfNeeded() {
-    if (saldo > 0 && !_isLoading) {
-      if (saldo > totalCosts * 0.5) {
+    debugPrint(
+        '🎉 Botão celebração clicado! Saldo: $saldo, Total Custos: $totalCosts, Loading: $_isLoading');
+
+    // ✅ CONDIÇÃO MAIS ROBUSTA
+    if (_isLoading) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⏳ Aguarde o carregamento dos dados...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (saldo > 0) {
+      if (totalCosts > 0 && saldo > totalCosts * 0.5) {
         // Preparar controlador de animação antes de mostrar o diálogo
         final AnimationController confettiController = AnimationController(
           vsync: this,
