@@ -26,7 +26,7 @@ class Costs {
     this.category, // Pode ser nulo, usará tipoDespesa se necessário
     this.isLancamentoFuturo = false, // Inicializado como falso
     this.recorrenciaOrigemId, // Inicializado como nulo
-    this.quantidadeMesesRecorrentes = 6,
+    this.quantidadeMesesRecorrentes = 0, // ✅ PADRÃO 0 - Usuário escolhe!
   });
 
   factory Costs.fromMap(Map<String, dynamic> map) {
@@ -43,7 +43,7 @@ class Costs {
       isLancamentoFuturo: (map['isLancamentoFuturo'] as int? ?? 0) == 1,
       recorrenciaOrigemId: map['recorrenciaOrigemId'] as String?,
       quantidadeMesesRecorrentes:
-          map['quantidadeMesesRecorrentes'] as int? ?? 6, // ✅ NOVO
+          map['quantidadeMesesRecorrentes'] as int? ?? 0, // ✅ PADRÃO 0
     );
   }
 
