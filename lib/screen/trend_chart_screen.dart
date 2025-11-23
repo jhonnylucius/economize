@@ -1314,125 +1314,138 @@ class _TrendChartScreenState extends State<TrendChartScreen>
       child: AnimatedBuilder(
         animation: _chartAnimation,
         builder: (context, _) {
-          return LineChart(
-            LineChartData(
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                drawHorizontalLine: true,
-                horizontalInterval:
-                    safeVerticalInterval, // Usar intervalo seguro
-                verticalInterval: horizontalInterval,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: theme.dividerColor.withAlpha((0.3 * 255).round()),
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                  );
-                },
-                getDrawingVerticalLine: (value) {
-                  // Desenhar linhas verticais apenas nos centros dos períodos
-                  int maxPeriods = _selectedPeriod == 0
-                      ? 12
-                      : (_selectedPeriod == 1 ? 4 : 2);
-                  if (value > 0.5 &&
-                      value < maxPeriods + 0.5 &&
-                      value % 1 == 0) {
-                    // Linhas nos valores inteiros (centros dos períodos)
-                    return FlLine(
-                      color: theme.dividerColor..withAlpha((0.3 * 255).round()),
-                      strokeWidth: 1,
-                      dashArray: [5, 5],
-                    );
-                  }
-                  return const FlLine(
-                      strokeWidth: 0); // Não desenha linha em outros lugares
-                },
+          return Padding(
+              // ✅ PADDING para não cortar nas bordas e botões do celular
+              padding: const EdgeInsets.only(
+                right: 30, // Margem direita
+                left: 10, // Margem esquerda
+                top: 10, // Margem superior
+                bottom: 40, // Margem inferior (botões do celular)
               ),
-              titlesData: _buildTitles(theme, themeManager),
-              borderData: FlBorderData(
-                show: true,
-                border: Border(
-                  left: BorderSide(
-                    color: theme.dividerColor.withAlpha((0.5 * 255).round()),
-                    width: 1,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: true,
+                    drawHorizontalLine: true,
+                    horizontalInterval:
+                        safeVerticalInterval, // Usar intervalo seguro
+                    verticalInterval: horizontalInterval,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color:
+                            theme.dividerColor.withAlpha((0.3 * 255).round()),
+                        strokeWidth: 1,
+                        dashArray: [5, 5],
+                      );
+                    },
+                    getDrawingVerticalLine: (value) {
+                      // Desenhar linhas verticais apenas nos centros dos períodos
+                      int maxPeriods = _selectedPeriod == 0
+                          ? 12
+                          : (_selectedPeriod == 1 ? 4 : 2);
+                      if (value > 0.5 &&
+                          value < maxPeriods + 0.5 &&
+                          value % 1 == 0) {
+                        // Linhas nos valores inteiros (centros dos períodos)
+                        return FlLine(
+                          color: theme.dividerColor
+                            ..withAlpha((0.3 * 255).round()),
+                          strokeWidth: 1,
+                          dashArray: [5, 5],
+                        );
+                      }
+                      return const FlLine(
+                          strokeWidth:
+                              0); // Não desenha linha em outros lugares
+                    },
                   ),
-                  bottom: BorderSide(
-                    color: theme.dividerColor.withAlpha((0.5 * 255).round()),
-                    width: 1,
-                  ),
-                  // Remove bordas direita e superior para um visual mais limpo
-                  right: const BorderSide(color: Colors.transparent),
-                  top: const BorderSide(color: Colors.transparent),
-                ),
-              ),
-              lineTouchData: _buildTouchData(theme),
-              minX: 0.5, // Começa antes do primeiro ponto
-              maxX: maxItems + 0.5, // Termina depois do último ponto
-              minY: _minY < 0
-                  ? _minY * 1.2
-                  : 0, // Estende o eixo Y para baixo se houver valores negativos
-              maxY: _maxY > 0
-                  ? _maxY * 1.2
-                  : 1000, // Estende o eixo Y para cima, com mínimo de 1000
-              clipData: FlClipData.all(),
-              lineBarsData: [
-                // Linha de Receitas (Verde)
-                _buildLineData(
-                  _revenueSpots,
-                  Colors.green,
-                  theme.cardColor,
-                  Colors.green.withAlpha((0.2 * 255).round()),
-                ),
-
-                // Linha de Despesas (Vermelho)
-                _buildLineData(
-                  _costSpots,
-                  Colors.red,
-                  theme.cardColor,
-                  Colors.red.withAlpha((0.2 * 255).round()),
-                ),
-
-                // Linha de Saldo (Azul)
-                _buildLineData(
-                  _balanceSpots,
-                  Colors.blue,
-                  theme.cardColor,
-                  Colors.transparent, // Sem preenchimento abaixo do saldo
-                ),
-              ],
-              extraLinesData: ExtraLinesData(
-                horizontalLines: [
-                  // Linha de zero (para saldo)
-                  // Desenha a linha de zero se o range incluir o zero (minY < 0 < maxY)
-                  if (_minY < 0 && _maxY > 0)
-                    HorizontalLine(
-                      y: 0,
-                      color: theme.dividerColor.withAlpha(
-                          (0.8 * 255).round()), // Um pouco mais visível
-                      strokeWidth: 1.5,
-                      dashArray: [6, 3],
-                      label: HorizontalLineLabel(
-                        show: true,
-                        alignment: Alignment.topRight,
-                        padding: const EdgeInsets.only(
-                          left: 8,
-                          right: 8,
-                          bottom: 2,
-                        ),
-                        style: TextStyle(
-                          color:
-                              theme.colorScheme.primary, // Cor primária do tema
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        labelResolver: (line) => 'zero',
+                  titlesData: _buildTitles(theme, themeManager),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border(
+                      left: BorderSide(
+                        color:
+                            theme.dividerColor.withAlpha((0.5 * 255).round()),
+                        width: 1,
                       ),
+                      bottom: BorderSide(
+                        color:
+                            theme.dividerColor.withAlpha((0.5 * 255).round()),
+                        width: 1,
+                      ),
+                      // Remove bordas direita e superior para um visual mais limpo
+                      right: const BorderSide(color: Colors.transparent),
+                      top: const BorderSide(color: Colors.transparent),
                     ),
-                ],
-              ),
-            ),
-          );
+                  ),
+                  lineTouchData: _buildTouchData(theme),
+                  minX: 0.5, // Começa antes do primeiro ponto
+                  maxX: maxItems + 0.5, // Termina depois do último ponto
+                  minY: _minY < 0
+                      ? _minY * 1.2
+                      : 0, // Estende o eixo Y para baixo se houver valores negativos
+                  maxY: _maxY > 0
+                      ? _maxY * 1.2
+                      : 1000, // Estende o eixo Y para cima, com mínimo de 1000
+                  clipData: FlClipData.all(),
+                  lineBarsData: [
+                    // Linha de Receitas (Verde)
+                    _buildLineData(
+                      _revenueSpots,
+                      Colors.green,
+                      theme.cardColor,
+                      Colors.green.withAlpha((0.2 * 255).round()),
+                    ),
+
+                    // Linha de Despesas (Vermelho)
+                    _buildLineData(
+                      _costSpots,
+                      Colors.red,
+                      theme.cardColor,
+                      Colors.red.withAlpha((0.2 * 255).round()),
+                    ),
+
+                    // Linha de Saldo (Azul)
+                    _buildLineData(
+                      _balanceSpots,
+                      Colors.blue,
+                      theme.cardColor,
+                      Colors.transparent, // Sem preenchimento abaixo do saldo
+                    ),
+                  ],
+                  extraLinesData: ExtraLinesData(
+                    horizontalLines: [
+                      // Linha de zero (para saldo)
+                      // Desenha a linha de zero se o range incluir o zero (minY < 0 < maxY)
+                      if (_minY < 0 && _maxY > 0)
+                        HorizontalLine(
+                          y: 0,
+                          color: theme.dividerColor.withAlpha(
+                              (0.8 * 255).round()), // Um pouco mais visível
+                          strokeWidth: 1.5,
+                          dashArray: [6, 3],
+                          label: HorizontalLineLabel(
+                            show: true,
+                            alignment: Alignment.topRight,
+                            padding: const EdgeInsets.only(
+                              left: 8,
+                              right: 8,
+                              bottom: 2,
+                            ),
+                            style: TextStyle(
+                              color: theme
+                                  .colorScheme.primary, // Cor primária do tema
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            labelResolver: (line) => 'zero',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ));
         },
       ),
     );
