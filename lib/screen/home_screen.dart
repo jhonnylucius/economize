@@ -3661,7 +3661,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.110'),
+            const Text('Versão: 1.0.112'),
             const SizedBox(height: 8),
             const Text(
                 'Desenvolvido com ❤️ para ajudar você a economizar! Suporte: contato@union.dev.br'),
@@ -3919,7 +3919,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
 
             const SizedBox(height: 20),
 
-            // Container com o PIX
+            // Container com o PIX e PayPal
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -3929,6 +3929,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
               ),
               child: Column(
                 children: [
+                  // PIX
                   Row(
                     children: [
                       Icon(Icons.pix, color: Colors.blue.shade700),
@@ -3949,6 +3950,65 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
                       fontSize: 12,
                       fontFamily: 'monospace',
                       color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  // Divisor
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey.shade400)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            'ou',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey.shade400)),
+                      ],
+                    ),
+                  ),
+
+                  // PayPal
+                  Row(
+                    children: [
+                      // ✅ Ícone melhor para PayPal
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Icon(
+                          Icons.payment,
+                          color: Colors.indigo.shade700,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'PayPal:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    'jhonnyluciusaa@gmail.com',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      color: Colors.indigo.shade700,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
