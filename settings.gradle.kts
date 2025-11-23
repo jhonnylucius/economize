@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "economize"
-include("app")
+// ✅ Módulo Kotlin removido - projeto Flutter puro
