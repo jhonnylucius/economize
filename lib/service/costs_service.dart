@@ -33,7 +33,19 @@ class CostsService {
 
   // TROCAR ESTE MÉTODO no CostsService:
   Future<void> saveCost(Costs cost, AccountService accountService) async {
-    await _costsDAO.insert(cost);
+    // ✅ VERIFICAR SE JÁ EXISTE (update) OU É NOVO (insert)
+    final existingCost = await _costsDAO.findById(cost.id);
+    final isUpdate = existingCost != null;
+
+    if (isUpdate) {
+      // ✅ É UMA ATUALIZAÇÃO - Usar update
+      await _costsDAO.update(cost);
+      debugPrint('🔄 Despesa atualizada: ${cost.tipoDespesa}');
+    } else {
+      // ✅ É UMA NOVA DESPESA - Usar insert
+      await _costsDAO.insert(cost);
+      debugPrint('➕ Nova despesa inserida: ${cost.tipoDespesa}');
+    }
 
     // ✅ NÃO adicionar no cache ainda - vamos recarregar tudo no final
 
@@ -41,7 +53,8 @@ class CostsService {
       await _checkImmediateNotification(cost);
     }
 
-    if (cost.accountId != null) {
+    if (cost.accountId != null && !isUpdate) {
+      // ✅ Só atualiza conta se for despesa NOVA
       await accountService.handleNewTransaction(
         accountId: cost.accountId!,
         amount: cost.preco,
@@ -50,8 +63,14 @@ class CostsService {
       );
     }
 
-// ✅ MOVER PARA FORA - Recorrência independe da conta
-    if (cost.recorrente && !cost.isLancamentoFuturo) {
+    // ✅ CRÍTICO: Só cria recorrências se:
+    // 1. É recorrente
+    // 2. NÃO é lançamento futuro (evita loop infinito)
+    // 3. É uma NOVA despesa (não é update)
+    if (cost.recorrente &&
+        !cost.isLancamentoFuturo &&
+        !isUpdate &&
+        cost.quantidadeMesesRecorrentes > 0) {
       await _createRecurringCosts(cost);
     }
 
