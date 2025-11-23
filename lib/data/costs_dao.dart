@@ -272,7 +272,7 @@ class CostsDAO {
       category TEXT,
       isLancamentoFuturo INTEGER DEFAULT 0,
       recorrenciaOrigemId TEXT,
-      quantidadeMesesRecorrentes INTEGER DEFAULT 6,
+      quantidadeMesesRecorrentes INTEGER DEFAULT 0,
     )
   ''');
   }
