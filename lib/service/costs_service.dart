@@ -41,26 +41,69 @@ class CostsService {
       // ✅ É UMA ATUALIZAÇÃO - Usar update
       await _costsDAO.update(cost);
       debugPrint('🔄 Despesa atualizada: ${cost.tipoDespesa}');
+
+      if (cost.accountId != null) {
+        // Lógica de Atualização de Saldo UNIFICADA
+        // Não importa se é cópia ou original, só afeta o saldo se estiver PAGO.
+
+        final wasPaid = existingCost!.pago;
+        final isPaid = cost.pago;
+
+        if (!wasPaid && isPaid) {
+          // 1. Estava Aberto -> Agora Pago: DEBITAR
+          await accountService.handleNewTransaction(
+            accountId: cost.accountId!,
+            amount: cost.preco,
+            isRevenue: false,
+            date: cost.data,
+          );
+        } else if (wasPaid && !isPaid) {
+          // 2. Estava Pago -> Agora Aberto: ESTORNAR (Credit)
+          await accountService.handleDeletedTransaction(
+            accountId: cost.accountId!,
+            amount: cost.preco, // Usa o preço atual (assumindo que não mudou drasticamente na transição)
+            isRevenue: false,
+          );
+        } else if (wasPaid && isPaid) {
+          // 3. Estava Pago -> Continua Pago (Mas valor pode ter mudado)
+          if (existingCost.preco != cost.preco) {
+            await accountService.handleUpdatedTransaction(
+              oldAccountId: existingCost.accountId ?? cost.accountId!,
+              oldAmount: existingCost.preco,
+              oldIsRevenue: false,
+              newAccountId: cost.accountId!,
+              newAmount: cost.preco,
+              newIsRevenue: false,
+              date: cost.data,
+            );
+          }
+        }
+        // 4. Estava Aberto -> Continua Aberto: Nada a fazer (saldo não muda)
+      }
+
     } else {
       // ✅ É UMA NOVA DESPESA - Usar insert
       await _costsDAO.insert(cost);
       debugPrint('➕ Nova despesa inserida: ${cost.tipoDespesa}');
+
+      if (cost.accountId != null) {
+         // Lógica de Inserção UNIFICADA
+         // Só debita se já nascer PAGA.
+         if (cost.pago) {
+            await accountService.handleNewTransaction(
+              accountId: cost.accountId!,
+              amount: cost.preco,
+              isRevenue: false,
+              date: cost.data,
+            );
+         }
+      }
     }
 
     // ✅ NÃO adicionar no cache ainda - vamos recarregar tudo no final
 
     if (!cost.pago) {
       await _checkImmediateNotification(cost);
-    }
-
-    if (cost.accountId != null && !isUpdate) {
-      // ✅ Só atualiza conta se for despesa NOVA
-      await accountService.handleNewTransaction(
-        accountId: cost.accountId!,
-        amount: cost.preco,
-        isRevenue: false,
-        date: cost.data,
-      );
     }
 
     // ✅ CRÍTICO: Só cria recorrências se:
@@ -201,12 +244,19 @@ class CostsService {
     _cachedCosts.removeWhere((cost) => cost.id == id);
 
     if (costToDelete.accountId != null) {
-      await accountService.handleDeletedTransaction(
-        accountId: costToDelete.accountId!,
-        amount: costToDelete.preco,
-        isRevenue: false,
-      );
+      // ✅ CORREÇÃO UNIFICADA: Só estorna se estava PAGA.
+      // Não importa se é original ou cópia. Se não foi paga, não debitou, então não estorna.
+      
+      if (costToDelete.pago) {
+        await accountService.handleDeletedTransaction(
+          accountId: costToDelete.accountId!,
+          amount: costToDelete.preco,
+          isRevenue: false,
+        );
+        debugPrint('✅ Despesa deletada e saldo da conta revertido.');
+      } else {
+        debugPrint('ℹ️ Despesa deletada sem estorno (não estava paga).');
+      }
     }
-    debugPrint('✅ Despesa deletada e saldo da conta revertido.');
   }
 }
