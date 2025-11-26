@@ -109,7 +109,7 @@ class AccountService {
       type: isRevenue
           ? AccountTransactionType.REVENUE
           : AccountTransactionType.COST,
-      description: isRevenue ? 'Nova receita' : 'Nova despesa',
+      description: isRevenue ? 'Nova receita' : 'Nova despesa', // Poderia ser melhorado para receber a descrição real
       date: date, // <-- passe a data aqui
     );
   }
