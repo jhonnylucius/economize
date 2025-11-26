@@ -29,8 +29,8 @@ android {
         applicationId "com.lucianoribeiro.economize"
         minSdk flutter.minSdkVersion
         targetSdk 35
-        versionCode 129
-        versionName "1.0.113"
+        versionCode 130
+        versionName "1.0.114"
         
         externalNativeBuild {
             cmake {
