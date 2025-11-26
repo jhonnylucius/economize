@@ -1753,11 +1753,7 @@ class _CostsScreenState extends State<CostsScreen>
         const Color.fromARGB(255, 216, 78, 196).withAlpha((0.3 * 255).toInt());
     final fieldBackgroundColor = Colors.grey.shade50;
 
-    final dataController = TextEditingController(
-      text: model != null
-          ? DateFormat('dd/MM/yyyy').format(model.data)
-          : DateFormat('dd/MM/yyyy').format(DateTime.now()),
-    );
+
 
     final descricaoController = TextEditingController(
       text: model?.descricaoDaDespesa ?? '',
@@ -1770,14 +1766,20 @@ class _CostsScreenState extends State<CostsScreen>
     bool recorrente = model?.recorrente ?? _isRecurrentCategory(selectedTipo);
 
     // Data da despesa
-    final dataEscolhida = model?.data ?? DateTime.now();
+
+    DateTime selectedDate = model?.data ?? DateTime.now();
 
     // ✅ NOVA VARIÁVEL PARA QUANTIDADE DE MESES (PADRÃO 0)
     int quantidadeMesesRecorrentes = model?.quantidadeMesesRecorrentes ?? 0;
 
     // Se a data for no passado ou o modelo já tem um valor, use-o; caso contrário, assuma falso
-    bool pago = model?.pago ?? dataEscolhida.isBefore(DateTime.now());
+    bool pago = model?.pago ?? selectedDate.isBefore(DateTime.now());
     int? selectedAccountId = model?.accountId;
+
+    final dataController = TextEditingController(
+      text: DateFormat('dd/MM/yyyy').format(selectedDate),
+    );
+
 
     void showAchievementSnackbar(List<Achievement> achievements) {
       if (achievements.length == 1) {
@@ -1966,10 +1968,22 @@ class _CostsScreenState extends State<CostsScreen>
                           );
                           if (date != null) {
                             setState(() {
+                              selectedDate = date; // ✅ ATUALIZAR VARIÁVEL
                               dataController.text =
                                   DateFormat('dd/MM/yyyy').format(date);
+                              
+                              // ✅ MELHORIA: Sempre atualizar o status de pago ao mudar a data para uma nova despesa
+                              // Se for futuro -> Não pago
+                              // Se for passado/hoje -> Mantém o que estava ou sugere pago? 
+                              // Melhor sugerir não pago para futuro e manter decisão do usuário para passado.
                               if (model == null) {
-                                pago = date.isBefore(DateTime.now());
+                                if (date.isAfter(DateTime.now())) {
+                                  pago = false;
+                                  // Opcional: Mostrar aviso visual?
+                                } else {
+                                  // Se voltou para o passado/hoje, sugere pago (comportamento padrão)
+                                  pago = true; 
+                                }
                               }
                             });
                           }
@@ -2477,8 +2491,14 @@ class _CostsScreenState extends State<CostsScreen>
                             child: FilledButton(
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
-                                  final dataFormatada = DateFormat('dd/MM/yyyy')
-                                      .parse(dataController.text);
+                                  // ✅ USAR selectedDate DIRETAMENTE
+                                  final dataFormatada = DateTime(
+                                    selectedDate.year,
+                                    selectedDate.month,
+                                    selectedDate.day,
+                                    DateTime.now().hour,
+                                    DateTime.now().minute,
+                                  );
 
                                   // ✅ CONVERSÃO MAIS ROBUSTA
                                   double valorNumerico = 0.0;
