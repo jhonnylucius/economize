@@ -159,8 +159,10 @@ class CostsService {
     final now = DateTime.now();
     return allCosts
         .where((cost) =>
-            !cost.isLancamentoFuturo ||
-            cost.data.isBefore(now.add(Duration(days: 1))))
+            // ✅ CORREÇÃO: Apenas despesas PAGAS devem entrar no cálculo do saldo/dashboard
+            cost.pago &&
+            (!cost.isLancamentoFuturo ||
+                cost.data.isBefore(now.add(Duration(days: 1)))))
         .toList();
   }
 
