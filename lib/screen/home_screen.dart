@@ -3661,7 +3661,7 @@ class _CentralMenuBottomSheetState extends State<_CentralMenuBottomSheet>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Versão: 1.0.112'),
+            const Text('Versão: 1.0.114'),
             const SizedBox(height: 8),
             const Text(
                 'Desenvolvido com ❤️ para ajudar você a economizar! Suporte: contato@union.dev.br'),
